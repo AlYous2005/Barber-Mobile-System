@@ -7,6 +7,7 @@ import '../../widgets/auth/auth_card.dart';
 import '../../widgets/auth/auth_error_message.dart';
 import '../../widgets/auth/auth_role_selector.dart';
 import '../../widgets/auth/auth_forgot_password_sheet.dart';
+import 'auth_transition_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -87,10 +88,43 @@ class _LoginScreenState extends State<LoginScreen>
 
     setState(() => loading = true);
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      setState(() => loading = false);
-    });
+Future.delayed(const Duration(milliseconds: 650), () {
+  if (!mounted) return;
+
+  setState(() => loading = false);
+
+  Navigator.pushReplacement(
+    context,
+    PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 650),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return AuthTransitionScreen(
+          userName: usernameController.text.trim(),
+          role: selectedRole,
+        );
+      },
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final offsetAnimation = Tween<Offset>(
+          begin: const Offset(0, 0.08),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: offsetAnimation,
+            child: child,
+          ),
+        );
+      },
+    ),
+  );
+});
   }
 
   void openForgotPasswordSheet() {
