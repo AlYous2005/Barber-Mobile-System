@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../models/mock_notification.dart';
+import '../../../models/mock_notification.dart';
 
 class CustomerNotificationsDropdown extends StatelessWidget {
   const CustomerNotificationsDropdown({

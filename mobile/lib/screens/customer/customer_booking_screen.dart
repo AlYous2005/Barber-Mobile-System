@@ -4,8 +4,8 @@ import '../../models/barber_model.dart';
 import '../../models/booking_model.dart';
 import '../../models/service_model.dart';
 
-import '../../widgets/customer/booking_date_selector.dart';
-import '../../widgets/customer/booking_summary_card.dart';
+import '../../widgets/customer/booking/booking_date_selector.dart';
+import '../../widgets/customer/booking/booking_summary_card.dart';
 import '../../utils/booking_date_helpers.dart';
 import '../../utils/booking_formatters.dart';
 import '../../widgets/customer/booking/booking_step_header.dart';

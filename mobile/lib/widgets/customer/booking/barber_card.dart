@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/barber_model.dart';
-import 'customer_theme.dart';
+import '../../../models/barber_model.dart';
+import '../customer_theme.dart';
 
 class BarberCard extends StatelessWidget {
   const BarberCard({

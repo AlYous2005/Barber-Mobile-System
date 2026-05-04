@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/booking_model.dart';
-import '../../widgets/customer/booking_summary_card.dart';
+import '../../widgets/customer/booking/booking_summary_card.dart';
 import '../../utils/duration_formatters.dart';
 import '../../widgets/customer/booking/booking_success_reminder_dialog.dart';
 

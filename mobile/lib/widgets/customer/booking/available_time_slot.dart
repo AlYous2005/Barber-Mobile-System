@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'customer_theme.dart';
+import '../customer_theme.dart';
 
 class AvailableTimeSlot extends StatelessWidget {
   const AvailableTimeSlot({

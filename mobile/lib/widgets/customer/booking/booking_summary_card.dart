@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../models/service_model.dart';
+import '../../../models/service_model.dart';
 
 class BookingSummaryCard extends StatelessWidget {
   const BookingSummaryCard({
