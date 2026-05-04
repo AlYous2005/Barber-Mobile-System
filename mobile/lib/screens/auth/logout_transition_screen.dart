@@ -5,7 +5,14 @@ import '../../widgets/auth/auth_background.dart';
 import 'login_screen.dart';
 
 class LogoutTransitionScreen extends StatefulWidget {
-  const LogoutTransitionScreen({super.key});
+  const LogoutTransitionScreen({
+    super.key,
+    this.footerTitle = 'شكرًا لاستخدام لوحة التحكم',
+    this.footerSubtitle = 'نتمنى لك يوم عمل موفق',
+  });
+
+  final String footerTitle;
+  final String footerSubtitle;
 
   @override
   State<LogoutTransitionScreen> createState() => _LogoutTransitionScreenState();
@@ -50,49 +57,24 @@ class _LogoutTransitionScreenState extends State<LogoutTransitionScreen>
       duration: const Duration(milliseconds: 10000),
     )..repeat(reverse: true);
 
-    _pageFade = CurvedAnimation(
-      parent: _pageController,
-      curve: Curves.easeOut,
-    );
+    _pageFade = CurvedAnimation(parent: _pageController, curve: Curves.easeOut);
 
-    _panelSlide = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _pageController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
+    _panelSlide = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _pageController, curve: Curves.easeOutCubic),
+        );
 
     _orbScale = Tween<double>(
       begin: 1,
       end: 1.06,
-    ).animate(
-      CurvedAnimation(
-        parent: _orbController,
-        curve: Curves.easeInOut,
-      ),
+    ).animate(CurvedAnimation(parent: _orbController, curve: Curves.easeInOut));
+
+    _lineMove = Tween<double>(begin: -0.35, end: 0.35).animate(
+      CurvedAnimation(parent: _lineController, curve: Curves.easeInOut),
     );
 
-    _lineMove = Tween<double>(
-      begin: -0.35,
-      end: 0.35,
-    ).animate(
-      CurvedAnimation(
-        parent: _lineController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _floatValue = Tween<double>(
-      begin: -1,
-      end: 1,
-    ).animate(
-      CurvedAnimation(
-        parent: _floatController,
-        curve: Curves.easeInOut,
-      ),
+    _floatValue = Tween<double>(begin: -1, end: 1).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
     );
 
     _pageController.forward();
@@ -101,9 +83,7 @@ class _LogoutTransitionScreenState extends State<LogoutTransitionScreen>
       if (!mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
         (route) => false,
       );
     });
@@ -192,10 +172,7 @@ class _LogoutTransitionScreenState extends State<LogoutTransitionScreen>
                             ],
                           ),
                           textDirection: TextDirection.ltr,
-                          style: TextStyle(
-                            fontSize: 42,
-                            letterSpacing: 2,
-                          ),
+                          style: TextStyle(fontSize: 42, letterSpacing: 2),
                         ),
 
                         const SizedBox(height: 20),
@@ -247,12 +224,16 @@ class _LogoutTransitionScreenState extends State<LogoutTransitionScreen>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.orange.withValues(alpha: 0.26),
+                                    color: Colors.orange.withValues(
+                                      alpha: 0.26,
+                                    ),
                                   ),
                                   color: Colors.white.withValues(alpha: 0.05),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.orange.withValues(alpha: 0.18),
+                                      color: Colors.orange.withValues(
+                                        alpha: 0.18,
+                                      ),
                                       blurRadius: 24,
                                       spreadRadius: 2,
                                     ),
@@ -264,10 +245,14 @@ class _LogoutTransitionScreenState extends State<LogoutTransitionScreen>
                                     height: 26,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.orange.withValues(alpha: 0.55),
+                                      color: Colors.orange.withValues(
+                                        alpha: 0.55,
+                                      ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.orange.withValues(alpha: 0.28),
+                                          color: Colors.orange.withValues(
+                                            alpha: 0.28,
+                                          ),
                                           blurRadius: 14,
                                         ),
                                       ],
@@ -302,21 +287,29 @@ class _LogoutTransitionScreenState extends State<LogoutTransitionScreen>
                                         width: 120,
                                         height: 5,
                                         decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(999),
+                                          borderRadius: BorderRadius.circular(
+                                            999,
+                                          ),
                                           gradient: LinearGradient(
                                             colors: [
                                               Colors.transparent,
-                                              Colors.orange.withValues(alpha: 0.60),
-                                              Colors.white.withValues(alpha: 0.42),
-                                              Colors.orange.withValues(alpha: 0.55),
+                                              Colors.orange.withValues(
+                                                alpha: 0.60,
+                                              ),
+                                              Colors.white.withValues(
+                                                alpha: 0.42,
+                                              ),
+                                              Colors.orange.withValues(
+                                                alpha: 0.55,
+                                              ),
                                               Colors.transparent,
                                             ],
                                           ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.orange
-                                                  .withValues(alpha: 0.28),
+                                              color: Colors.orange.withValues(
+                                                alpha: 0.28,
+                                              ),
                                               blurRadius: 12,
                                             ),
                                           ],
@@ -332,10 +325,10 @@ class _LogoutTransitionScreenState extends State<LogoutTransitionScreen>
 
                         const SizedBox(height: 20),
 
-                        const Text(
-                          "شكرًا لاستخدام لوحة التحكم",
+                        Text(
+                          widget.footerTitle,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white54,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -344,10 +337,10 @@ class _LogoutTransitionScreenState extends State<LogoutTransitionScreen>
 
                         const SizedBox(height: 6),
 
-                        const Text(
-                          "نتمنى لك يوم عمل موفق",
+                        Text(
+                          widget.footerSubtitle,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white38,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,

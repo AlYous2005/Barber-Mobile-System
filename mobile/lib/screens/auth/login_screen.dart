@@ -88,43 +88,41 @@ class _LoginScreenState extends State<LoginScreen>
 
     setState(() => loading = true);
 
-Future.delayed(const Duration(milliseconds: 650), () {
-  if (!mounted) return;
+    Future.delayed(const Duration(milliseconds: 650), () {
+      if (!mounted) return;
 
-  setState(() => loading = false);
+      setState(() => loading = false);
 
-  Navigator.pushReplacement(
-    context,
-    PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 650),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return AuthTransitionScreen(
-          userName: usernameController.text.trim(),
-          role: selectedRole,
-        );
-      },
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final offsetAnimation = Tween<Offset>(
-          begin: const Offset(0, 0.08),
-          end: Offset.zero,
-        ).animate(
-          CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-          ),
-        );
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 650),
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return AuthTransitionScreen(
+              userName: usernameController.text.trim(),
+              role: selectedRole,
+            );
+          },
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final offsetAnimation =
+                Tween<Offset>(
+                  begin: const Offset(0, 0.08),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                );
 
-        return FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: offsetAnimation,
-            child: child,
-          ),
-        );
-      },
-    ),
-  );
-});
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(position: offsetAnimation, child: child),
+            );
+          },
+        ),
+      );
+    });
   }
 
   void openForgotPasswordSheet() {
@@ -156,7 +154,6 @@ Future.delayed(const Duration(milliseconds: 650), () {
               },
               child: AuthCard(
                 hasError: errorMessage != null,
-                
 
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -212,8 +209,8 @@ Future.delayed(const Duration(milliseconds: 650), () {
                         },
                       ),
                     ),
-                     
-                     TextButton(
+
+                    TextButton(
                       onPressed: openForgotPasswordSheet,
                       child: const Text(
                         "هل نسيت كلمة المرور؟",
@@ -237,21 +234,53 @@ Future.delayed(const Duration(milliseconds: 650), () {
 
                     const SizedBox(height: 8),
 
-                    
+                    const SizedBox(height: 8),
 
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SignUpScreen(),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 280),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, animation) {
+                        final slideAnimation = Tween<Offset>(
+                          begin: const Offset(0, 0.25),
+                          end: Offset.zero,
+                        ).animate(animation);
+
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SizeTransition(
+                            sizeFactor: animation,
+                            axisAlignment: -1,
+                            child: SlideTransition(
+                              position: slideAnimation,
+                              child: child,
+                            ),
                           ),
                         );
                       },
-                      child: const Text(
-                        "إنشاء حساب جديد",
-                        style: TextStyle(color: Colors.white70),
-                      ),
+                      child: selectedRole == "customer"
+                          ? Center(
+                              key: const ValueKey("signup-button-visible"),
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const SignUpScreen(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  "إنشاء حساب جديد",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                              ),
+                            )
+                          : const SizedBox(
+                              key: ValueKey("signup-button-hidden"),
+                              height: 0,
+                            ),
                     ),
                   ],
                 ),
