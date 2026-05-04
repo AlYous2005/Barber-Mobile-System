@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/mock_appointment.dart';
+import '../../../utils/app_theme_colors.dart';
 import 'appointment_action_widgets.dart';
 
 class AppointmentsListSection extends StatelessWidget {
@@ -27,22 +28,22 @@ class AppointmentsListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool dark = AppThemeColors.isDark(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFFFFFF),
-            Color(0xFFFDFCFA),
-          ],
-        ),
+        color: dark ? AppThemeColors.card(context) : null,
+        gradient: dark
+            ? null
+            : const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFFFFFFF), Color(0xFFFDFCFA)],
+              ),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: const Color(0x14744F40),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x142C221C),
@@ -57,16 +58,14 @@ class AppointmentsListSection extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFFFAF4EE),
-                    Color(0xFFF6EEE6),
-                  ],
-                ),
+                color: dark ? AppThemeColors.softCard(context) : null,
+                gradient: dark
+                    ? null
+                    : const LinearGradient(
+                        colors: [Color(0xFFFAF4EE), Color(0xFFF6EEE6)],
+                      ),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: const Color(0x29B4825A),
-                ),
+                border: Border.all(color: AppThemeColors.border(context)),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x14B8774A),
@@ -107,10 +106,10 @@ class AppointmentsListSection extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF2A2018),
+                      color: AppThemeColors.textPrimary(context),
                     ),
                   ),
                 ],
@@ -140,29 +139,26 @@ class AppointmentsListSection extends StatelessWidget {
 }
 
 class EmptyAppointmentsState extends StatelessWidget {
-  const EmptyAppointmentsState({
-    super.key,
-    required this.emptyText,
-  });
+  const EmptyAppointmentsState({super.key, required this.emptyText});
 
   final String emptyText;
 
   @override
   Widget build(BuildContext context) {
+    final bool dark = AppThemeColors.isDark(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFFAF6F1),
-            Color(0xFFF6F0E9),
-          ],
-        ),
+        color: dark ? AppThemeColors.softCard(context) : null,
+        gradient: dark
+            ? null
+            : const LinearGradient(
+                colors: [Color(0xFFFAF6F1), Color(0xFFF6F0E9)],
+              ),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0x22785A46),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Row(
         children: [
@@ -170,17 +166,19 @@ class EmptyAppointmentsState extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFFFAECE0),
-                  Color(0xFFF4E2D2),
-                ],
-              ),
+              color: dark ? AppThemeColors.elevatedCard(context) : null,
+              gradient: dark
+                  ? null
+                  : const LinearGradient(
+                      colors: [Color(0xFFFAECE0), Color(0xFFF4E2D2)],
+                    ),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.calendar_month_rounded,
-              color: Color(0xFF8A4A2A),
+              color: dark
+                  ? AppThemeColors.brandBrown(context)
+                  : const Color(0xFF8A4A2A),
               size: 23,
             ),
           ),
@@ -189,22 +187,22 @@ class EmptyAppointmentsState extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'لا توجد مواعيد هنا الآن',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF2A2018),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 5),
                 Text(
                   emptyText,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     height: 1.6,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF8A7A72),
+                    color: AppThemeColors.textSecondary(context),
                   ),
                 ),
               ],
@@ -268,11 +266,9 @@ class _AppointmentLuxuryCardState extends State<AppointmentLuxuryCard> {
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFFDFCFA),
+            color: AppThemeColors.elevatedCard(context),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: const Color(0x1A4A3428),
-            ),
+            border: Border.all(color: AppThemeColors.border(context)),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x0D000000),
@@ -294,15 +290,13 @@ class _AppointmentLuxuryCardState extends State<AppointmentLuxuryCard> {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFAECE0),
+                      color: AppThemeColors.softCard(context),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: const Color(0x33C8A078),
-                      ),
+                      border: Border.all(color: AppThemeColors.border(context)),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.person_rounded,
-                      color: Color(0xFF5C4030),
+                      color: AppThemeColors.textSecondary(context),
                       size: 21,
                     ),
                   ),
@@ -310,10 +304,10 @@ class _AppointmentLuxuryCardState extends State<AppointmentLuxuryCard> {
                   Expanded(
                     child: Text(
                       appointment.customerName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF2A2018),
+                        color: AppThemeColors.textPrimary(context),
                       ),
                     ),
                   ),
@@ -376,15 +370,13 @@ class AppointmentDetailLine extends StatelessWidget {
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: const Color(0xFFF8F2EC),
+            color: AppThemeColors.softCard(context),
             borderRadius: BorderRadius.circular(11),
-            border: Border.all(
-              color: const Color(0x38C8AA8C),
-            ),
+            border: Border.all(color: AppThemeColors.border(context)),
           ),
           child: Icon(
             icon,
-            color: const Color(0xFF6B4F3E),
+            color: AppThemeColors.textSecondary(context),
             size: 17,
           ),
         ),
@@ -392,11 +384,11 @@ class AppointmentDetailLine extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14.5,
               height: 1.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF374151),
+              color: AppThemeColors.textSecondary(context),
             ),
           ),
         ),
@@ -406,10 +398,7 @@ class AppointmentDetailLine extends StatelessWidget {
 }
 
 class StatusBadge extends StatelessWidget {
-  const StatusBadge({
-    super.key,
-    required this.status,
-  });
+  const StatusBadge({super.key, required this.status});
 
   final String status;
 
@@ -454,32 +443,17 @@ class StatusBadge extends StatelessWidget {
   List<Color> get gradientColors {
     switch (status) {
       case 'مؤكد':
-        return const [
-          Color(0xFFE8F2EC),
-          Color(0xFFD4E8DC),
-        ];
+        return const [Color(0xFFE8F2EC), Color(0xFFD4E8DC)];
       case 'ملغي':
       case 'ملغية':
-        return const [
-          Color(0xFFF8E9E8),
-          Color(0xFFEFD5D3),
-        ];
+        return const [Color(0xFFF8E9E8), Color(0xFFEFD5D3)];
       case 'لم يحضر':
-        return const [
-          Color(0xFFFAF3EB),
-          Color(0xFFF0E0D0),
-        ];
+        return const [Color(0xFFFAF3EB), Color(0xFFF0E0D0)];
       case 'مكتمل':
       case 'مكتملة':
-        return const [
-          Color(0xFFE8EEF6),
-          Color(0xFFD6E2F0),
-        ];
+        return const [Color(0xFFE8EEF6), Color(0xFFD6E2F0)];
       default:
-        return const [
-          Color(0xFFF2EEF8),
-          Color(0xFFE6DFF0),
-        ];
+        return const [Color(0xFFF2EEF8), Color(0xFFE6DFF0)];
     }
   }
 
@@ -490,13 +464,9 @@ class StatusBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: gradientColors,
-          ),
+          gradient: LinearGradient(colors: gradientColors),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: textColor.withValues(alpha: 0.22),
-          ),
+          border: Border.all(color: textColor.withValues(alpha: 0.22)),
         ),
         child: Text(
           label,

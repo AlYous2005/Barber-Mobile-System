@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../widgets/barber/settings/settings_intro_card.dart';
 import '../../widgets/barber/settings/theme_settings_card.dart';
 import '../../widgets/barber/settings/notifications_settings_card.dart';
 import '../../widgets/barber/settings/salon_image_settings_card.dart';
+import '../../main.dart';
 
 class BarberSettingsScreen extends StatefulWidget {
   const BarberSettingsScreen({super.key, required this.onLogout});
@@ -18,6 +21,12 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
   bool notificationsEnabled = true;
   bool isDarkMode = false;
   bool hasSalonImage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isDarkMode = appThemeMode.value == ThemeMode.dark;
+  }
 
   void _toggleNotifications() {
     setState(() {
@@ -40,12 +49,15 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
       isDarkMode = value;
     });
 
+    appThemeMode.value = value ? ThemeMode.dark : ThemeMode.light;
+    unawaited(saveAppThemeMode(appThemeMode.value));
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           isDarkMode
-              ? 'تم اختيار الوضع الداكن مؤقتًا'
-              : 'تم اختيار الوضع الفاتح مؤقتًا',
+              ? 'تم تفعيل الوضع الداكن للتطبيق'
+              : 'تم تفعيل الوضع الفاتح للتطبيق',
         ),
       ),
     );
@@ -81,9 +93,10 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Color pageBackground = isDarkMode
-        ? const Color(0xFF111827)
-        : Colors.white;
+    final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
+    final Color textColor =
+        Theme.of(context).appBarTheme.iconTheme?.color ??
+        Theme.of(context).colorScheme.onSurface;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -92,18 +105,13 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
         appBar: AppBar(
           title: Text(
             '',
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              color: isDarkMode ? Colors.white : const Color(0xFF111827),
-            ),
+            style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
           ),
           centerTitle: true,
           backgroundColor: pageBackground,
           surfaceTintColor: pageBackground,
           elevation: 0,
-          iconTheme: IconThemeData(
-            color: isDarkMode ? Colors.white : const Color(0xFF111827),
-          ),
+          iconTheme: IconThemeData(color: textColor),
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),

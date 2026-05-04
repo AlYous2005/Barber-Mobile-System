@@ -63,16 +63,16 @@ class _TimelineRadarCircleState extends State<TimelineRadarCircle>
                     color: const Color(0xFFEFFFD8),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF84CC16).withValues(
-                          alpha: _glowAnimation.value,
-                        ),
+                        color: const Color(
+                          0xFF84CC16,
+                        ).withValues(alpha: _glowAnimation.value),
                         blurRadius: 22,
                         spreadRadius: 4,
                       ),
                       BoxShadow(
-                        color: const Color(0xFFBEF264).withValues(
-                          alpha: _glowAnimation.value * 0.55,
-                        ),
+                        color: const Color(
+                          0xFFBEF264,
+                        ).withValues(alpha: _glowAnimation.value * 0.55),
                         blurRadius: 34,
                         spreadRadius: 8,
                       ),

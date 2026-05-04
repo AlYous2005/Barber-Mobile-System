@@ -41,9 +41,7 @@ class CustomerAppointmentsSection extends StatelessWidget {
 
         if (selectedTab == 'upcoming') ...[
           if (upcomingAppointments.isEmpty)
-            const EmptyAppointmentsBox(
-              message: 'لا توجد مواعيد قادمة حالياً',
-            )
+            const EmptyAppointmentsBox(message: 'لا توجد مواعيد قادمة حالياً')
           else
             ...upcomingAppointments.map(
               (item) => CustomerAppointmentCard(
@@ -62,9 +60,7 @@ class CustomerAppointmentsSection extends StatelessWidget {
             ),
         ] else ...[
           if (previousAppointments.isEmpty)
-            const EmptyAppointmentsBox(
-              message: 'لا توجد مواعيد سابقة حالياً',
-            )
+            const EmptyAppointmentsBox(message: 'لا توجد مواعيد سابقة حالياً')
           else
             ...previousAppointments.map(
               (item) => CustomerAppointmentCard(

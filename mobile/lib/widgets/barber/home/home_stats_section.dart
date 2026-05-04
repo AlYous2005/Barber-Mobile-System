@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../shared/stat_card.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class HomeStatsSection extends StatelessWidget {
   const HomeStatsSection({
@@ -20,14 +21,11 @@ class HomeStatsSection extends StatelessWidget {
           child: Container(
             width: double.infinity,
             margin: const EdgeInsets.symmetric(horizontal: 28),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 22,
-              vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
+              color: AppThemeColors.softCard(context),
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              border: Border.all(color: AppThemeColors.border(context)),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x12000000),
@@ -36,13 +34,13 @@ class HomeStatsSection extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Text(
+            child: Text(
               'إحصائيات اليوم',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFF111827),
+                color: AppThemeColors.textPrimary(context),
               ),
             ),
           ),

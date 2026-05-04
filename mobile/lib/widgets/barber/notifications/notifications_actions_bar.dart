@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class NotificationsActionsBar extends StatelessWidget {
   const NotificationsActionsBar({
     super.key,
@@ -15,11 +17,9 @@ class NotificationsActionsBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF7),
+        color: AppThemeColors.elevatedCard(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFFEADBCD),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Row(
         children: [
@@ -42,11 +42,11 @@ class NotificationsActionsBar extends StatelessWidget {
               unreadCount == 0
                   ? 'لا يوجد إشعارات تحتاج متابعة'
                   : 'عندك $unreadCount إشعارات غير مقروءة',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13.5,
                 height: 1.5,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF2A2018),
+                color: AppThemeColors.textPrimary(context),
               ),
             ),
           ),

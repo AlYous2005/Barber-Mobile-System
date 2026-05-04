@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/app_theme_colors.dart';
 
 class StarRatingDisplay extends StatelessWidget {
   const StarRatingDisplay({
@@ -6,13 +7,7 @@ class StarRatingDisplay extends StatelessWidget {
     required this.rating,
     required this.ratingCount,
     required this.satisfactionRate,
-    this.ratingBreakdown = const {
-      5: 18,
-      4: 6,
-      3: 2,
-      2: 1,
-      1: 0,
-    },
+    this.ratingBreakdown = const {5: 18, 4: 6, 3: 2, 2: 1, 1: 0},
     this.starSize = 18,
     this.enableDetailsPopup = true,
   });
@@ -46,16 +41,14 @@ class StarRatingDisplay extends StatelessWidget {
 
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 1.5),
-        child: Icon(
-          icon,
-          size: effectiveSize,
-          color: color,
-        ),
+        child: Icon(icon, size: effectiveSize, color: color),
       );
     });
   }
 
   void _showRatingDetails(BuildContext context) {
+    final bool isDark = AppThemeColors.isDark(context);
+
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
@@ -68,13 +61,14 @@ class StarRatingDisplay extends StatelessWidget {
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppThemeColors.card(context),
               borderRadius: BorderRadius.circular(28),
-              boxShadow: const [
+              border: Border.all(color: AppThemeColors.border(context)),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x33000000),
+                  color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.20),
                   blurRadius: 28,
-                  offset: Offset(0, 14),
+                  offset: const Offset(0, 14),
                 ),
               ],
             ),
@@ -85,7 +79,7 @@ class StarRatingDisplay extends StatelessWidget {
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE5E7EB),
+                    color: AppThemeColors.border(context),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -97,27 +91,32 @@ class StarRatingDisplay extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(24),
-                    gradient: const LinearGradient(
-                      begin: Alignment.topRight,
-                      end: Alignment.bottomLeft,
-                      colors: [
-                        Color(0xFFFFFBEB),
-                        Color(0xFFFFF7ED),
-                        Color(0xFFFFFFFF),
-                      ],
-                    ),
+                    gradient: isDark
+                        ? null
+                        : const LinearGradient(
+                            begin: Alignment.topRight,
+                            end: Alignment.bottomLeft,
+                            colors: [
+                              Color(0xFFFFFBEB),
+                              Color(0xFFFFF7ED),
+                              Color(0xFFFFFFFF),
+                            ],
+                          ),
+                    color: isDark ? AppThemeColors.elevatedCard(context) : null,
                     border: Border.all(
-                      color: Color(0xFFFDE68A),
+                      color: isDark
+                          ? AppThemeColors.border(context)
+                          : const Color(0xFFFDE68A),
                     ),
                   ),
                   child: Column(
                     children: [
-                      const Text(
+                      Text(
                         'تقييم الحلاق',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF111827),
+                          color: AppThemeColors.textPrimary(context),
                         ),
                       ),
 
@@ -125,10 +124,12 @@ class StarRatingDisplay extends StatelessWidget {
 
                       Text(
                         _safeRating.toStringAsFixed(1),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 42,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF92400E),
+                          color: isDark
+                              ? const Color(0xFFF6D38B)
+                              : const Color(0xFF92400E),
                           height: 1,
                         ),
                       ),
@@ -145,10 +146,10 @@ class StarRatingDisplay extends StatelessWidget {
 
                       Text(
                         '$ratingCount تقييم • نسبة رضا $satisfactionRate%',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF6B7280),
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppThemeColors.textSecondary(context),
                         ),
                       ),
                     ],
@@ -157,36 +158,36 @@ class StarRatingDisplay extends StatelessWidget {
 
                 const SizedBox(height: 18),
 
-                const Align(
+                Align(
                   alignment: Alignment.centerRight,
                   child: Text(
                     'تفصيل التقييمات',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF111827),
+                      color: AppThemeColors.textPrimary(context),
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 12),
 
-                ...[5, 4, 3, 2, 1].map(
-                  (stars) {
-                    final int count = ratingBreakdown[stars] ?? 0;
-                    final double percentage =
-                        ratingCount == 0 ? 0 : count / ratingCount;
+                ...[5, 4, 3, 2, 1].map((stars) {
+                  final int count = ratingBreakdown[stars] ?? 0;
+                  final double percentage = ratingCount == 0
+                      ? 0
+                      : count / ratingCount;
 
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _RatingBreakdownRow(
-                        stars: stars,
-                        count: count,
-                        percentage: percentage,
-                      ),
-                    );
-                  },
-                ),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _RatingBreakdownRow(
+                      stars: stars,
+                      count: count,
+                      percentage: percentage,
+                      isDark: isDark,
+                    ),
+                  );
+                }),
 
                 const SizedBox(height: 8),
 
@@ -194,13 +195,11 @@ class StarRatingDisplay extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
+                    color: AppThemeColors.softCard(context),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: const Color(0xFFE5E7EB),
-                    ),
+                    border: Border.all(color: AppThemeColors.border(context)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(
                         Icons.verified_rounded,
@@ -215,7 +214,7 @@ class StarRatingDisplay extends StatelessWidget {
                             fontSize: 12.5,
                             height: 1.5,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF4B5563),
+                            color: AppThemeColors.textSecondary(context),
                           ),
                         ),
                       ),
@@ -230,7 +229,9 @@ class StarRatingDisplay extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF111827),
+                      backgroundColor: isDark
+                          ? const Color(0xFFC47A3D)
+                          : const Color(0xFF111827),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 13),
@@ -263,16 +264,11 @@ class StarRatingDisplay extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         onTap: enableDetailsPopup ? () => _showRatingDetails(context) : null,
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 11,
-            vertical: 7,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
           decoration: BoxDecoration(
             color: const Color(0x12F59E0B),
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: const Color(0x30F59E0B),
-            ),
+            border: Border.all(color: const Color(0x30F59E0B)),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x12F59E0B),
@@ -297,9 +293,11 @@ class _RatingBreakdownRow extends StatelessWidget {
     required this.stars,
     required this.count,
     required this.percentage,
+    required this.isDark,
   });
 
   final int stars;
+  final bool isDark;
   final int count;
   final double percentage;
 
@@ -320,10 +318,10 @@ class _RatingBreakdownRow extends StatelessWidget {
               const SizedBox(width: 3),
               Text(
                 '$stars',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF374151),
+                  color: AppThemeColors.textPrimary(context),
                 ),
               ),
             ],
@@ -336,7 +334,9 @@ class _RatingBreakdownRow extends StatelessWidget {
             child: LinearProgressIndicator(
               value: percentage.clamp(0, 1),
               minHeight: 9,
-              backgroundColor: const Color(0xFFF3F4F6),
+              backgroundColor: isDark
+                  ? AppThemeColors.softCard(context)
+                  : const Color(0xFFF3F4F6),
               valueColor: const AlwaysStoppedAnimation<Color>(
                 Color(0xFFF59E0B),
               ),
@@ -351,10 +351,10 @@ class _RatingBreakdownRow extends StatelessWidget {
           child: Text(
             '$count',
             textAlign: TextAlign.left,
-            style: const TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF6B7280),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppThemeColors.textSecondary(context),
             ),
           ),
         ),

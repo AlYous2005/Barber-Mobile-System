@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/summary_models.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class SummaryMiniStrip extends StatelessWidget {
   const SummaryMiniStrip({super.key, required this.snapshot});
@@ -9,14 +10,19 @@ class SummaryMiniStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool dark = AppThemeColors.isDark(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFDF7F1), Color(0xFFF7EEE6)],
-        ),
+        color: dark ? AppThemeColors.elevatedCard(context) : null,
+        gradient: dark
+            ? null
+            : const LinearGradient(
+                colors: [Color(0xFFFDF7F1), Color(0xFFF7EEE6)],
+              ),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE7D7CB)),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Row(
         children: [
@@ -42,19 +48,19 @@ class SummaryMiniStrip extends StatelessWidget {
               children: [
                 Text(
                   'ملخص ${snapshot.filterLabel}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF2A2018),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   'إجمالي المواعيد: ${snapshot.totalAppointments} • الإيرادات: ${snapshot.revenue} ₪',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF6B5D52),
+                    color: AppThemeColors.textSecondary(context),
                   ),
                 ),
               ],

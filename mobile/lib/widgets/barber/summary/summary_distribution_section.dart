@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/summary_models.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class DistributionSection extends StatelessWidget {
   const DistributionSection({super.key, required this.snapshot});
@@ -17,23 +18,27 @@ class DistributionSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF7),
+        color: AppThemeColors.elevatedCard(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFEADBCD)),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Column(
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.bar_chart_rounded, color: Color(0xFF9A5A38), size: 21),
-              SizedBox(width: 8),
+              const Icon(
+                Icons.bar_chart_rounded,
+                color: Color(0xFF9A5A38),
+                size: 21,
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'توزيع الحالات',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF2A2018),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -53,11 +58,7 @@ class DistributionSection extends StatelessWidget {
 }
 
 class DistributionBar extends StatelessWidget {
-  const DistributionBar({
-    super.key,
-    required this.item,
-    required this.total,
-  });
+  const DistributionBar({super.key, required this.item, required this.total});
 
   final DistributionItem item;
   final int total;
@@ -74,10 +75,10 @@ class DistributionBar extends StatelessWidget {
             Expanded(
               child: Text(
                 item.label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF2A2018),
+                  color: AppThemeColors.textPrimary(context),
                 ),
               ),
             ),
@@ -96,7 +97,7 @@ class DistributionBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
           child: Container(
             height: 10,
-            color: const Color(0xFFF1E8DF),
+            color: AppThemeColors.softCard(context),
             child: Align(
               alignment: Alignment.centerRight,
               child: FractionallySizedBox(

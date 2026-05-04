@@ -43,7 +43,10 @@ class CustomerHeader extends StatelessWidget {
         IconButton(
           onPressed: onLogout,
           tooltip: 'تسجيل خروج',
-          icon: const Icon(Icons.logout_rounded, color: CustomerTheme.accentOrange),
+          icon: const Icon(
+            Icons.logout_rounded,
+            color: CustomerTheme.accentOrange,
+          ),
         ),
       ],
     );

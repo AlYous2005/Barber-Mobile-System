@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/summary_models.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class InsightsSection extends StatelessWidget {
   const InsightsSection({super.key, required this.snapshot});
@@ -57,9 +58,9 @@ class InsightsSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF7),
+        color: AppThemeColors.elevatedCard(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFEADBCD)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x12000000),
@@ -70,21 +71,21 @@ class InsightsSection extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.auto_graph_rounded,
                 color: Color(0xFF9A5A38),
                 size: 21,
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'الرؤى والمؤشرات',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF2A2018),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -113,9 +114,9 @@ class InsightCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFEAEAEA)),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Row(
         children: [
@@ -135,19 +136,19 @@ class InsightCard extends StatelessWidget {
               children: [
                 Text(
                   data.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF2A2018),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   data.subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF6B7280),
+                    color: AppThemeColors.textSecondary(context),
                   ),
                 ),
               ],

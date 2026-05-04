@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/mock_service.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class ManualAppointmentTextField extends StatelessWidget {
   const ManualAppointmentTextField({
@@ -23,10 +24,10 @@ class ManualAppointmentTextField extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF374151),
+            color: AppThemeColors.textPrimary(context),
           ),
         ),
         const SizedBox(height: 9),
@@ -34,23 +35,16 @@ class ManualAppointmentTextField extends StatelessWidget {
           controller: controller,
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(
-              icon,
-              color: const Color(0xFF5C4030),
-            ),
+            prefixIcon: Icon(icon, color: AppThemeColors.brandBrown(context)),
             filled: true,
-            fillColor: const Color(0xFFF9FBFA),
+            fillColor: AppThemeColors.softCard(context),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(
-                color: Color(0xFFE4ECE7),
-              ),
+              borderSide: BorderSide(color: AppThemeColors.border(context)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(
-                color: Color(0xFFE4ECE7),
-              ),
+              borderSide: BorderSide(color: AppThemeColors.border(context)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
@@ -80,30 +74,31 @@ class ManualServiceDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Text(
+        Text(
           'نوع الخدمة',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF374151),
+            color: AppThemeColors.textPrimary(context),
           ),
         ),
         const SizedBox(height: 9),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: const Color(0xFFF9FBFA),
+            color: AppThemeColors.softCard(context),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: const Color(0xFFE4ECE7),
-            ),
+            border: Border.all(color: AppThemeColors.border(context)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: selectedServiceName,
               isExpanded: true,
-              hint: const Text('اختر الخدمة'),
+              hint: Text(
+                'اختر الخدمة',
+                style: TextStyle(color: AppThemeColors.textMuted(context)),
+              ),
               items: mockBarberServices.map((service) {
                 return DropdownMenuItem<String>(
                   value: service.name,
@@ -142,15 +137,15 @@ class PickerBox extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF374151),
+            color: AppThemeColors.textPrimary(context),
           ),
         ),
         const SizedBox(height: 9),
         Material(
-          color: const Color(0xFFF9FBFA),
+          color: AppThemeColors.softCard(context),
           borderRadius: BorderRadius.circular(18),
           child: InkWell(
             onTap: onTap,
@@ -159,15 +154,13 @@ class PickerBox extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: const Color(0xFFE4ECE7),
-                ),
+                border: Border.all(color: AppThemeColors.border(context)),
               ),
               child: Row(
                 children: [
                   Icon(
                     icon,
-                    color: const Color(0xFF5C4030),
+                    color: AppThemeColors.brandBrown(context),
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -176,10 +169,10 @@ class PickerBox extends StatelessWidget {
                       value,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF111827),
+                        color: AppThemeColors.textPrimary(context),
                       ),
                     ),
                   ),
@@ -229,11 +222,7 @@ class ManualPrimaryButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 18,
-              ),
+              Icon(icon, color: Colors.white, size: 18),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(

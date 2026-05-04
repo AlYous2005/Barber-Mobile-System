@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class CustomerProfileTextField extends StatelessWidget {
   const CustomerProfileTextField({
     super.key,
@@ -18,15 +20,20 @@ class CustomerProfileTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color fillColor = AppThemeColors.isDark(context)
+        ? AppThemeColors.softCard(context)
+        : const Color(0xFFF9FBFA);
+    final Color borderColor = AppThemeColors.border(context);
+
     return Column(
       children: [
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF374151),
+            color: AppThemeColors.textSecondary(context),
           ),
         ),
         const SizedBox(height: 9),
@@ -35,19 +42,16 @@ class CustomerProfileTextField extends StatelessWidget {
           keyboardType: keyboardType,
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(
-              icon,
-              color: const Color(0xFF5C4030),
-            ),
+            prefixIcon: Icon(icon, color: const Color(0xFF5C4030)),
             filled: true,
-            fillColor: const Color(0xFFF9FBFA),
+            fillColor: fillColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: Color(0xFFE4ECE7)),
+              borderSide: BorderSide(color: borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: Color(0xFFE4ECE7)),
+              borderSide: BorderSide(color: borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
@@ -75,15 +79,20 @@ class CustomerCountryDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color fillColor = AppThemeColors.isDark(context)
+        ? AppThemeColors.softCard(context)
+        : const Color(0xFFF9FBFA);
+    final Color borderColor = AppThemeColors.border(context);
+
     return Column(
       children: [
-        const Text(
+        Text(
           'الدولة',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF374151),
+            color: AppThemeColors.textSecondary(context),
           ),
         ),
         const SizedBox(height: 9),
@@ -91,14 +100,14 @@ class CustomerCountryDropdown extends StatelessWidget {
           initialValue: selectedCountry,
           decoration: InputDecoration(
             filled: true,
-            fillColor: const Color(0xFFF9FBFA),
+            fillColor: fillColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: Color(0xFFE4ECE7)),
+              borderSide: BorderSide(color: borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: Color(0xFFE4ECE7)),
+              borderSide: BorderSide(color: borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
@@ -109,14 +118,8 @@ class CustomerCountryDropdown extends StatelessWidget {
             ),
           ),
           items: const [
-            DropdownMenuItem(
-              value: 'فلسطين',
-              child: Text('🇵🇸 +970'),
-            ),
-            DropdownMenuItem(
-              value: 'إسرائيل',
-              child: Text('🇮🇱 +972'),
-            ),
+            DropdownMenuItem(value: 'فلسطين', child: Text('🇵🇸 +970')),
+            DropdownMenuItem(value: 'إسرائيل', child: Text('🇮🇱 +972')),
           ],
           onChanged: onChanged,
         ),
@@ -141,15 +144,20 @@ class CustomerPasswordField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color fillColor = AppThemeColors.isDark(context)
+        ? AppThemeColors.softCard(context)
+        : const Color(0xFFF9FBFA);
+    final Color borderColor = AppThemeColors.border(context);
+
     return Column(
       children: [
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF374151),
+            color: AppThemeColors.textSecondary(context),
           ),
         ),
         const SizedBox(height: 9),
@@ -168,18 +176,18 @@ class CustomerPasswordField extends StatelessWidget {
                 isVisible
                     ? Icons.visibility_off_rounded
                     : Icons.visibility_rounded,
-                color: const Color(0xFF6B7280),
+                color: AppThemeColors.textSecondary(context),
               ),
             ),
             filled: true,
-            fillColor: const Color(0xFFF9FBFA),
+            fillColor: fillColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: Color(0xFFE4ECE7)),
+              borderSide: BorderSide(color: borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(color: Color(0xFFE4ECE7)),
+              borderSide: BorderSide(color: borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),

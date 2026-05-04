@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class CustomerSectionTitleCard extends StatelessWidget {
-  const CustomerSectionTitleCard({
-    super.key,
-    required this.title,
-  });
+  const CustomerSectionTitleCard({super.key, required this.title});
 
   final String title;
 
@@ -12,14 +11,11 @@ class CustomerSectionTitleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 14,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF7),
+        color: AppThemeColors.softCard(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFEADBCD)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x10000000),
@@ -31,8 +27,8 @@ class CustomerSectionTitleCard extends StatelessWidget {
       child: Text(
         title,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Color(0xFF111827),
+        style: TextStyle(
+          color: AppThemeColors.textPrimary(context),
           fontSize: 20,
           fontWeight: FontWeight.w900,
         ),

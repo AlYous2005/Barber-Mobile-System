@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class WorkingHoursIntroCard extends StatelessWidget {
   const WorkingHoursIntroCard({super.key});
 
@@ -13,11 +15,7 @@ class WorkingHoursIntroCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF6E3F2F),
-            Color(0xFF9B5A3D),
-            Color(0xFFC37A49),
-          ],
+          colors: [Color(0xFF6E3F2F), Color(0xFF9B5A3D), Color(0xFFC37A49)],
         ),
         boxShadow: const [
           BoxShadow(
@@ -27,12 +25,12 @@ class WorkingHoursIntroCard extends StatelessWidget {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          WorkingHoursCenterPill(),
+          const WorkingHoursCenterPill(),
 
-          SizedBox(height: 14),
+          const SizedBox(height: 14),
 
           Text(
             'ساعات العمل',
@@ -40,14 +38,14 @@ class WorkingHoursIntroCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 27,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111111),
+              color: AppThemeColors.textPrimary(context),
               height: 1.1,
             ),
           ),
 
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
 
-          Text(
+          const Text(
             'حدد أيام وساعات دوام الحلاق لتظهر للزبائن بشكل صحيح',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -74,9 +72,7 @@ class WorkingHoursCenterPill extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.18),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
@@ -91,11 +87,7 @@ class WorkingHoursCenterPill extends StatelessWidget {
               ),
             ),
             SizedBox(width: 6),
-            Icon(
-              Icons.schedule_rounded,
-              size: 14,
-              color: Colors.white,
-            ),
+            Icon(Icons.schedule_rounded, size: 14, color: Colors.white),
           ],
         ),
       ),

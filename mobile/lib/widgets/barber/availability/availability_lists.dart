@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/availability_models.dart';
+import '../../../utils/app_theme_colors.dart';
 import 'availability_shared_widgets.dart';
 
 class ClosuresList extends StatelessWidget {
@@ -18,9 +19,7 @@ class ClosuresList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (closures.isEmpty) {
-      return const AvailabilityEmptyState(
-        text: 'لا توجد إغلاقات خاصة حاليًا',
-      );
+      return const AvailabilityEmptyState(text: 'لا توجد إغلاقات خاصة حاليًا');
     }
 
     return Column(
@@ -118,11 +117,13 @@ class TimeBlockCard extends StatelessWidget {
       icon: Icons.access_time_rounded,
       title: '${formatTime(block.startTime)} — ${formatTime(block.endTime)}',
       subtitle: block.reason,
-      secondSubtitle:
-          isRecurring ? 'يتكرر في أيام الدوام' : 'بتاريخ ${block.dateLabel}',
+      secondSubtitle: isRecurring
+          ? 'يتكرر في أيام الدوام'
+          : 'بتاريخ ${block.dateLabel}',
       badge: isRecurring ? 'متكرر' : 'ليوم محدد',
-      badgeColor:
-          isRecurring ? const Color(0xFF16A34A) : const Color(0xFF2563EB),
+      badgeColor: isRecurring
+          ? const Color(0xFF16A34A)
+          : const Color(0xFF2563EB),
       onEdit: onEdit,
       onDelete: onDelete,
     );
@@ -157,11 +158,9 @@ class AvailabilityRecordCardShell extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFFEDF1F3),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0D0F172A),
@@ -177,9 +176,7 @@ class AvailabilityRecordCardShell extends StatelessWidget {
             decoration: BoxDecoration(
               color: badgeColor.withValues(alpha: 0.11),
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: badgeColor.withValues(alpha: 0.18),
-              ),
+              border: Border.all(color: badgeColor.withValues(alpha: 0.18)),
             ),
             child: Text(
               badge,
@@ -197,15 +194,13 @@ class AvailabilityRecordCardShell extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFFEEF7F1),
+              color: AppThemeColors.softCard(context),
               borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: const Color(0xFFDCEFE2),
-              ),
+              border: Border.all(color: AppThemeColors.border(context)),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF5C4030),
+              color: AppThemeColors.brandBrown(context),
               size: 21,
             ),
           ),
@@ -215,10 +210,10 @@ class AvailabilityRecordCardShell extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111827),
+              color: AppThemeColors.textPrimary(context),
             ),
           ),
 
@@ -227,10 +222,10 @@ class AvailabilityRecordCardShell extends StatelessWidget {
             Text(
               secondSubtitle!,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF334155),
+                color: AppThemeColors.textSecondary(context),
               ),
             ),
           ],
@@ -240,11 +235,11 @@ class AvailabilityRecordCardShell extends StatelessWidget {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               height: 1.6,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF64748B),
+              color: AppThemeColors.textSecondary(context),
             ),
           ),
 
@@ -278,10 +273,7 @@ class AvailabilityRecordCardShell extends StatelessWidget {
 }
 
 class AvailabilityEmptyState extends StatelessWidget {
-  const AvailabilityEmptyState({
-    super.key,
-    required this.text,
-  });
+  const AvailabilityEmptyState({super.key, required this.text});
 
   final String text;
 
@@ -291,19 +283,17 @@ class AvailabilityEmptyState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: AppThemeColors.softCard(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFFDBE3EA),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w800,
-          color: Color(0xFF6B7280),
+          color: AppThemeColors.textSecondary(context),
         ),
       ),
     );

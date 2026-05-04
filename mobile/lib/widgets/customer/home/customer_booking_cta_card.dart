@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 
-
-
 class CustomerBookingCtaCard extends StatelessWidget {
-  const CustomerBookingCtaCard({
-    super.key,
-    required this.onStartBooking,
-  });
+  const CustomerBookingCtaCard({super.key, required this.onStartBooking});
 
   final VoidCallback onStartBooking;
 
@@ -20,11 +15,7 @@ class CustomerBookingCtaCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
-          colors: [
-            Color(0xFF6E3F2F),
-            Color(0xFF9B5A3D),
-            Color(0xFFC47A3D),
-          ],
+          colors: [Color(0xFF6E3F2F), Color(0xFF9B5A3D), Color(0xFFC47A3D)],
         ),
         boxShadow: const [
           BoxShadow(
@@ -88,16 +79,11 @@ class CustomerBookingCtaCard extends StatelessWidget {
 
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 13,
-              vertical: 10,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.10),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
             ),
             child: const Row(
               children: [

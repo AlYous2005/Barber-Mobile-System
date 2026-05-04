@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class SummaryFiltersCard extends StatelessWidget {
   const SummaryFiltersCard({
     super.key,
@@ -19,9 +21,9 @@ class SummaryFiltersCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF7),
+        color: AppThemeColors.elevatedCard(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFEADBCD)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x12000000),
@@ -32,21 +34,21 @@ class SummaryFiltersCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.filter_alt_rounded,
                 color: Color(0xFF9A5A38),
                 size: 20,
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'فلترة الملخصات',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF2A2018),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -89,7 +91,11 @@ class FilterPillButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: isSelected ? const Color(0xFF9A5A38) : const Color(0xFFF7EEE6),
+      color: isSelected
+          ? const Color(0xFF9A5A38)
+          : (AppThemeColors.isDark(context)
+                ? AppThemeColors.card(context)
+                : const Color(0xFFF7EEE6)),
       borderRadius: BorderRadius.circular(999),
       child: InkWell(
         onTap: onTap,
@@ -101,7 +107,7 @@ class FilterPillButton extends StatelessWidget {
             border: Border.all(
               color: isSelected
                   ? const Color(0xFF9A5A38)
-                  : const Color(0xFFE3D3C6),
+                  : AppThemeColors.border(context),
             ),
             boxShadow: isSelected
                 ? const [
@@ -118,7 +124,9 @@ class FilterPillButton extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w900,
-              color: isSelected ? Colors.white : const Color(0xFF6B4F3E),
+              color: isSelected
+                  ? Colors.white
+                  : AppThemeColors.textSecondary(context),
             ),
           ),
         ),

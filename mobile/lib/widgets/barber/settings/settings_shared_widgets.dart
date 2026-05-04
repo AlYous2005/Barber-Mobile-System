@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class SettingsCardShell extends StatelessWidget {
   const SettingsCardShell({super.key, required this.child});
 
@@ -11,9 +13,9 @@ class SettingsCardShell extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFEDF1F3)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x140F172A),
@@ -28,11 +30,7 @@ class SettingsCardShell extends StatelessWidget {
 }
 
 class SettingsIconBox extends StatelessWidget {
-  const SettingsIconBox({
-    super.key,
-    required this.icon,
-    required this.color,
-  });
+  const SettingsIconBox({super.key, required this.icon, required this.color});
 
   final IconData icon;
   final Color color;
@@ -53,11 +51,7 @@ class SettingsIconBox extends StatelessWidget {
 }
 
 class StatusPill extends StatelessWidget {
-  const StatusPill({
-    super.key,
-    required this.label,
-    required this.color,
-  });
+  const StatusPill({super.key, required this.label, required this.color});
 
   final String label;
   final Color color;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
 import '../../../utils/booking_formatters.dart';
 
 class ServicesLiveCounter extends StatelessWidget {
@@ -17,6 +18,21 @@ class ServicesLiveCounter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool hasSelection = selectedCount > 0;
+    final bool dark = AppThemeColors.isDark(context);
+    final List<Color> gradientColors = dark
+        ? (hasSelection
+              ? [
+                  AppThemeColors.elevatedCard(context),
+                  AppThemeColors.card(context),
+                  AppThemeColors.softCard(context),
+                ]
+              : [
+                  AppThemeColors.card(context),
+                  AppThemeColors.elevatedCard(context),
+                ])
+        : (hasSelection
+              ? const [Color(0xFFFFFFFF), Color(0xFFFFFBF7), Color(0xFFFFEDD5)]
+              : const [Color(0xFFFFFFFF), Color(0xFFFFFBF7)]);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 260),
@@ -27,15 +43,13 @@ class ServicesLiveCounter extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
-          colors: hasSelection
-              ? const [Color(0xFFFFFFFF), Color(0xFFFFFBF7), Color(0xFFFFEDD5)]
-              : const [Color(0xFFFFFFFF), Color(0xFFFFFBF7)],
+          colors: gradientColors,
         ),
         borderRadius: BorderRadius.circular(26),
         border: Border.all(
           color: hasSelection
               ? const Color(0xFFC47A3D)
-              : const Color(0xFFEADBCD),
+              : AppThemeColors.border(context),
           width: hasSelection ? 1.6 : 1,
         ),
         boxShadow: [
@@ -103,18 +117,18 @@ class ServicesLiveCounter extends StatelessWidget {
                             ? 'تم اختيار $selectedCount خدمات'
                             : 'اختر خدماتك وسيظهر الحساب هنا',
                         key: ValueKey('selected-count-$selectedCount'),
-                        style: const TextStyle(
-                          color: Color(0xFF111827),
+                        style: TextStyle(
+                          color: AppThemeColors.textPrimary(context),
                           fontSize: 15,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
                     const SizedBox(height: 5),
-                    const Text(
+                    Text(
                       'يتم تحديث السعر والمدة تلقائيًا',
                       style: TextStyle(
-                        color: Color(0xFF6B7280),
+                        color: AppThemeColors.textSecondary(context),
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                       ),
@@ -203,8 +217,8 @@ class _AnimatedSummaryBox extends StatelessWidget {
                   '$label:',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF4B5563),
+                  style: TextStyle(
+                    color: AppThemeColors.textSecondary(context),
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
                   ),

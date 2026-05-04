@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
 import '../home/customer_theme.dart';
 
 class AvailableTimeSlot extends StatelessWidget {
@@ -27,17 +28,21 @@ class AvailableTimeSlot extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected
                 ? CustomerTheme.accentOrange.withValues(alpha: 0.28)
-                : const Color(0xFFF9FAFB),
+                : AppThemeColors.softCard(context),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: selected ? CustomerTheme.accentOrange : const Color(0xFFE5E7EB),
+              color: selected
+                  ? CustomerTheme.accentOrange
+                  : AppThemeColors.border(context),
             ),
           ),
           child: Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: selected ? const Color(0xFF111827) : const Color(0xFF4B5563),
+              color: selected
+                  ? AppThemeColors.textPrimary(context)
+                  : AppThemeColors.textSecondary(context),
               fontWeight: selected ? FontWeight.bold : FontWeight.w600,
               fontSize: 13,
             ),

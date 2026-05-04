@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class NotificationsFilterBar extends StatelessWidget {
   const NotificationsFilterBar({
     super.key,
@@ -15,11 +17,9 @@ class NotificationsFilterBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F3ED),
+        color: AppThemeColors.softCard(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFFE8D8B8),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Wrap(
         spacing: 8,
@@ -74,7 +74,9 @@ class FilterChipButton extends StatelessWidget {
     final bool isSelected = value == selectedFilter;
 
     return Material(
-      color: isSelected ? const Color(0xFF9A5A38) : Colors.white,
+      color: isSelected
+          ? const Color(0xFF9A5A38)
+          : AppThemeColors.card(context),
       borderRadius: BorderRadius.circular(999),
       child: InkWell(
         onTap: () => onChanged(value),
@@ -86,7 +88,7 @@ class FilterChipButton extends StatelessWidget {
             border: Border.all(
               color: isSelected
                   ? const Color(0xFF9A5A38)
-                  : const Color(0xFFE3D3C6),
+                  : AppThemeColors.border(context),
             ),
           ),
           child: Text(
@@ -94,7 +96,9 @@ class FilterChipButton extends StatelessWidget {
             style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w900,
-              color: isSelected ? Colors.white : const Color(0xFF6B4F3E),
+              color: isSelected
+                  ? Colors.white
+                  : AppThemeColors.textSecondary(context),
             ),
           ),
         ),

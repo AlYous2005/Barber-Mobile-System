@@ -13,11 +13,7 @@ class CustomerProfileIntroCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF6E3F2F),
-            Color(0xFF9B5A3D),
-            Color(0xFFC37A49),
-          ],
+          colors: [Color(0xFF6E3F2F), Color(0xFF9B5A3D), Color(0xFFC37A49)],
         ),
         boxShadow: const [
           BoxShadow(
@@ -38,7 +34,7 @@ class CustomerProfileIntroCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 27,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111111),
+              color: Color(0xFFFFF8F2),
               height: 1.1,
             ),
           ),
@@ -70,9 +66,7 @@ class CustomerProfileCenterPill extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.18),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
@@ -87,11 +81,7 @@ class CustomerProfileCenterPill extends StatelessWidget {
               ),
             ),
             SizedBox(width: 6),
-            Icon(
-              Icons.person_rounded,
-              size: 14,
-              color: Colors.white,
-            ),
+            Icon(Icons.person_rounded, size: 14, color: Colors.white),
           ],
         ),
       ),

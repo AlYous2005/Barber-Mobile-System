@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/barber_model.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class ChooseBarberStep extends StatelessWidget {
   const ChooseBarberStep({
@@ -43,12 +44,12 @@ class _WarmBarberChoiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color borderColor = selected
         ? const Color(0xFFC47A3D)
-        : const Color(0xFFEADBCD);
+        : AppThemeColors.border(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 13),
       child: Material(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(24),
         child: InkWell(
           onTap: onTap,
@@ -58,10 +59,7 @@ class _WarmBarberChoiceCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: borderColor,
-                width: selected ? 1.7 : 1,
-              ),
+              border: Border.all(color: borderColor, width: selected ? 1.7 : 1),
               boxShadow: [
                 BoxShadow(
                   color: selected
@@ -85,10 +83,7 @@ class _WarmBarberChoiceCard extends StatelessWidget {
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFF6E3F2F),
-                            Color(0xFFC47A3D),
-                          ],
+                          colors: [Color(0xFF6E3F2F), Color(0xFFC47A3D)],
                         ),
                         border: Border.all(
                           color: const Color(0xFFE7B679),
@@ -112,7 +107,7 @@ class _WarmBarberChoiceCard extends StatelessWidget {
                             shape: BoxShape.circle,
                             color: const Color(0xFF16A34A),
                             border: Border.all(
-                              color: Colors.white,
+                              color: AppThemeColors.card(context),
                               width: 2,
                             ),
                           ),
@@ -136,8 +131,8 @@ class _WarmBarberChoiceCard extends StatelessWidget {
                         barber.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF111827),
+                        style: TextStyle(
+                          color: AppThemeColors.textPrimary(context),
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
                         ),
@@ -149,8 +144,8 @@ class _WarmBarberChoiceCard extends StatelessWidget {
                         barber.shopName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF6B7280),
+                        style: TextStyle(
+                          color: AppThemeColors.textSecondary(context),
                           fontSize: 13.5,
                           fontWeight: FontWeight.w700,
                         ),
@@ -160,16 +155,16 @@ class _WarmBarberChoiceCard extends StatelessWidget {
 
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.location_on_outlined,
                             size: 17,
-                            color: Color(0xFF9CA3AF),
+                            color: AppThemeColors.textMuted(context),
                           ),
                           const SizedBox(width: 5),
-                          const Text(
+                          Text(
                             'زيتا، زيتا',
                             style: TextStyle(
-                              color: Color(0xFF6B7280),
+                              color: AppThemeColors.textSecondary(context),
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
                             ),
@@ -191,12 +186,12 @@ class _WarmBarberChoiceCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: selected
                         ? const Color(0xFFC47A3D)
-                        : const Color(0xFFFFF7ED),
+                        : AppThemeColors.softCard(context),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: selected
                           ? const Color(0xFFC47A3D)
-                          : const Color(0xFFEADBCD),
+                          : AppThemeColors.border(context),
                     ),
                   ),
                   child: Icon(
@@ -217,9 +212,7 @@ class _WarmBarberChoiceCard extends StatelessWidget {
 }
 
 class _FiveStarsMiniRating extends StatelessWidget {
-  const _FiveStarsMiniRating({
-    required this.rating,
-  });
+  const _FiveStarsMiniRating({required this.rating});
 
   final double rating;
 
@@ -241,11 +234,7 @@ class _FiveStarsMiniRating extends StatelessWidget {
           icon = Icons.star_border_rounded;
         }
 
-        return Icon(
-          icon,
-          size: 15,
-          color: const Color(0xFFF59E0B),
-        );
+        return Icon(icon, size: 15, color: const Color(0xFFF59E0B));
       }),
     );
   }

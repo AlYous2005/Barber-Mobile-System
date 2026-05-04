@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/mock_notification.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class CustomerNotificationsDropdown extends StatelessWidget {
-  const CustomerNotificationsDropdown({
-    super.key,
-    required this.onClose,
-  });
+  const CustomerNotificationsDropdown({super.key, required this.onClose});
 
   final VoidCallback onClose;
 
@@ -18,9 +16,9 @@ class CustomerNotificationsDropdown extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF7),
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFEADBCD)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x18000000),
@@ -37,21 +35,23 @@ class CustomerNotificationsDropdown extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFC47A3D).withValues(alpha: 0.12),
+                  color: AppThemeColors.brandBrown(
+                    context,
+                  ).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.notifications_active_rounded,
-                  color: Color(0xFFC47A3D),
+                  color: AppThemeColors.brandBrown(context),
                   size: 20,
                 ),
               ),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'إشعاراتي',
                   style: TextStyle(
-                    color: Color(0xFF111827),
+                    color: AppThemeColors.textPrimary(context),
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
                   ),
@@ -59,7 +59,10 @@ class CustomerNotificationsDropdown extends StatelessWidget {
               ),
               IconButton(
                 onPressed: onClose,
-                icon: const Icon(Icons.close_rounded, color: Color(0xFF6B7280)),
+                icon: Icon(
+                  Icons.close_rounded,
+                  color: AppThemeColors.textSecondary(context),
+                ),
               ),
             ],
           ),
@@ -71,15 +74,15 @@ class CustomerNotificationsDropdown extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppThemeColors.softCard(context),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: AppThemeColors.border(context)),
               ),
-              child: const Text(
+              child: Text(
                 'لا توجد إشعارات حالياً',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF6B7280),
+                  color: AppThemeColors.textSecondary(context),
                   fontSize: 13.5,
                   fontWeight: FontWeight.w700,
                 ),
@@ -135,10 +138,14 @@ class _CustomerNotificationMiniCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 9),
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: isRead ? Colors.white : const Color(0xFFFFF7ED),
+        color: isRead
+            ? AppThemeColors.softCard(context)
+            : AppThemeColors.elevatedCard(context),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isRead ? const Color(0xFFE5E7EB) : const Color(0xFFF3D4A7),
+          color: isRead
+              ? AppThemeColors.border(context)
+              : AppThemeColors.brandBrown(context),
         ),
       ),
       child: Row(
@@ -148,14 +155,18 @@ class _CustomerNotificationMiniCard extends StatelessWidget {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: isRead ? const Color(0xFFF3F4F6) : const Color(0xFFFFEDD5),
+              color: isRead
+                  ? AppThemeColors.softCard(context)
+                  : AppThemeColors.brandBrown(context).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               isRead
                   ? Icons.notifications_none_rounded
                   : Icons.notifications_active_rounded,
-              color: isRead ? const Color(0xFF6B7280) : const Color(0xFFC47A3D),
+              color: isRead
+                  ? AppThemeColors.textSecondary(context)
+                  : AppThemeColors.brandBrown(context),
               size: 18,
             ),
           ),
@@ -164,7 +175,7 @@ class _CustomerNotificationMiniCard extends StatelessWidget {
             child: Text(
               readableMessage,
               style: TextStyle(
-                color: const Color(0xFF111827),
+                color: AppThemeColors.textPrimary(context),
                 fontSize: 13,
                 height: 1.45,
                 fontWeight: isRead ? FontWeight.w600 : FontWeight.w900,

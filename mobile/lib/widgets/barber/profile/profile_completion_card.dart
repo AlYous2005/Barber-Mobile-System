@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class ProfileCompletionCard extends StatelessWidget {
-  const ProfileCompletionCard({
-    super.key,
-    required this.completedItemsCount,
-  });
+  const ProfileCompletionCard({super.key, required this.completedItemsCount});
 
   final int completedItemsCount;
 
@@ -14,21 +13,21 @@ class ProfileCompletionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: AppThemeColors.softCard(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'حالة اكتمال الملف الشخصي',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF111827),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -82,11 +81,7 @@ class ProfileCompletionCard extends StatelessWidget {
 }
 
 class CompletionChip extends StatelessWidget {
-  const CompletionChip({
-    super.key,
-    required this.label,
-    required this.isDone,
-  });
+  const CompletionChip({super.key, required this.label, required this.isDone});
 
   final String label;
   final bool isDone;

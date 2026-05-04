@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class CustomerAppointmentCard extends StatelessWidget {
   const CustomerAppointmentCard({
     super.key,
@@ -38,9 +40,9 @@ class CustomerAppointmentCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppThemeColors.card(context),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFE7E5E4)),
+          border: Border.all(color: AppThemeColors.border(context)),
           boxShadow: const [
             BoxShadow(
               color: Color(0x10000000),
@@ -79,8 +81,8 @@ class CustomerAppointmentCard extends StatelessWidget {
                         'الحلاق $barberName',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF111827),
+                        style: TextStyle(
+                          color: AppThemeColors.textPrimary(context),
                           fontSize: 17,
                           fontWeight: FontWeight.w900,
                         ),
@@ -98,9 +100,9 @@ class CustomerAppointmentCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
+                color: AppThemeColors.softCard(context),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: AppThemeColors.border(context)),
               ),
               child: Column(
                 children: [
@@ -241,24 +243,24 @@ class _AppointmentInfoRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
-    this.valueColor = const Color(0xFF111827),
+    this.valueColor,
   });
 
   final IconData icon;
   final String label;
   final String value;
-  final Color valueColor;
+  final Color? valueColor;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: const Color(0xFF9CA3AF)),
+        Icon(icon, size: 18, color: AppThemeColors.textMuted(context)),
         const SizedBox(width: 8),
         Text(
           '$label:',
-          style: const TextStyle(
-            color: Color(0xFF6B7280),
+          style: TextStyle(
+            color: AppThemeColors.textSecondary(context),
             fontSize: 13,
             fontWeight: FontWeight.w700,
           ),
@@ -271,7 +273,7 @@ class _AppointmentInfoRow extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: valueColor,
+              color: valueColor ?? AppThemeColors.textPrimary(context),
               fontSize: 13.5,
               fontWeight: FontWeight.w800,
             ),

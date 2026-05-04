@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
 import 'customer_profile_fields.dart';
 import 'customer_profile_shared_widgets.dart';
 
@@ -57,15 +58,9 @@ class CustomerProfileFormBox extends StatelessWidget {
                       : const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFF6E3F2F),
-                            Color(0xFFC47A3D),
-                          ],
+                          colors: [Color(0xFF6E3F2F), Color(0xFFC47A3D)],
                         ),
-                  border: Border.all(
-                    color: const Color(0xFFE7B679),
-                    width: 3,
-                  ),
+                  border: Border.all(color: const Color(0xFFE7B679), width: 3),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x22C47A3D),
@@ -90,7 +85,7 @@ class CustomerProfileFormBox extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: const Color(0xFF22C55E),
                     border: Border.all(
-                      color: Colors.white,
+                      color: AppThemeColors.card(context),
                       width: 2,
                     ),
                     boxShadow: const [
@@ -111,8 +106,8 @@ class CustomerProfileFormBox extends StatelessWidget {
                 ? 'تمت إضافة صورة بروفايل مؤقتة'
                 : 'لم تتم إضافة صورة بروفايل بعد',
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFF6B7280),
+            style: TextStyle(
+              color: AppThemeColors.textSecondary(context),
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
@@ -178,11 +173,9 @@ class CustomerProfileFormBox extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFFBF2),
+              color: AppThemeColors.elevatedCard(context),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: const Color(0xFFE8D8B8),
-              ),
+              border: Border.all(color: AppThemeColors.border(context)),
             ),
             child: Row(
               children: [
@@ -195,11 +188,11 @@ class CustomerProfileFormBox extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'سيظهر رقمك للحلاق بصيغة: $phoneCode ${phoneController.text}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12.5,
                       height: 1.5,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF6B4F3E),
+                      color: AppThemeColors.textSecondary(context),
                     ),
                   ),
                 ),

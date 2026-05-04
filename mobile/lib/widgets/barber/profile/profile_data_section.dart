@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class ProfileDataSection extends StatelessWidget {
   const ProfileDataSection({
     super.key,
@@ -32,9 +34,9 @@ class ProfileDataSection extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0A000000),
@@ -47,13 +49,13 @@ class ProfileDataSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'البيانات الحالية',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF111827),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -198,9 +200,9 @@ class ProfileInfoTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: AppThemeColors.softCard(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Row(
         children: [
@@ -231,11 +233,11 @@ class ProfileInfoTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     height: 1.4,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ],
@@ -273,18 +275,18 @@ class ProfileTextField extends StatelessWidget {
         labelText: label,
         prefixIcon: Icon(icon, color: const Color(0xFFC47A3D)),
         filled: true,
-        fillColor: const Color(0xFFF8FAFC),
+        fillColor: AppThemeColors.softCard(context),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 13,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          borderSide: BorderSide(color: AppThemeColors.border(context)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          borderSide: BorderSide(color: AppThemeColors.border(context)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -315,9 +317,9 @@ class WhatsappField extends StatelessWidget {
           height: 58,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
+            color: AppThemeColors.softCard(context),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            border: Border.all(color: AppThemeColors.border(context)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
@@ -341,18 +343,18 @@ class WhatsappField extends StatelessWidget {
             decoration: InputDecoration(
               labelText: 'رقم الواتساب',
               filled: true,
-              fillColor: const Color(0xFFF8FAFC),
+              fillColor: AppThemeColors.softCard(context),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 14,
                 vertical: 13,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                borderSide: BorderSide(color: AppThemeColors.border(context)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                borderSide: BorderSide(color: AppThemeColors.border(context)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'animated_crown_name.dart';
 import 'header_icon_button.dart';
 import 'notification_header_button.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class BarberHeader extends StatelessWidget {
   const BarberHeader({
@@ -30,29 +31,41 @@ class BarberHeader extends StatelessWidget {
         ? 'admin'
         : userName.trim();
 
-        
+    final bool isDark = AppThemeColors.isDark(context);
+
     return Stack(
       children: [
         Container(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-              colors: [Color(0xFFFFFFFF), Color(0xFFFFFBF2), Color(0xFFFFF7E6)],
-            ),
+            gradient: isDark
+                ? null
+                : const LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [
+                      Color(0xFFFFFFFF),
+                      Color(0xFFFFFBF2),
+                      Color(0xFFFFF7E6),
+                    ],
+                  ),
+            color: isDark ? AppThemeColors.card(context) : null,
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: const Color(0xFFE8D8B8)),
-            boxShadow: const [
+            border: Border.all(color: AppThemeColors.border(context)),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x14000000),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.22)
+                    : const Color(0x14000000),
                 blurRadius: 18,
-                offset: Offset(0, 8),
+                offset: const Offset(0, 8),
               ),
               BoxShadow(
-                color: Color(0x22C47A3D),
+                color: isDark
+                    ? const Color(0x1AC47A3D)
+                    : const Color(0x22C47A3D),
                 blurRadius: 20,
-                offset: Offset(0, 8),
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -67,13 +80,13 @@ class BarberHeader extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                     Text(
                       'الحلاق',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF111827),
+                        color: AppThemeColors.textPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 5),

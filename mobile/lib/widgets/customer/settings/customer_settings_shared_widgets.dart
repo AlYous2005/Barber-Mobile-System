@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class CustomerSettingsCardShell extends StatelessWidget {
-  const CustomerSettingsCardShell({
-    super.key,
-    required this.child,
-  });
+  const CustomerSettingsCardShell({super.key, required this.child});
 
   final Widget child;
 
@@ -14,11 +13,9 @@ class CustomerSettingsCardShell extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: const Color(0xFFEDF1F3),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x140F172A),
@@ -50,15 +47,9 @@ class CustomerSettingsIconBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withValues(alpha: 0.18),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
-      child: Icon(
-        icon,
-        color: color,
-        size: 22,
-      ),
+      child: Icon(icon, color: color, size: 22),
     );
   }
 }
@@ -81,9 +72,7 @@ class CustomerSettingsStatusPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: color.withValues(alpha: 0.18),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Text(
         label,
@@ -142,7 +131,9 @@ class CustomerThemeModeButton extends StatelessWidget {
               Icon(
                 icon,
                 size: 17,
-                color: isActive ? Colors.white : const Color(0xFF6B5D52),
+                color: isActive
+                    ? Colors.white
+                    : AppThemeColors.textSecondary(context),
               ),
               const SizedBox(width: 7),
               Flexible(
@@ -153,7 +144,9 @@ class CustomerThemeModeButton extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
-                    color: isActive ? Colors.white : const Color(0xFF6B5D52),
+                    color: isActive
+                        ? Colors.white
+                        : AppThemeColors.textSecondary(context),
                   ),
                 ),
               ),

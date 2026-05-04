@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/availability_models.dart';
+import '../../../utils/app_theme_colors.dart';
 import 'availability_shared_widgets.dart';
 import 'availability_sheet_widgets.dart';
 
@@ -58,7 +59,7 @@ class _EditClosureSheetState extends State<EditClosureSheet> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppThemeColors.card(context),
             borderRadius: BorderRadius.circular(28),
             boxShadow: const [
               BoxShadow(

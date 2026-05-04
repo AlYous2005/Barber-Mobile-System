@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/availability_models.dart';
+import '../../../utils/app_theme_colors.dart';
 import 'availability_shared_widgets.dart';
 import 'availability_sheet_widgets.dart';
 
@@ -61,10 +62,7 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
   }
 
   Future<void> _pickEditStart() async {
-    final picked = await _pickTime(
-      context: context,
-      initialValue: editStart,
-    );
+    final picked = await _pickTime(context: context, initialValue: editStart);
 
     if (picked == null) return;
 
@@ -74,10 +72,7 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
   }
 
   Future<void> _pickEditEnd() async {
-    final picked = await _pickTime(
-      context: context,
-      initialValue: editEnd,
-    );
+    final picked = await _pickTime(context: context, initialValue: editEnd);
 
     if (picked == null) return;
 
@@ -160,7 +155,7 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppThemeColors.card(context),
             borderRadius: BorderRadius.circular(28),
             boxShadow: const [
               BoxShadow(

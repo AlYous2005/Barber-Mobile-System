@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
 import 'profile_action_widgets.dart';
 
 class ProfileImageOptionsSheet extends StatelessWidget {
@@ -20,7 +21,7 @@ class ProfileImageOptionsSheet extends StatelessWidget {
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppThemeColors.card(context),
           borderRadius: BorderRadius.circular(26),
           boxShadow: const [
             BoxShadow(
@@ -37,19 +38,19 @@ class ProfileImageOptionsSheet extends StatelessWidget {
               width: 44,
               height: 5,
               decoration: BoxDecoration(
-                color: const Color(0xFFE5E7EB),
+                color: AppThemeColors.border(context),
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
 
             const SizedBox(height: 16),
 
-            const Text(
+            Text(
               'تغيير صورة الحلاق',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFF111827),
+                color: AppThemeColors.textPrimary(context),
               ),
             ),
 

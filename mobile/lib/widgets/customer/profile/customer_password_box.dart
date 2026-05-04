@@ -37,7 +37,8 @@ class CustomerPasswordBox extends StatelessWidget {
           const CustomerProfileSectionHeader(
             icon: Icons.lock_rounded,
             title: 'تغيير كلمة المرور',
-            subtitle: 'اترك الحقول فارغة إذا كنت لا تريد تغيير كلمة المرور الآن.',
+            subtitle:
+                'اترك الحقول فارغة إذا كنت لا تريد تغيير كلمة المرور الآن.',
           ),
           const SizedBox(height: 18),
           CustomerPasswordField(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../utils/app_theme_colors.dart';
+
 class StatCard extends StatelessWidget {
   const StatCard({
     super.key,
@@ -58,6 +60,14 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = AppThemeColors.isDark(context);
+    final Color readableTextColor = isDark
+        ? const Color(0xFFF8F3ED)
+        : const Color(0xFF1F2937);
+    final Color chipBackgroundColor = isDark
+        ? Colors.white.withValues(alpha: 0.82)
+        : Colors.white.withValues(alpha: 0.65);
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -92,93 +102,97 @@ class StatCard extends StatelessWidget {
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Stack(
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: color.withValues(alpha: 0.16),
-                    ),
-                    child: Center(
-                      child: _StatIcon(
-                        icon: _resolveIcon(),
-                        color: color,
-                        shouldAnimate: title.contains('معلقة'),
-                      ),
+              Align(
+                alignment: Alignment.topRight,
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color.withValues(alpha: isDark ? 0.24 : 0.16),
+                  ),
+                  child: Center(
+                    child: _StatIcon(
+                      icon: _resolveIcon(),
+                      color: color,
+                      shouldAnimate: title.contains('معلقة'),
                     ),
                   ),
+                ),
+              ),
 
-                  const SizedBox(width: 8),
+              Align(
+                alignment: Alignment.topLeft,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 180),
+                  opacity: isSelected ? 1 : 0,
+                  child: Icon(
+                    Icons.check_circle_rounded,
+                    color: color,
+                    size: 20,
+                  ),
+                ),
+              ),
 
-                  Expanded(
-                    child: Text(
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
                       title,
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1F2937),
+                        fontWeight: FontWeight.w900,
+                        color: readableTextColor,
                       ),
                     ),
-                  ),
 
-                  SizedBox(
-                    width: 34,
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 180),
-                      opacity: isSelected ? 1 : 0,
-                      child: Icon(
-                        Icons.check_circle_rounded,
+                    const SizedBox(height: 16),
+
+                    Text(
+                      value,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
+                        height: 1,
                         color: color,
-                        size: 20,
                       ),
                     ),
-                  ),
-                ],
-              ),
 
-              const Spacer(),
+                    const SizedBox(height: 12),
 
-              Text(
-                value,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
-                  color: color,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.65),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: color.withValues(alpha: 0.14)),
-                ),
-                child: Text(
-                  _resolveSubtitle(),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    color: color.withValues(alpha: 0.90),
-                  ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: chipBackgroundColor,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: color.withValues(alpha: 0.18),
+                        ),
+                      ),
+                      child: Text(
+                        _resolveSubtitle(),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: color.withValues(alpha: 0.95),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

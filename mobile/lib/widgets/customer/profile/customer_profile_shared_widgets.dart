@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class CustomerProfileCardShell extends StatelessWidget {
-  const CustomerProfileCardShell({
-    super.key,
-    required this.child,
-  });
+  const CustomerProfileCardShell({super.key, required this.child});
 
   final Widget child;
 
@@ -14,11 +13,9 @@ class CustomerProfileCardShell extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: const Color(0xFFEDF1F3),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x140F172A),
@@ -48,10 +45,7 @@ class CustomerProfileSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        CustomerProfileIconBox(
-          icon: icon,
-          color: const Color(0xFFC47A3D),
-        ),
+        CustomerProfileIconBox(icon: icon, color: const Color(0xFFC47A3D)),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -59,8 +53,8 @@ class CustomerProfileSectionHeader extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Color(0xFF111827),
+                style: TextStyle(
+                  color: AppThemeColors.textPrimary(context),
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
                 ),
@@ -68,8 +62,8 @@ class CustomerProfileSectionHeader extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  color: Color(0xFF6B7280),
+                style: TextStyle(
+                  color: AppThemeColors.textSecondary(context),
                   fontSize: 13,
                   height: 1.6,
                   fontWeight: FontWeight.w600,
@@ -101,15 +95,9 @@ class CustomerProfileIconBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withValues(alpha: 0.18),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
-      child: Icon(
-        icon,
-        color: color,
-        size: 22,
-      ),
+      child: Icon(icon, color: color, size: 22),
     );
   }
 }
@@ -142,11 +130,7 @@ class CustomerProfileMiniActionButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 18,
-              ),
+              Icon(icon, color: Colors.white, size: 18),
               const SizedBox(width: 7),
               Flexible(
                 child: Text(
@@ -204,11 +188,7 @@ class CustomerProfilePrimarySaveButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 20,
-              ),
+              Icon(icon, color: Colors.white, size: 20),
               const SizedBox(width: 8),
               Text(
                 label,

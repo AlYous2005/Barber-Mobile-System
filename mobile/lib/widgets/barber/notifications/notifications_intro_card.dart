@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class NotificationsIntroCard extends StatelessWidget {
-  const NotificationsIntroCard({
-    super.key,
-    required this.unreadCount,
-  });
+  const NotificationsIntroCard({super.key, required this.unreadCount});
 
   final int unreadCount;
 
@@ -18,11 +17,7 @@ class NotificationsIntroCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF6E3F2F),
-            Color(0xFF9B5A3D),
-            Color(0xFFC37A49),
-          ],
+          colors: [Color(0xFF6E3F2F), Color(0xFF9B5A3D), Color(0xFFC37A49)],
         ),
         boxShadow: const [
           BoxShadow(
@@ -37,13 +32,13 @@ class NotificationsIntroCard extends StatelessWidget {
         children: [
           const NotificationsCenterPill(),
           const SizedBox(height: 14),
-          const Text(
+          Text(
             'الإشعارات',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 27,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111111),
+              color: AppThemeColors.textPrimary(context),
               height: 1.1,
             ),
           ),
@@ -64,9 +59,7 @@ class NotificationsIntroCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.20),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.20)),
             ),
             child: Text(
               unreadCount == 0
@@ -96,9 +89,7 @@ class NotificationsCenterPill extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.18),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,

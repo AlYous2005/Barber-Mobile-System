@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
 
 import '../../widgets/customer/settings/customer_settings_intro_card.dart';
 import '../../widgets/customer/settings/customer_appearance_settings_card.dart';
 import '../../widgets/customer/settings/customer_notifications_settings_card.dart';
+import '../../main.dart';
 
 class CustomerSettingsScreen extends StatefulWidget {
   const CustomerSettingsScreen({super.key});
@@ -15,6 +17,12 @@ class CustomerSettingsScreen extends StatefulWidget {
 class _CustomerSettingsScreenState extends State<CustomerSettingsScreen> {
   bool notificationsEnabled = true;
   bool isDarkMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isDarkMode = appThemeMode.value == ThemeMode.dark;
+  }
 
   void _toggleNotifications(bool value) {
     setState(() {
@@ -37,12 +45,15 @@ class _CustomerSettingsScreenState extends State<CustomerSettingsScreen> {
       isDarkMode = dark;
     });
 
+    appThemeMode.value = dark ? ThemeMode.dark : ThemeMode.light;
+    unawaited(saveAppThemeMode(appThemeMode.value));
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           isDarkMode
-              ? 'تم اختيار النمط الداكن مؤقتًا'
-              : 'تم اختيار النمط الفاتح مؤقتًا',
+              ? 'تم تفعيل الوضع الداكن للتطبيق'
+              : 'تم تفعيل الوضع الفاتح للتطبيق',
         ),
       ),
     );
@@ -50,11 +61,10 @@ class _CustomerSettingsScreenState extends State<CustomerSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Color pageBackground =
-        isDarkMode ? const Color(0xFF111827) : Colors.white;
-
+    final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
     final Color textColor =
-        isDarkMode ? Colors.white : const Color(0xFF111827);
+        Theme.of(context).appBarTheme.iconTheme?.color ??
+        Theme.of(context).colorScheme.onSurface;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -63,10 +73,7 @@ class _CustomerSettingsScreenState extends State<CustomerSettingsScreen> {
         appBar: AppBar(
           title: Text(
             '',
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              color: textColor,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
           ),
           centerTitle: true,
           backgroundColor: pageBackground,
@@ -99,12 +106,3 @@ class _CustomerSettingsScreenState extends State<CustomerSettingsScreen> {
     );
   }
 }
-
-
-
-
-
-
-
-
-

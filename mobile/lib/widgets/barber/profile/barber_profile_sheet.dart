@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
 import 'profile_action_widgets.dart';
 import 'profile_completion_card.dart';
 import 'profile_data_section.dart';
@@ -218,7 +219,7 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
         child: Container(
           margin: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppThemeColors.card(context),
             borderRadius: BorderRadius.circular(30),
             boxShadow: const [
               BoxShadow(

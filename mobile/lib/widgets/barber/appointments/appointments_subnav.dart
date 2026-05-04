@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class AppointmentsSubnav extends StatelessWidget {
   const AppointmentsSubnav({
     super.key,
@@ -15,11 +17,9 @@ class AppointmentsSubnav extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F3ED),
+        color: AppThemeColors.softCard(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFFE8D8B8),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Row(
         children: [
@@ -90,7 +90,9 @@ class SubnavButton extends StatelessWidget {
               Icon(
                 icon,
                 size: 17,
-                color: isActive ? Colors.white : const Color(0xFF6B5D52),
+                color: isActive
+                    ? Colors.white
+                    : AppThemeColors.textSecondary(context),
               ),
               const SizedBox(width: 7),
               Flexible(
@@ -101,7 +103,9 @@ class SubnavButton extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
-                    color: isActive ? Colors.white : const Color(0xFF6B5D52),
+                    color: isActive
+                        ? Colors.white
+                        : AppThemeColors.textSecondary(context),
                   ),
                 ),
               ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class AvailabilityIntroCard extends StatelessWidget {
   const AvailabilityIntroCard({super.key});
 
@@ -13,11 +15,7 @@ class AvailabilityIntroCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF6E3F2F),
-            Color(0xFF9B5A3D),
-            Color(0xFFC37A49),
-          ],
+          colors: [Color(0xFF6E3F2F), Color(0xFF9B5A3D), Color(0xFFC37A49)],
         ),
         boxShadow: const [
           BoxShadow(
@@ -27,23 +25,23 @@ class AvailabilityIntroCard extends StatelessWidget {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AvailabilityCenterPill(),
-          SizedBox(height: 14),
+          const AvailabilityCenterPill(),
+          const SizedBox(height: 14),
           Text(
             'التوفر والإغلاقات',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 27,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111111),
+              color: AppThemeColors.textPrimary(context),
               height: 1.1,
             ),
           ),
-          SizedBox(height: 10),
-          Text(
+          const SizedBox(height: 10),
+          const Text(
             'أدِر أيام الإغلاق وفترات عدم التوفر داخل ساعات الدوام',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -70,9 +68,7 @@ class AvailabilityCenterPill extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.18),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
@@ -87,11 +83,7 @@ class AvailabilityCenterPill extends StatelessWidget {
               ),
             ),
             SizedBox(width: 6),
-            Icon(
-              Icons.calendar_month_rounded,
-              size: 14,
-              color: Colors.white,
-            ),
+            Icon(Icons.calendar_month_rounded, size: 14, color: Colors.white),
           ],
         ),
       ),

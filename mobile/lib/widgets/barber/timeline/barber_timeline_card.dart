@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../models/mock_appointment.dart';
+import '../../../utils/app_theme_colors.dart';
 import 'timeline_marquee_text.dart';
 import 'timeline_radar_circle.dart';
 import 'timeline_status_badge.dart';
@@ -125,24 +126,25 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
 
     final bool isCurrentMode = widget.showCurrent;
     final bool hasAppointment = appointment != null;
+    final bool isDark = AppThemeColors.isDark(context);
 
-    final Color mainStartColor = isCurrentMode
-        ? const Color(0xFF9B6035)
-        : const Color(0xFF114E79);
-    final Color mainMiddleColor = isCurrentMode
-        ? const Color(0xFFC98B53)
-        : const Color(0xFF0E6BA8);
-    final Color mainEndColor = isCurrentMode
-        ? const Color(0xFFE7B679)
-        : const Color(0xFF42BFF8);
+    final Color mainStartColor = isDark
+        ? (isCurrentMode ? const Color(0xFF2A1810) : const Color(0xFF0C2433))
+        : (isCurrentMode ? const Color(0xFF9B6035) : const Color(0xFF114E79));
+    final Color mainMiddleColor = isDark
+        ? (isCurrentMode ? const Color(0xFF4A3020) : const Color(0xFF143D55))
+        : (isCurrentMode ? const Color(0xFFC98B53) : const Color(0xFF0E6BA8));
+    final Color mainEndColor = isDark
+        ? (isCurrentMode ? const Color(0xFF52321E) : const Color(0xFF1A4D6A))
+        : (isCurrentMode ? const Color(0xFFE7B679) : const Color(0xFF42BFF8));
 
-    final Color switchColor = isCurrentMode
-        ? const Color(0xFF0EA5E9)
-        : const Color(0xFFF59E0B);
+    final Color switchColor = isDark
+        ? (isCurrentMode ? const Color(0xFFB86A3D) : const Color(0xFFD97706))
+        : (isCurrentMode ? const Color(0xFF0EA5E9) : const Color(0xFFF59E0B));
 
-    final Color timerColor = isCurrentMode
-        ? const Color(0xFFD9F99D)
-        : const Color(0xFFBAE6FD);
+    final Color timerColor = isDark
+        ? (isCurrentMode ? const Color(0xFFEED9B8) : const Color(0xFFB8E0F2))
+        : (isCurrentMode ? const Color(0xFFD9F99D) : const Color(0xFFBAE6FD));
 
     final String switchLabel = isCurrentMode ? 'القادم' : 'الحالي';
 
@@ -191,18 +193,26 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
                   colors: [mainStartColor, mainMiddleColor, mainEndColor],
                 ),
                 borderRadius: BorderRadius.circular(28),
-                boxShadow: [
-                  BoxShadow(
-                    color: mainMiddleColor.withValues(alpha: 0.25),
-                    blurRadius: 24,
-                    offset: const Offset(0, 12),
-                  ),
-                  const BoxShadow(
-                    color: Color(0x18000000),
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
+                boxShadow: isDark
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          blurRadius: 22,
+                          offset: const Offset(0, 10),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: mainMiddleColor.withValues(alpha: 0.25),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
+                        ),
+                        const BoxShadow(
+                          color: Color(0x18000000),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
               ),
               child: Stack(
                 children: [
@@ -437,12 +447,16 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
                     bottom: Radius.circular(999),
                   ),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.55),
+                    color: isDark
+                        ? const Color(0xFFF8F3ED).withValues(alpha: 0.14)
+                        : Colors.white.withValues(alpha: 0.55),
                     width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: switchColor.withValues(alpha: 0.28),
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.45)
+                          : switchColor.withValues(alpha: 0.28),
                       blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),
@@ -476,5 +490,3 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
     );
   }
 }
-
-

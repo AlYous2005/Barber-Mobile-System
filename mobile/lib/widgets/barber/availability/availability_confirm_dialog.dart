@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
 import 'availability_shared_widgets.dart';
 
 class AvailabilityConfirmDialog extends StatelessWidget {
@@ -24,9 +25,7 @@ class AvailabilityConfirmDialog extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: Dialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(26),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
           child: Column(
@@ -35,10 +34,10 @@ class AvailabilityConfirmDialog extends StatelessWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 21,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF111827),
+                  color: AppThemeColors.textPrimary(context),
                 ),
               ),
 
@@ -47,11 +46,11 @@ class AvailabilityConfirmDialog extends StatelessWidget {
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   height: 1.7,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF4B5563),
+                  color: AppThemeColors.textSecondary(context),
                 ),
               ),
 

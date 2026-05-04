@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class BookingStepHeader extends StatelessWidget {
-  const BookingStepHeader({
-    super.key,
-    required this.step,
-    required this.title,
-  });
+  const BookingStepHeader({super.key, required this.step, required this.title});
 
   final int step;
   final String title;
@@ -19,9 +17,9 @@ class BookingStepHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFEADBCD)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x10000000),
@@ -58,8 +56,8 @@ class BookingStepHeader extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: Color(0xFF111827),
+                      style: TextStyle(
+                        color: AppThemeColors.textPrimary(context),
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
                       ),
@@ -67,8 +65,8 @@ class BookingStepHeader extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'الخطوة $currentStep من 5',
-                      style: const TextStyle(
-                        color: Color(0xFF6B7280),
+                      style: TextStyle(
+                        color: AppThemeColors.textSecondary(context),
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                       ),
@@ -83,9 +81,9 @@ class BookingStepHeader extends StatelessWidget {
                   vertical: 7,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF7ED),
+                  color: AppThemeColors.softCard(context),
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: const Color(0xFFEADBCD)),
+                  border: Border.all(color: AppThemeColors.border(context)),
                 ),
                 child: Text(
                   '$currentStep/5',
@@ -106,7 +104,7 @@ class BookingStepHeader extends StatelessWidget {
             child: Container(
               height: 8,
               width: double.infinity,
-              color: const Color(0xFFF3E5D8),
+              color: AppThemeColors.softCard(context),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: FractionallySizedBox(

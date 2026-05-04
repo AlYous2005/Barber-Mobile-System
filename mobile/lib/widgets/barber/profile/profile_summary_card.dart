@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class ProfileSummaryCard extends StatelessWidget {
   const ProfileSummaryCard({
     super.key,
@@ -14,17 +16,22 @@ class ProfileSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool dark = AppThemeColors.isDark(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: [Color(0xFFFFFBF2), Color(0xFFFFF7E6), Colors.white],
-        ),
-        border: Border.all(color: const Color(0xFFE8D8B8)),
+        color: dark ? AppThemeColors.elevatedCard(context) : null,
+        gradient: dark
+            ? null
+            : const LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                colors: [Color(0xFFFFFBF2), Color(0xFFFFF7E6), Colors.white],
+              ),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x12C47A3D),
@@ -51,16 +58,26 @@ class ProfileSummaryCard extends StatelessWidget {
                       end: Alignment.bottomLeft,
                       colors: [Color(0xFFC47A3D), Color(0xFFF6D38B)],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFC47A3D).withValues(alpha: 0.25),
-                        blurRadius: 22,
-                        spreadRadius: 2,
-                      ),
-                    ],
+                    boxShadow: dark
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.38),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ]
+                        : [
+                            BoxShadow(
+                              color: const Color(
+                                0xFF5C3D24,
+                              ).withValues(alpha: 0.20),
+                              blurRadius: 14,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                   ),
                   child: CircleAvatar(
-                    backgroundColor: const Color(0xFFF8FAFC),
+                    backgroundColor: AppThemeColors.softCard(context),
                     child: Icon(
                       hasSelectedImage
                           ? Icons.image_rounded
@@ -79,7 +96,10 @@ class ProfileSummaryCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: const Color(0xFF111827),
-                      border: Border.all(color: Colors.white, width: 3),
+                      border: Border.all(
+                        color: AppThemeColors.card(context),
+                        width: 3,
+                      ),
                     ),
                     child: const Icon(
                       Icons.camera_alt_rounded,
@@ -101,9 +121,9 @@ class ProfileSummaryCard extends StatelessWidget {
                 color: const Color(0xFFC47A3D).withValues(alpha: 0.20),
               ),
             ),
-            child: const Text(
+            child: Text(
               'الملف الشخصي المهني',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w900,
                 color: Color(0xFF8A4E2E),
@@ -114,21 +134,21 @@ class ProfileSummaryCard extends StatelessWidget {
           Text(
             barberName,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF2F1F17),
+              color: AppThemeColors.textPrimary(context),
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'اضغط على الصورة لتغيير صورة الحلاق',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12.5,
               height: 1.5,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF6B7280),
+              color: AppThemeColors.textSecondary(context),
             ),
           ),
         ],

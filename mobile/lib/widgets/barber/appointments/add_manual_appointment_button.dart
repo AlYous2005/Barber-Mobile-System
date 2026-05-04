@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AddManualAppointmentButton extends StatelessWidget {
-  const AddManualAppointmentButton({
-    super.key,
-    required this.onTap,
-  });
+  const AddManualAppointmentButton({super.key, required this.onTap});
 
   final VoidCallback onTap;
 
@@ -22,10 +19,7 @@ class AddManualAppointmentButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: const LinearGradient(
-              colors: [
-                Color(0xFF9A5A38),
-                Color(0xFFB8774A),
-              ],
+              colors: [Color(0xFF9A5A38), Color(0xFFB8774A)],
             ),
             boxShadow: const [
               BoxShadow(
@@ -38,11 +32,7 @@ class AddManualAppointmentButton extends StatelessWidget {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.add_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
+              Icon(Icons.add_rounded, color: Colors.white, size: 20),
               SizedBox(width: 8),
               Text(
                 'إضافة موعد يدوي',

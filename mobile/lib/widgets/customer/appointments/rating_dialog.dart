@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 Future<int?> showCustomerRatingDialog({
   required BuildContext context,
   required String barberName,
@@ -13,15 +15,16 @@ Future<int?> showCustomerRatingDialog({
       return Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: AppThemeColors.card(context),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(22),
+            side: BorderSide(color: AppThemeColors.border(context)),
           ),
-          title: const Text(
+          title: Text(
             'قيّم الحلاق',
             style: TextStyle(
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111827),
+              color: AppThemeColors.textPrimary(context),
             ),
           ),
           content: StatefulBuilder(
@@ -32,8 +35,8 @@ Future<int?> showCustomerRatingDialog({
                   Text(
                     'الحلاق $barberName',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF111827),
+                    style: TextStyle(
+                      color: AppThemeColors.textPrimary(context),
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
@@ -42,8 +45,8 @@ Future<int?> showCustomerRatingDialog({
                   Text(
                     'تقييمه الحالي ${barberRating.toStringAsFixed(1)} ★',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF6B7280),
+                    style: TextStyle(
+                      color: AppThemeColors.textSecondary(context),
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
@@ -77,10 +80,10 @@ Future<int?> showCustomerRatingDialog({
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 'إلغاء',
                 style: TextStyle(
-                  color: Color(0xFF6B7280),
+                  color: AppThemeColors.textSecondary(context),
                   fontWeight: FontWeight.w800,
                 ),
               ),

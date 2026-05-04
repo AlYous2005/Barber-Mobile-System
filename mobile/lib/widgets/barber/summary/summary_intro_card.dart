@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class SummaryIntroCard extends StatelessWidget {
   const SummaryIntroCard({super.key});
 
@@ -23,23 +25,23 @@ class SummaryIntroCard extends StatelessWidget {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SummaryCenterPill(),
-          SizedBox(height: 14),
+          const SummaryCenterPill(),
+          const SizedBox(height: 14),
           Text(
             'الملخصات والإنجازات',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 27,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111111),
+              color: AppThemeColors.textPrimary(context),
               height: 1.1,
             ),
           ),
-          SizedBox(height: 10),
-          Text(
+          const SizedBox(height: 10),
+          const Text(
             'تتبّع الأداء والإيرادات والمواعيد بطريقة واضحة واحترافية',
             textAlign: TextAlign.center,
             style: TextStyle(

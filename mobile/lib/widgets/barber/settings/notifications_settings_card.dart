@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
 import 'settings_shared_widgets.dart';
 
 class NotificationsSettingsCard extends StatelessWidget {
@@ -30,7 +31,7 @@ class NotificationsSettingsCard extends StatelessWidget {
 
               const SizedBox(width: 12),
 
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -39,17 +40,17 @@ class NotificationsSettingsCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF111827),
+                        color: AppThemeColors.textPrimary(context),
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
                       'فعّل أو أوقف إشعارات الحجوزات الجديدة وتحديثات المواعيد.',
                       style: TextStyle(
                         fontSize: 13,
                         height: 1.6,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
+                        color: AppThemeColors.textSecondary(context),
                       ),
                     ),
                   ],

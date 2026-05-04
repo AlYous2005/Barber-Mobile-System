@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class CustomerHomeTopBar extends StatelessWidget {
   const CustomerHomeTopBar({
     super.key,
@@ -26,9 +28,9 @@ class CustomerHomeTopBar extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppThemeColors.card(context),
           borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: const Color(0xFFEADFCF)),
+          border: Border.all(color: AppThemeColors.border(context)),
           boxShadow: const [
             BoxShadow(
               color: Color(0x12000000),
@@ -132,7 +134,7 @@ class _CustomerProfileAvatar extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: const Color(0xFF22C55E),
-              border: Border.all(color: Colors.white, width: 2),
+              border: Border.all(color: AppThemeColors.card(context), width: 2),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x7722C55E),
@@ -192,7 +194,10 @@ class _HeaderActionButton extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFEF4444),
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: Colors.white, width: 1.5),
+                border: Border.all(
+                  color: AppThemeColors.card(context),
+                  width: 1.5,
+                ),
               ),
               child: Text(
                 badgeCount > 9 ? '9+' : '$badgeCount',
@@ -222,11 +227,13 @@ class _SmartMarqueeTextState extends State<_SmartMarqueeText>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
-  static const TextStyle _textStyle = TextStyle(
-    color: Color(0xFF111827),
-    fontSize: 16,
-    fontWeight: FontWeight.w900,
-  );
+  TextStyle _textStyle(BuildContext context) {
+    return TextStyle(
+      color: AppThemeColors.textPrimary(context),
+      fontSize: 16,
+      fontWeight: FontWeight.w900,
+    );
+  }
 
   @override
   void initState() {
@@ -244,9 +251,13 @@ class _SmartMarqueeTextState extends State<_SmartMarqueeText>
     super.dispose();
   }
 
-  bool _isOverflowing({required String text, required double maxWidth}) {
+  bool _isOverflowing({
+    required BuildContext context,
+    required String text,
+    required double maxWidth,
+  }) {
     final TextPainter painter = TextPainter(
-      text: TextSpan(text: text, style: _textStyle),
+      text: TextSpan(text: text, style: _textStyle(context)),
       maxLines: 1,
       textDirection: TextDirection.rtl,
     )..layout();
@@ -254,9 +265,9 @@ class _SmartMarqueeTextState extends State<_SmartMarqueeText>
     return painter.width > maxWidth;
   }
 
-  double _textWidth(String text) {
+  double _textWidth(BuildContext context, String text) {
     final TextPainter painter = TextPainter(
-      text: TextSpan(text: text, style: _textStyle),
+      text: TextSpan(text: text, style: _textStyle(context)),
       maxLines: 1,
       textDirection: TextDirection.rtl,
     )..layout();
@@ -269,6 +280,7 @@ class _SmartMarqueeTextState extends State<_SmartMarqueeText>
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool shouldAnimate = _isOverflowing(
+          context: context,
           text: widget.text,
           maxWidth: constraints.maxWidth,
         );
@@ -279,11 +291,11 @@ class _SmartMarqueeTextState extends State<_SmartMarqueeText>
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.right,
-            style: _textStyle,
+            style: _textStyle(context),
           );
         }
 
-        final double textWidth = _textWidth(widget.text);
+        final double textWidth = _textWidth(context, widget.text);
         final double travelDistance = textWidth - constraints.maxWidth + 34;
 
         return ClipRect(
@@ -320,7 +332,7 @@ class _SmartMarqueeTextState extends State<_SmartMarqueeText>
                         maxLines: 1,
                         softWrap: false,
                         textAlign: TextAlign.right,
-                        style: _textStyle,
+                        style: _textStyle(context),
                       ),
                     ),
                   ),

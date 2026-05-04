@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class AppointmentsTabsSelector extends StatelessWidget {
   const AppointmentsTabsSelector({
     super.key,
@@ -20,9 +22,9 @@ class AppointmentsTabsSelector extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF7),
+        color: AppThemeColors.softCard(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFEADBCD)),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Row(
         children: [
@@ -35,9 +37,7 @@ class AppointmentsTabsSelector extends StatelessWidget {
               onTap: () => onTabChanged('upcoming'),
             ),
           ),
-
           const SizedBox(width: 8),
-
           Expanded(
             child: _AppointmentTabButton(
               title: 'السابقة',
@@ -70,7 +70,7 @@ class _AppointmentTabButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color activeColor = const Color(0xFFC47A3D);
+    final Color activeColor = AppThemeColors.brandBrown(context);
 
     return Material(
       color: Colors.transparent,
@@ -103,24 +103,22 @@ class _AppointmentTabButton extends StatelessWidget {
                 color: isSelected ? Colors.white : activeColor,
                 size: 20,
               ),
-
               const SizedBox(width: 7),
-
               Flexible(
                 child: Text(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF6B4F3E),
+                    color: isSelected
+                        ? Colors.white
+                        : AppThemeColors.textSecondary(context),
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-
               const SizedBox(width: 7),
-
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(

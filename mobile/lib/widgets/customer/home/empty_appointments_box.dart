@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class EmptyAppointmentsBox extends StatelessWidget {
-  const EmptyAppointmentsBox({
-    super.key,
-    required this.message,
-  });
+  const EmptyAppointmentsBox({super.key, required this.message});
 
   final String message;
 
@@ -15,15 +14,15 @@ class EmptyAppointmentsBox extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: AppThemeColors.softCard(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Text(
         message,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Color(0xFF6B7280),
+        style: TextStyle(
+          color: AppThemeColors.textSecondary(context),
           fontSize: 13.5,
           fontWeight: FontWeight.w800,
         ),

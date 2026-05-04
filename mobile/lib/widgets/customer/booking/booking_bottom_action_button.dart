@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class BookingBottomActionButton extends StatelessWidget {
   const BookingBottomActionButton({
     super.key,
@@ -22,7 +24,8 @@ class BookingBottomActionButton extends StatelessWidget {
           backgroundColor: const Color(0xFFC47A3D),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 15),
-          disabledBackgroundColor: const Color(0xFFE5E7EB),
+          disabledBackgroundColor: AppThemeColors.softCard(context),
+          disabledForegroundColor: AppThemeColors.textMuted(context),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),

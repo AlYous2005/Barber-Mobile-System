@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 enum BookingDateChoice { today, tomorrow, custom }
 
 class BookingDateSelector extends StatefulWidget {
@@ -215,9 +217,9 @@ class _DateChoiceHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFEADBCD)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x10000000),
@@ -250,8 +252,8 @@ class _DateChoiceHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Color(0xFF111827),
+                  style: TextStyle(
+                    color: AppThemeColors.textPrimary(context),
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                   ),
@@ -259,8 +261,8 @@ class _DateChoiceHeader extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFF6B7280),
+                  style: TextStyle(
+                    color: AppThemeColors.textSecondary(context),
                     fontSize: 12.8,
                     height: 1.5,
                     fontWeight: FontWeight.w700,
@@ -293,7 +295,7 @@ class _DateChoiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppThemeColors.card(context),
       borderRadius: BorderRadius.circular(22),
       child: InkWell(
         onTap: onTap,
@@ -306,7 +308,7 @@ class _DateChoiceCard extends StatelessWidget {
             border: Border.all(
               color: selected
                   ? const Color(0xFFC47A3D)
-                  : const Color(0xFFEADBCD),
+                  : AppThemeColors.border(context),
               width: selected ? 1.7 : 1,
             ),
             boxShadow: [
@@ -328,7 +330,7 @@ class _DateChoiceCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: selected
                       ? const Color(0xFFC47A3D)
-                      : const Color(0xFFFFF7ED),
+                      : AppThemeColors.softCard(context),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Icon(
@@ -340,8 +342,8 @@ class _DateChoiceCard extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 label,
-                style: const TextStyle(
-                  color: Color(0xFF111827),
+                style: TextStyle(
+                  color: AppThemeColors.textPrimary(context),
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
                 ),
@@ -350,8 +352,8 @@ class _DateChoiceCard extends StatelessWidget {
               Text(
                 subtitle,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Color(0xFF6B7280),
+                style: TextStyle(
+                  color: AppThemeColors.textSecondary(context),
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
                 ),
@@ -383,10 +385,7 @@ class _CustomDateTriggerCard extends StatelessWidget {
 
     return TweenAnimationBuilder<double>(
       key: ValueKey('custom-date-pulse-$pulseKey'),
-      tween: Tween<double>(
-        begin: hasSelectedDate ? 1 : 0,
-        end: 0,
-      ),
+      tween: Tween<double>(begin: hasSelectedDate ? 1 : 0, end: 0),
       duration: const Duration(milliseconds: 850),
       curve: Curves.easeOutCubic,
       builder: (context, pulseValue, child) {
@@ -397,7 +396,7 @@ class _CustomDateTriggerCard extends StatelessWidget {
         return Transform.scale(
           scale: scale,
           child: Material(
-            color: Colors.white,
+            color: AppThemeColors.card(context),
             borderRadius: BorderRadius.circular(22),
             child: InkWell(
               onTap: onTap,
@@ -411,7 +410,7 @@ class _CustomDateTriggerCard extends StatelessWidget {
                   border: Border.all(
                     color: selected
                         ? const Color(0xFFC47A3D)
-                        : const Color(0xFFEADBCD),
+                        : AppThemeColors.border(context),
                     width: selected ? 1.7 : 1,
                   ),
                   boxShadow: [
@@ -434,14 +433,16 @@ class _CustomDateTriggerCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: selected
                             ? const Color(0xFFC47A3D)
-                            : const Color(0xFFFFF7ED),
+                            : AppThemeColors.softCard(context),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Icon(
                         hasSelectedDate
                             ? Icons.event_available_rounded
                             : Icons.edit_calendar_rounded,
-                        color: selected ? Colors.white : const Color(0xFFC47A3D),
+                        color: selected
+                            ? Colors.white
+                            : const Color(0xFFC47A3D),
                         size: 22,
                       ),
                     ),
@@ -452,10 +453,10 @@ class _CustomDateTriggerCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'تاريخ محدد',
                             style: TextStyle(
-                              color: Color(0xFF111827),
+                              color: AppThemeColors.textPrimary(context),
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
                             ),
@@ -482,7 +483,7 @@ class _CustomDateTriggerCard extends StatelessWidget {
                               style: TextStyle(
                                 color: hasSelectedDate
                                     ? const Color(0xFFC47A3D)
-                                    : const Color(0xFF6B7280),
+                                    : AppThemeColors.textSecondary(context),
                                 fontSize: hasSelectedDate ? 13.5 : 12.5,
                                 fontWeight: hasSelectedDate
                                     ? FontWeight.w900
@@ -511,6 +512,7 @@ class _CustomDateTriggerCard extends StatelessWidget {
     );
   }
 }
+
 class _ArabicCalendarCard extends StatelessWidget {
   const _ArabicCalendarCard({
     required this.visibleMonth,
@@ -588,9 +590,9 @@ class _ArabicCalendarCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFEADBCD)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x12000000),
@@ -611,8 +613,8 @@ class _ArabicCalendarCard extends StatelessWidget {
                 child: Text(
                   'شهر (${visibleMonth.month}) - ${visibleMonth.year}',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Color(0xFF111827),
+                  style: TextStyle(
+                    color: AppThemeColors.textPrimary(context),
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
                   ),
@@ -641,8 +643,8 @@ class _ArabicCalendarCard extends StatelessWidget {
                   weekdays[index],
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF9CA3AF),
+                  style: TextStyle(
+                    color: AppThemeColors.textMuted(context),
                     fontSize: 10.5,
                     fontWeight: FontWeight.w900,
                   ),
@@ -698,7 +700,7 @@ class _MonthArrowButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFFFFF7ED),
+      color: AppThemeColors.softCard(context),
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,
@@ -731,16 +733,16 @@ class _CalendarDayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color backgroundColor = Colors.transparent;
-    Color textColor = const Color(0xFF111827);
+    Color textColor = AppThemeColors.textPrimary(context);
     Color borderColor = Colors.transparent;
 
     if (disabled) {
-      textColor = const Color(0xFFD1D5DB);
+      textColor = AppThemeColors.textMuted(context);
     }
 
     if (isToday && !isSelected) {
-      backgroundColor = const Color(0xFFFFF7ED);
-      borderColor = const Color(0xFFEADBCD);
+      backgroundColor = AppThemeColors.softCard(context);
+      borderColor = AppThemeColors.border(context);
       textColor = const Color(0xFFC47A3D);
     }
 

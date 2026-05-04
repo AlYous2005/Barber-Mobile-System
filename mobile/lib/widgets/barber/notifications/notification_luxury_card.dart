@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/barber_notification_ui_model.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class NotificationLuxuryCard extends StatelessWidget {
   const NotificationLuxuryCard({
@@ -20,7 +21,7 @@ class NotificationLuxuryCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       child: Material(
         color: notification.isRead
-            ? const Color(0xFFFFFFFF)
+            ? AppThemeColors.card(context)
             : visual.color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(24),
         child: InkWell(
@@ -32,7 +33,7 @@ class NotificationLuxuryCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 color: notification.isRead
-                    ? const Color(0xFFE5E7EB)
+                    ? AppThemeColors.border(context)
                     : visual.color.withValues(alpha: 0.24),
               ),
               boxShadow: const [
@@ -59,11 +60,7 @@ class NotificationLuxuryCard extends StatelessWidget {
                           color: visual.color.withValues(alpha: 0.20),
                         ),
                       ),
-                      child: Icon(
-                        visual.icon,
-                        color: visual.color,
-                        size: 23,
-                      ),
+                      child: Icon(visual.icon, color: visual.color, size: 23),
                     ),
 
                     if (!notification.isRead)
@@ -77,7 +74,7 @@ class NotificationLuxuryCard extends StatelessWidget {
                             shape: BoxShape.circle,
                             color: const Color(0xFFEF4444),
                             border: Border.all(
-                              color: Colors.white,
+                              color: AppThemeColors.card(context),
                               width: 2,
                             ),
                           ),
@@ -103,10 +100,10 @@ class NotificationLuxuryCard extends StatelessWidget {
 
                           Text(
                             notification.timeLabel,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF9CA3AF),
+                              color: AppThemeColors.textMuted(context),
                             ),
                           ),
                         ],
@@ -122,7 +119,7 @@ class NotificationLuxuryCard extends StatelessWidget {
                           fontWeight: notification.isRead
                               ? FontWeight.w700
                               : FontWeight.w900,
-                          color: const Color(0xFF111827),
+                          color: AppThemeColors.textPrimary(context),
                         ),
                       ),
 
@@ -227,9 +224,7 @@ class NotificationBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: color.withValues(alpha: 0.20),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
       ),
       child: Text(
         label,

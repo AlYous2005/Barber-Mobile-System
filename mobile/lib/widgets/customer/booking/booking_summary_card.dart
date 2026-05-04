@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/service_model.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class BookingSummaryCard extends StatelessWidget {
   const BookingSummaryCard({
@@ -24,25 +25,28 @@ class BookingSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool dark = AppThemeColors.isDark(context);
+    final List<Color> heroGradient = dark
+        ? [
+            AppThemeColors.elevatedCard(context),
+            AppThemeColors.card(context),
+            AppThemeColors.softCard(context),
+          ]
+        : const [Color(0xFFFFFFFF), Color(0xFFFFFBF7), Color(0xFFFFF1E3)];
+
     return Column(
       children: [
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topRight,
               end: Alignment.bottomLeft,
-              colors: [
-                Color(0xFFFFFFFF),
-                Color(0xFFFFFBF7),
-                Color(0xFFFFF1E3),
-              ],
+              colors: heroGradient,
             ),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: const Color(0xFFEADBCD),
-            ),
+            border: Border.all(color: AppThemeColors.border(context)),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x12000000),
@@ -60,10 +64,7 @@ class BookingSummaryCard extends StatelessWidget {
                     height: 50,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF6E3F2F),
-                          Color(0xFFC47A3D),
-                        ],
+                        colors: [Color(0xFF6E3F2F), Color(0xFFC47A3D)],
                       ),
                       borderRadius: BorderRadius.circular(18),
                     ),
@@ -74,23 +75,23 @@ class BookingSummaryCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'راجع تفاصيل حجزك',
                           style: TextStyle(
-                            color: Color(0xFF111827),
+                            color: AppThemeColors.textPrimary(context),
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           'تأكد من البيانات التالية قبل الضغط على تأكيد الحجز.',
                           style: TextStyle(
-                            color: Color(0xFF6B7280),
+                            color: AppThemeColors.textSecondary(context),
                             fontSize: 12.8,
                             height: 1.5,
                             fontWeight: FontWeight.w700,
@@ -114,9 +115,7 @@ class BookingSummaryCard extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              _ServicesSummaryCard(
-                services: selectedServices,
-              ),
+              _ServicesSummaryCard(services: selectedServices),
 
               const SizedBox(height: 12),
 
@@ -168,13 +167,6 @@ class BookingSummaryCard extends StatelessWidget {
             ],
           ),
         ),
-
-        
-
-
-
-
-        
       ],
     );
   }
@@ -201,11 +193,9 @@ class _SummaryInfoCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFFEADBCD),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Row(
         children: [
@@ -216,11 +206,7 @@ class _SummaryInfoCard extends StatelessWidget {
               color: color.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 21,
-            ),
+            child: Icon(icon, color: color, size: 21),
           ),
           const SizedBox(width: 11),
           Expanded(
@@ -229,8 +215,8 @@ class _SummaryInfoCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Color(0xFF6B7280),
+                  style: TextStyle(
+                    color: AppThemeColors.textSecondary(context),
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
                   ),
@@ -238,8 +224,8 @@ class _SummaryInfoCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: Color(0xFF111827),
+                  style: TextStyle(
+                    color: AppThemeColors.textPrimary(context),
                     fontSize: 15.5,
                     fontWeight: FontWeight.w900,
                   ),
@@ -247,8 +233,8 @@ class _SummaryInfoCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   secondaryValue,
-                  style: const TextStyle(
-                    color: Color(0xFF6B7280),
+                  style: TextStyle(
+                    color: AppThemeColors.textSecondary(context),
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
                   ),
@@ -263,9 +249,7 @@ class _SummaryInfoCard extends StatelessWidget {
 }
 
 class _ServicesSummaryCard extends StatelessWidget {
-  const _ServicesSummaryCard({
-    required this.services,
-  });
+  const _ServicesSummaryCard({required this.services});
 
   final List<ServiceModel> services;
 
@@ -275,27 +259,25 @@ class _ServicesSummaryCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFFEADBCD),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.design_services_rounded,
                 color: Color(0xFFC47A3D),
                 size: 18,
               ),
-              SizedBox(width: 7),
+              const SizedBox(width: 7),
               Text(
                 'الخدمات المختارة',
                 style: TextStyle(
-                  color: Color(0xFF111827),
+                  color: AppThemeColors.textPrimary(context),
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
                 ),
@@ -314,16 +296,14 @@ class _ServicesSummaryCard extends StatelessWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF7ED),
+                      color: AppThemeColors.softCard(context),
                       borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: const Color(0xFFEADBCD),
-                      ),
+                      border: Border.all(color: AppThemeColors.border(context)),
                     ),
                     child: Text(
                       service.name,
-                      style: const TextStyle(
-                        color: Color(0xFF6B4F3E),
+                      style: TextStyle(
+                        color: AppThemeColors.textSecondary(context),
                         fontSize: 12.5,
                         fontWeight: FontWeight.w800,
                       ),
@@ -358,27 +338,21 @@ class _MiniSummaryBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.09),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color.withValues(alpha: 0.16),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: color,
-                size: 17,
-              ),
+              Icon(icon, color: color, size: 17),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF4B5563),
+                  style: TextStyle(
+                    color: AppThemeColors.textSecondary(context),
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../utils/app_theme_colors.dart';
 import '../../models/mock_appointment.dart';
 import '../../models/summary_models.dart';
 import '../../widgets/barber/summary/summary_filters_card.dart';
@@ -158,18 +159,18 @@ class _BarberSummaryScreenState extends State<BarberSummaryScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             '',
             style: TextStyle(
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111827),
+              color: AppThemeColors.textPrimary(context),
             ),
           ),
           centerTitle: true,
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
         ),
         body: ListView(
@@ -223,10 +224,3 @@ class _BarberSummaryScreenState extends State<BarberSummaryScreen> {
     );
   }
 }
-
-
-
-
-
-
-

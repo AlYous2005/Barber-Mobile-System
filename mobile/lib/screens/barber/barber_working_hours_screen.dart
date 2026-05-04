@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../utils/app_theme_colors.dart';
 import '../../models/working_day_model.dart';
 import '../../widgets/barber/working_hours/working_hours_intro_card.dart';
 import '../../widgets/barber/working_hours/working_day_card.dart';
@@ -100,7 +101,7 @@ class _BarberWorkingHoursScreenState extends State<BarberWorkingHoursScreen> {
       },
     );
   }
-  
+
   static String _formatTime(String value) {
     final parts = value.split(':');
     final hour = int.tryParse(parts.first) ?? 0;
@@ -119,18 +120,18 @@ class _BarberWorkingHoursScreenState extends State<BarberWorkingHoursScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             '',
             style: TextStyle(
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111827),
+              color: AppThemeColors.textPrimary(context),
             ),
           ),
           centerTitle: true,
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
         ),
         body: ListView(

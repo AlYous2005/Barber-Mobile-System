@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/mock_appointment.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class AppointmentsPreviewSection extends StatelessWidget {
   const AppointmentsPreviewSection({
@@ -17,9 +18,9 @@ class AppointmentsPreviewSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF7),
+        color: AppThemeColors.elevatedCard(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFEADBCD)),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Column(
         children: [
@@ -34,10 +35,10 @@ class AppointmentsPreviewSection extends StatelessWidget {
               Expanded(
                 child: Text(
                   'أبرز المواعيد - $filterLabel',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF2A2018),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -57,10 +58,7 @@ class AppointmentsPreviewSection extends StatelessWidget {
 }
 
 class PreviewAppointmentCard extends StatelessWidget {
-  const PreviewAppointmentCard({
-    super.key,
-    required this.appointment,
-  });
+  const PreviewAppointmentCard({super.key, required this.appointment});
 
   final MockAppointment appointment;
 
@@ -86,9 +84,9 @@ class PreviewAppointmentCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFEAEAEA)),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Row(
         children: [
@@ -96,12 +94,12 @@ class PreviewAppointmentCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: const Color(0xFFF7EEE6),
+              color: AppThemeColors.softCard(context),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person_rounded,
-              color: Color(0xFF6B4F3E),
+              color: AppThemeColors.brandBrown(context),
               size: 20,
             ),
           ),
@@ -112,28 +110,28 @@ class PreviewAppointmentCard extends StatelessWidget {
               children: [
                 Text(
                   appointment.customerName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF2A2018),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   appointment.serviceName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF6B7280),
+                    color: AppThemeColors.textSecondary(context),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${appointment.dateLabel} • ${appointment.timeLabel}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF6B7280),
+                    color: AppThemeColors.textSecondary(context),
                   ),
                 ),
               ],

@@ -165,10 +165,11 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
+       backgroundColor: pageBackground,
         body: Stack(
           children: [
             SafeArea(

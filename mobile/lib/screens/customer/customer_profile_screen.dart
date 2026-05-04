@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/customer_profile_result.dart';
+import '../../utils/app_theme_colors.dart';
 import '../../widgets/customer/profile/customer_profile_intro_card.dart';
 import '../../widgets/customer/profile/customer_profile_shared_widgets.dart';
 import '../../widgets/customer/profile/customer_password_box.dart';
@@ -159,22 +160,20 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color pageBg = Theme.of(context).scaffoldBackgroundColor;
+    final Color titleColor = AppThemeColors.textPrimary(context);
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: pageBg,
         appBar: AppBar(
-          title: const Text(
-            'الملف الشخصي',
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF111827),
-            ),
-          ),
+          title: const SizedBox.shrink(),
           centerTitle: true,
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
+          backgroundColor: pageBg,
+          surfaceTintColor: pageBg,
           elevation: 0,
+          iconTheme: IconThemeData(color: titleColor),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -245,4 +244,3 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
     );
   }
 }
-

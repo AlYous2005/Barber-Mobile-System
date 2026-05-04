@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../models/mock_appointment.dart';
 import '../../../models/mock_service.dart';
+import '../../../utils/app_theme_colors.dart';
 import 'manual_appointment_widgets.dart';
 
 class AddManualAppointmentSheet extends StatefulWidget {
@@ -152,7 +153,7 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppThemeColors.card(context),
             borderRadius: BorderRadius.circular(28),
             boxShadow: const [
               BoxShadow(
@@ -170,7 +171,7 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE5E7EB),
+                    color: AppThemeColors.border(context),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -184,8 +185,9 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                         color: const Color(0xFFC47A3D).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color:
-                              const Color(0xFFC47A3D).withValues(alpha: 0.18),
+                          color: const Color(
+                            0xFFC47A3D,
+                          ).withValues(alpha: 0.18),
                         ),
                       ),
                       child: const Icon(
@@ -195,28 +197,28 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'إضافة موعد يدوي',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF111827),
+                          color: AppThemeColors.textPrimary(context),
                         ),
                       ),
                     ),
                     Material(
-                      color: const Color(0xFFF5F5F4),
+                      color: AppThemeColors.softCard(context),
                       borderRadius: BorderRadius.circular(14),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(14),
                         onTap: () => Navigator.of(context).pop(),
-                        child: const SizedBox(
+                        child: SizedBox(
                           width: 40,
                           height: 40,
                           child: Icon(
                             Icons.close_rounded,
-                            color: Color(0xFF374151),
+                            color: AppThemeColors.textPrimary(context),
                           ),
                         ),
                       ),
@@ -242,9 +244,8 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
 
                     setState(() {
                       selectedServiceName = value;
-                      selectedServiceDuration = int.tryParse(
-                            service.durationMinutes.toString(),
-                          ) ??
+                      selectedServiceDuration =
+                          int.tryParse(service.durationMinutes.toString()) ??
                           30;
                     });
                   },
@@ -276,11 +277,9 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBF2),
+                    color: AppThemeColors.elevatedCard(context),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: const Color(0xFFE8D8B8),
-                    ),
+                    border: Border.all(color: AppThemeColors.border(context)),
                   ),
                   child: Row(
                     children: [
@@ -293,11 +292,11 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                       Expanded(
                         child: Text(
                           'مدة الموعد ستُحسب تلقائيًا حسب الخدمة المختارة: $selectedServiceDuration دقيقة',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12.5,
                             height: 1.5,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF6B4F3E),
+                            color: AppThemeColors.textSecondary(context),
                           ),
                         ),
                       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class EditActionsBar extends StatelessWidget {
   const EditActionsBar({
     super.key,
@@ -21,9 +23,9 @@ class EditActionsBar extends StatelessWidget {
             onPressed: canSave ? onSave : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFC47A3D),
-              disabledBackgroundColor: const Color(0xFFE5E7EB),
+              disabledBackgroundColor: AppThemeColors.softCard(context),
               foregroundColor: Colors.white,
-              disabledForegroundColor: const Color(0xFF9CA3AF),
+              disabledForegroundColor: AppThemeColors.textMuted(context),
               elevation: canSave ? 2 : 0,
               padding: const EdgeInsets.symmetric(vertical: 13),
               shape: RoundedRectangleBorder(
@@ -41,8 +43,8 @@ class EditActionsBar extends StatelessWidget {
           child: OutlinedButton(
             onPressed: onCancel,
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF111827),
-              side: const BorderSide(color: Color(0xFFE5E7EB)),
+              foregroundColor: AppThemeColors.textPrimary(context),
+              side: BorderSide(color: AppThemeColors.border(context)),
               padding: const EdgeInsets.symmetric(vertical: 13),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),

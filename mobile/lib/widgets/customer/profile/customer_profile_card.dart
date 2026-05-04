@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
 import '../home/customer_theme.dart';
 
 class CustomerProfileCard extends StatelessWidget {
@@ -22,9 +23,9 @@ class CustomerProfileCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x12000000),
@@ -38,12 +39,15 @@ class CustomerProfileCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.person_outline_rounded, color: CustomerTheme.accentOrange),
+              const Icon(
+                Icons.person_outline_rounded,
+                color: CustomerTheme.accentOrange,
+              ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'بياناتك',
                 style: TextStyle(
-                  color: Color(0xFF111827),
+                  color: AppThemeColors.textPrimary(context),
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -51,38 +55,48 @@ class CustomerProfileCard extends StatelessWidget {
               const Spacer(),
               TextButton.icon(
                 onPressed: onEdit,
-                icon: const Icon(Icons.edit_outlined, size: 18, color: CustomerTheme.accentOrange),
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  size: 18,
+                  color: CustomerTheme.accentOrange,
+                ),
                 label: const Text(
                   'تعديل',
-                  style: TextStyle(color: CustomerTheme.accentOrange, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: CustomerTheme.accentOrange,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          _row('الاسم الظاهر:', displayName),
+          _row(context, 'الاسم الظاهر:', displayName),
           const SizedBox(height: 8),
-          _row('رقم الهاتف:', '$countryCode $phoneNumber'),
+          _row(context, 'رقم الهاتف:', '$countryCode $phoneNumber'),
         ],
       ),
     );
   }
 
-  Widget _row(String label, String value) {
+  Widget _row(BuildContext context, String label, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+          style: TextStyle(
+            color: AppThemeColors.textSecondary(context),
+            fontSize: 14,
+          ),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: const TextStyle(
-              color: Color(0xFF111827),
+            style: TextStyle(
+              color: AppThemeColors.textPrimary(context),
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),

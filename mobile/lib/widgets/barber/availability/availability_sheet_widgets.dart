@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class AvailabilitySheetHandle extends StatelessWidget {
   const AvailabilitySheetHandle({super.key});
 
@@ -9,7 +11,7 @@ class AvailabilitySheetHandle extends StatelessWidget {
       width: 44,
       height: 5,
       decoration: BoxDecoration(
-        color: const Color(0xFFE5E7EB),
+        color: AppThemeColors.border(context),
         borderRadius: BorderRadius.circular(999),
       ),
     );
@@ -44,11 +46,7 @@ class AvailabilitySheetHeader extends StatelessWidget {
               color: const Color(0xFFC47A3D).withValues(alpha: 0.18),
             ),
           ),
-          child: Icon(
-            icon,
-            color: const Color(0xFFC47A3D),
-            size: 21,
-          ),
+          child: Icon(icon, color: const Color(0xFFC47A3D), size: 21),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -57,36 +55,36 @@ class AvailabilitySheetHeader extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF111827),
+                  color: AppThemeColors.textPrimary(context),
                 ),
               ),
               const SizedBox(height: 3),
               Text(
                 subtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF6B7280),
+                  color: AppThemeColors.textSecondary(context),
                 ),
               ),
             ],
           ),
         ),
         Material(
-          color: const Color(0xFFF5F5F4),
+          color: AppThemeColors.softCard(context),
           borderRadius: BorderRadius.circular(14),
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
             onTap: onClose,
-            child: const SizedBox(
+            child: SizedBox(
               width: 40,
               height: 40,
               child: Icon(
                 Icons.close_rounded,
-                color: Color(0xFF374151),
+                color: AppThemeColors.textPrimary(context),
               ),
             ),
           ),

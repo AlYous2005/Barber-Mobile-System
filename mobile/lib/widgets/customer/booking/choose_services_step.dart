@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/service_model.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class ChooseServicesStep extends StatelessWidget {
   const ChooseServicesStep({
@@ -83,7 +84,7 @@ class _ServicesSectionTitle extends StatelessWidget {
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: const Color(0xFFFFEDD5),
+            color: AppThemeColors.softCard(context),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Icon(icon, color: const Color(0xFFC47A3D), size: 20),
@@ -97,8 +98,8 @@ class _ServicesSectionTitle extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Color(0xFF111827),
+                style: TextStyle(
+                  color: AppThemeColors.textPrimary(context),
                   fontSize: 17,
                   fontWeight: FontWeight.w900,
                 ),
@@ -106,8 +107,8 @@ class _ServicesSectionTitle extends StatelessWidget {
               const SizedBox(height: 3),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  color: Color(0xFF6B7280),
+                style: TextStyle(
+                  color: AppThemeColors.textSecondary(context),
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
                 ),
@@ -138,7 +139,7 @@ class _SelectableServiceCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(22),
         child: InkWell(
           onTap: onTap,
@@ -151,7 +152,7 @@ class _SelectableServiceCard extends StatelessWidget {
               border: Border.all(
                 color: selected
                     ? const Color(0xFFC47A3D)
-                    : const Color(0xFFEADBCD),
+                    : AppThemeColors.border(context),
                 width: selected ? 1.7 : 1,
               ),
               boxShadow: [
@@ -173,12 +174,12 @@ class _SelectableServiceCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: selected
                         ? const Color(0xFFC47A3D)
-                        : const Color(0xFFFFF7ED),
+                        : AppThemeColors.softCard(context),
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
                       color: selected
                           ? const Color(0xFFC47A3D)
-                          : const Color(0xFFEADBCD),
+                          : AppThemeColors.border(context),
                     ),
                   ),
                   child: Icon(
@@ -196,8 +197,8 @@ class _SelectableServiceCard extends StatelessWidget {
                     children: [
                       Text(
                         service.name,
-                        style: const TextStyle(
-                          color: Color(0xFF111827),
+                        style: TextStyle(
+                          color: AppThemeColors.textPrimary(context),
                           fontSize: 16.5,
                           fontWeight: FontWeight.w900,
                         ),
@@ -285,19 +286,23 @@ class _ChildServiceInfoCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF2),
+        color: AppThemeColors.elevatedCard(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE8D8B8)),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.child_care_rounded, color: Color(0xFFC47A3D), size: 24),
-          SizedBox(width: 10),
+          const Icon(
+            Icons.child_care_rounded,
+            color: Color(0xFFC47A3D),
+            size: 24,
+          ),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               'يمكنك حجز موعد لحلاقة طفلك أيضًا عن طريق هذه الخدمة.',
               style: TextStyle(
-                color: Color(0xFF6B4F3E),
+                color: AppThemeColors.textSecondary(context),
                 fontSize: 13,
                 height: 1.55,
                 fontWeight: FontWeight.w800,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../utils/app_theme_colors.dart';
 import '../../models/mock_notification.dart';
 import 'barber_appointments_screen.dart';
 import 'barber_availability_screen.dart';
@@ -90,7 +91,6 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
 
     if (message.contains('ساعات') || message.contains('العمل')) {
       return NotificationType.workingHours;
-    
     }
 
     if (message.contains('إغلاق') ||
@@ -173,9 +173,7 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
 
       case NotificationType.service:
         Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => const BarberServicesScreen(),
-          ),
+          MaterialPageRoute<void>(builder: (_) => const BarberServicesScreen()),
         );
         break;
 
@@ -197,18 +195,14 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
 
       case NotificationType.summary:
         Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => const BarberSummaryScreen(),
-          ),
+          MaterialPageRoute<void>(builder: (_) => const BarberSummaryScreen()),
         );
         break;
 
       case NotificationType.system:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('هذا إشعار نظامي فقط'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('هذا إشعار نظامي فقط')));
         break;
     }
   }
@@ -221,9 +215,7 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تم تعليم كل الإشعارات كمقروءة'),
-      ),
+      const SnackBar(content: Text('تم تعليم كل الإشعارات كمقروءة')),
     );
   }
 
@@ -234,26 +226,24 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             '',
             style: TextStyle(
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111827),
+              color: AppThemeColors.textPrimary(context),
             ),
           ),
           centerTitle: true,
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           children: [
-            NotificationsIntroCard(
-              unreadCount: unreadCount,
-            ),
+            NotificationsIntroCard(unreadCount: unreadCount),
 
             const SizedBox(height: 14),
 
@@ -290,9 +280,3 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
     );
   }
 }
-
-
-
-
-
-

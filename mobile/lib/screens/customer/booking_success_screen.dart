@@ -1,5 +1,4 @@
-
-
+import '../../utils/app_theme_colors.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/booking_model.dart';
@@ -8,10 +7,7 @@ import '../../utils/duration_formatters.dart';
 import '../../widgets/customer/booking/booking_success_reminder_dialog.dart';
 
 class BookingSuccessScreen extends StatefulWidget {
-  const BookingSuccessScreen({
-    super.key,
-    required this.booking,
-  });
+  const BookingSuccessScreen({super.key, required this.booking});
 
   final BookingModel booking;
 
@@ -34,29 +30,32 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
-
   @override
   Widget build(BuildContext context) {
     final booking = widget.booking;
+    final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
+    final Color appBarTextColor =
+        Theme.of(context).appBarTheme.iconTheme?.color ??
+        Theme.of(context).colorScheme.onSurface;
 
     return PopScope(
       canPop: false,
       child: Directionality(
         textDirection: TextDirection.rtl,
         child: Scaffold(
-          backgroundColor: const Color(0xFFFFF7ED),
+          backgroundColor: pageBackground,
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            title: const Text(
+            title: Text(
               'نجاح الحجز',
               style: TextStyle(
-                color: Color(0xFF111827),
+                color: appBarTextColor,
                 fontWeight: FontWeight.w900,
               ),
             ),
             centerTitle: true,
-            backgroundColor: const Color(0xFFFFF7ED),
-            surfaceTintColor: const Color(0xFFFFF7ED),
+            backgroundColor: pageBackground,
+            surfaceTintColor: pageBackground,
             elevation: 0,
           ),
           body: SafeArea(
@@ -71,18 +70,25 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topRight,
-                        end: Alignment.bottomLeft,
-                        colors: [
-                          Color(0xFFFFFFFF),
-                          Color(0xFFF0FDF4),
-                          Color(0xFFDCFCE7),
-                        ],
-                      ),
+                      gradient: AppThemeColors.isDark(context)
+                          ? null
+                          : const LinearGradient(
+                              begin: Alignment.topRight,
+                              end: Alignment.bottomLeft,
+                              colors: [
+                                Color(0xFFFFFFFF),
+                                Color(0xFFF0FDF4),
+                                Color(0xFFDCFCE7),
+                              ],
+                            ),
+                      color: AppThemeColors.isDark(context)
+                          ? AppThemeColors.elevatedCard(context)
+                          : null,
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
-                        color: const Color(0xFFBBF7D0),
+                        color: AppThemeColors.isDark(context)
+                            ? AppThemeColors.border(context)
+                            : const Color(0xFFBBF7D0),
                       ),
                       boxShadow: const [
                         BoxShadow(
@@ -102,8 +108,9 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
                             color: const Color(0xFF16A34A),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF16A34A)
-                                    .withValues(alpha: 0.35),
+                                color: const Color(
+                                  0xFF16A34A,
+                                ).withValues(alpha: 0.35),
                                 blurRadius: 24,
                                 spreadRadius: 2,
                               ),
@@ -118,11 +125,11 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
 
                         const SizedBox(height: 18),
 
-                        const Text(
+                        Text(
                           'تم تأكيد حجزك بنجاح',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Color(0xFF111827),
+                            color: AppThemeColors.textPrimary(context),
                             fontSize: 25,
                             fontWeight: FontWeight.w900,
                           ),
@@ -130,11 +137,11 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
 
                         const SizedBox(height: 10),
 
-                        const Text(
+                        Text(
                           'تم تسجيل الموعد بنجاح. يمكنك الآن العودة للصفحة الرئيسية ومتابعة حالة موعدك من قسم مواعيدي.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Color(0xFF4B5563),
+                            color: AppThemeColors.textSecondary(context),
                             fontSize: 14,
                             height: 1.65,
                             fontWeight: FontWeight.w700,

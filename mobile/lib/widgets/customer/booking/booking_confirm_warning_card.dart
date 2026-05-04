@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class BookingConfirmWarningCard extends StatelessWidget {
   const BookingConfirmWarningCard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final Color surface = AppThemeColors.isDark(context)
+        ? const Color(0xFF3D1818)
+        : const Color(0xFFFFF1F2);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF1F2),
+        color: surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFFCA5A5)),
         boxShadow: const [
@@ -20,19 +26,21 @@ class BookingConfirmWarningCard extends StatelessWidget {
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.warning_amber_rounded,
             color: Color(0xFFDC2626),
             size: 23,
           ),
-          SizedBox(width: 9),
+          const SizedBox(width: 9),
           Expanded(
             child: Text(
               'راجع تفاصيل الحجز جيدًا. يمكنك الرجوع وتعديل أي خطوة قبل تأكيد الحجز النهائي.',
               style: TextStyle(
-                color: Color(0xFF991B1B),
+                color: AppThemeColors.isDark(context)
+                    ? const Color(0xFFFECACA)
+                    : const Color(0xFF991B1B),
                 fontSize: 13,
                 height: 1.55,
                 fontWeight: FontWeight.w900,

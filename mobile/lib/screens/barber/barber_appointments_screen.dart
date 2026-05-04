@@ -233,22 +233,28 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
+    final Color appBarTextColor =
+        Theme.of(context).appBarTheme.iconTheme?.color ??
+        Theme.of(context).colorScheme.onSurface;
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: pageBackground,
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             '',
             style: TextStyle(
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111827),
+              color: appBarTextColor,
             ),
           ),
           centerTitle: true,
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
+          backgroundColor: pageBackground,
+          surfaceTintColor: pageBackground,
           elevation: 0,
+          iconTheme: IconThemeData(color: appBarTextColor),
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),

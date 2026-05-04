@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class AvailabilityPickerBox extends StatelessWidget {
   const AvailabilityPickerBox({
     super.key,
@@ -21,15 +23,15 @@ class AvailabilityPickerBox extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF374151),
+            color: AppThemeColors.textPrimary(context),
           ),
         ),
         const SizedBox(height: 9),
         Material(
-          color: Colors.white,
+          color: AppThemeColors.softCard(context),
           borderRadius: BorderRadius.circular(18),
           child: InkWell(
             onTap: onTap,
@@ -38,15 +40,13 @@ class AvailabilityPickerBox extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: const Color(0xFFE4ECE7),
-                ),
+                border: Border.all(color: AppThemeColors.border(context)),
               ),
               child: Row(
                 children: [
                   Icon(
                     icon,
-                    color: const Color(0xFF5C4030),
+                    color: AppThemeColors.brandBrown(context),
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -55,10 +55,10 @@ class AvailabilityPickerBox extends StatelessWidget {
                       value,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF111827),
+                        color: AppThemeColors.textPrimary(context),
                       ),
                     ),
                   ),
@@ -93,10 +93,10 @@ class AvailabilityTextInputBox extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF374151),
+            color: AppThemeColors.textPrimary(context),
           ),
         ),
         const SizedBox(height: 9),
@@ -104,23 +104,16 @@ class AvailabilityTextInputBox extends StatelessWidget {
           controller: controller,
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(
-              icon,
-              color: const Color(0xFF5C4030),
-            ),
+            prefixIcon: Icon(icon, color: AppThemeColors.brandBrown(context)),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppThemeColors.softCard(context),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(
-                color: Color(0xFFE4ECE7),
-              ),
+              borderSide: BorderSide(color: AppThemeColors.border(context)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(
-                color: Color(0xFFE4ECE7),
-              ),
+              borderSide: BorderSide(color: AppThemeColors.border(context)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
@@ -152,28 +145,22 @@ class AvailabilityInfoBox extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: AppThemeColors.softCard(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF475569),
-            size: 20,
-          ),
+          Icon(icon, color: AppThemeColors.textSecondary(context), size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12.5,
                 height: 1.6,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF475569),
+                color: AppThemeColors.textSecondary(context),
               ),
             ),
           ),
@@ -211,11 +198,7 @@ class AvailabilityPrimaryButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 17,
-              ),
+              Icon(icon, color: Colors.white, size: 17),
               const SizedBox(width: 7),
               Flexible(
                 child: Text(
@@ -252,7 +235,7 @@ class AvailabilitySecondaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppThemeColors.card(context),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -262,28 +245,22 @@ class AvailabilitySecondaryButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFE5E7EB),
-            ),
+            border: Border.all(color: AppThemeColors.border(context)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: const Color(0xFF374151),
-                size: 17,
-              ),
+              Icon(icon, color: AppThemeColors.textPrimary(context), size: 17),
               const SizedBox(width: 7),
               Flexible(
                 child: Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF374151),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -344,7 +321,7 @@ class AvailabilityModeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: isActive ? const Color(0xFFFFF3C4) : Colors.white,
+      color: isActive ? const Color(0xFFFFF3C4) : AppThemeColors.card(context),
       borderRadius: BorderRadius.circular(999),
       child: InkWell(
         onTap: onTap,
@@ -354,8 +331,9 @@ class AvailabilityModeChip extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color:
-                  isActive ? const Color(0xFFC4A15F) : const Color(0xFFE2E8F0),
+              color: isActive
+                  ? const Color(0xFFC4A15F)
+                  : AppThemeColors.border(context),
             ),
           ),
           child: Text(
@@ -364,8 +342,9 @@ class AvailabilityModeChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w900,
-              color:
-                  isActive ? const Color(0xFF92400E) : const Color(0xFF475569),
+              color: isActive
+                  ? const Color(0xFF92400E)
+                  : AppThemeColors.textSecondary(context),
             ),
           ),
         ),
@@ -390,20 +369,20 @@ class AvailabilityAddCardShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool dark = AppThemeColors.isDark(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFFBFFFC),
-            Color(0xFFF5FBF7),
-          ],
-        ),
+        color: dark ? AppThemeColors.card(context) : null,
+        gradient: dark
+            ? null
+            : const LinearGradient(
+                colors: [Color(0xFFFBFFFC), Color(0xFFF5FBF7)],
+              ),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: const Color(0xFFE3EFE7),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x100F172A),
@@ -421,10 +400,7 @@ class AvailabilityAddCardShell extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF9A5A38),
-                      Color(0xFFB8774A),
-                    ],
+                    colors: [Color(0xFF9A5A38), Color(0xFFB8774A)],
                   ),
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: const [
@@ -435,11 +411,7 @@ class AvailabilityAddCardShell extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                child: Icon(icon, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -448,20 +420,22 @@ class AvailabilityAddCardShell extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 21,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF5C4030),
+                        color: dark
+                            ? AppThemeColors.textPrimary(context)
+                            : const Color(0xFF5C4030),
                       ),
                     ),
                     const SizedBox(height: 5),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         height: 1.6,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF4B5563),
+                        color: AppThemeColors.textSecondary(context),
                       ),
                     ),
                   ],

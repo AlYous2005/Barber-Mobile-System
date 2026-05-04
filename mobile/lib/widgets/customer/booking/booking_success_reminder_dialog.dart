@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 void showBookingSuccessReminderDialog(BuildContext context) {
   showDialog<void>(
     context: context,
@@ -13,13 +15,8 @@ void showBookingSuccessReminderDialog(BuildContext context) {
           children: [
             Positioned.fill(
               child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 8,
-                  sigmaY: 8,
-                ),
-                child: Container(
-                  color: Colors.black.withValues(alpha: 0.22),
-                ),
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(color: Colors.black.withValues(alpha: 0.22)),
               ),
             ),
             Dialog(
@@ -28,11 +25,9 @@ void showBookingSuccessReminderDialog(BuildContext context) {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppThemeColors.card(context),
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(
-                    color: const Color(0xFFFCA5A5),
-                  ),
+                  border: Border.all(color: const Color(0xFFFCA5A5)),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x33000000),
@@ -48,11 +43,11 @@ void showBookingSuccessReminderDialog(BuildContext context) {
                       width: 62,
                       height: 62,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF1F2),
+                        color: AppThemeColors.isDark(context)
+                            ? const Color(0xFF3D1818)
+                            : const Color(0xFFFFF1F2),
                         borderRadius: BorderRadius.circular(22),
-                        border: Border.all(
-                          color: const Color(0xFFFCA5A5),
-                        ),
+                        border: Border.all(color: const Color(0xFFFCA5A5)),
                       ),
                       child: const Icon(
                         Icons.notifications_active_rounded,
@@ -63,11 +58,11 @@ void showBookingSuccessReminderDialog(BuildContext context) {
 
                     const SizedBox(height: 16),
 
-                    const Text(
+                    Text(
                       'تنبيه مهم قبل الموعد',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFF111827),
+                        color: AppThemeColors.textPrimary(context),
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
                       ),
@@ -75,13 +70,15 @@ void showBookingSuccessReminderDialog(BuildContext context) {
 
                     const SizedBox(height: 10),
 
-                    const Text(
+                    Text(
                       'يرجى الانتباه إلى هاتفك قبل الموعد بـ 15 دقيقة.\n'
                       'سيتم إرسال إشعار لك لتأكيد حضورك على الموعد.\n'
                       'في حال عدم الرد قد يتم إلغاء الموعد تلقائيًا.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFF7F1D1D),
+                        color: AppThemeColors.isDark(context)
+                            ? const Color(0xFFFECACA)
+                            : const Color(0xFF7F1D1D),
                         fontSize: 14,
                         height: 1.7,
                         fontWeight: FontWeight.w800,

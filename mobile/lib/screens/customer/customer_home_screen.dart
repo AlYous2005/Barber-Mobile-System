@@ -17,7 +17,7 @@ import 'customer_booking_screen.dart';
 import 'customer_profile_screen.dart';
 import 'customer_settings_screen.dart';
 import '../../models/customer_profile_result.dart';
-
+import '../../utils/app_theme_colors.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({
@@ -33,13 +33,19 @@ class CustomerHomeScreen extends StatefulWidget {
   State<CustomerHomeScreen> createState() => _CustomerHomeScreenState();
 }
 
-class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
+class _CustomerHomeScreenState extends State<CustomerHomeScreen>
+    with SingleTickerProviderStateMixin {
   String displayName = 'يوسف';
   String countryCode = '+970';
   String phoneNumber = '599999999';
   bool isNotificationsDropdownOpen = false;
   String selectedAppointmentsTab = 'upcoming';
   late List<MockAppointment> appointments;
+
+  late final AnimationController _greetingAnimController;
+  late final Animation<double> _greetingFade;
+  late final Animation<Offset> _greetingSlide;
+  late final Animation<double> _greetingScale;
 
   @override
   void initState() {
@@ -51,6 +57,31 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     }
 
     appointments = List<MockAppointment>.from(mockCustomerAppointments);
+
+    _greetingAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 720),
+    );
+
+    final CurvedAnimation curved = CurvedAnimation(
+      parent: _greetingAnimController,
+      curve: Curves.easeOutCubic,
+    );
+
+    _greetingFade = Tween<double>(begin: 0, end: 1).animate(curved);
+    _greetingSlide = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(curved);
+    _greetingScale = Tween<double>(begin: 0.96, end: 1).animate(curved);
+
+    _greetingAnimController.forward();
+  }
+
+  @override
+  void dispose() {
+    _greetingAnimController.dispose();
+    super.dispose();
   }
 
   int get unreadNotifications =>
@@ -181,10 +212,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: pageBackground,
         body: SafeArea(
           child: Stack(
             children: [
@@ -204,26 +236,45 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
                     const SizedBox(height: 18),
 
-                    Text(
-                      'أهلاً $displayName',
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        color: Color(0xFF111827),
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-
-                    const SizedBox(height: 7),
-
-                    const Text(
-                      'جاهز لحجز موعدك اليوم؟',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                        color: Color(0xFF4B5563),
-                        fontSize: 16,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
+                    FadeTransition(
+                      opacity: _greetingFade,
+                      child: SlideTransition(
+                        position: _greetingSlide,
+                        child: ScaleTransition(
+                          scale: _greetingScale,
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'أهلاً $displayName',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppThemeColors.isDark(context)
+                                        ? const Color(0xFFF6D38B)
+                                        : const Color(0xFF111827),
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 7),
+                                Text(
+                                  'جاهز لحجز موعدك القادم؟',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppThemeColors.isDark(context)
+                                        ? AppThemeColors.textSecondary(context)
+                                        : const Color(0xFF4B5563),
+                                    fontSize: 16,
+                                    height: 1.35,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
 

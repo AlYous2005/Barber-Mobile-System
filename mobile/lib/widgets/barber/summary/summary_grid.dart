@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/summary_models.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class SummaryGrid extends StatelessWidget {
   const SummaryGrid({super.key, required this.snapshot});
@@ -98,10 +99,10 @@ class SummaryCard extends StatelessWidget {
             data.title,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF2A2018),
+              color: AppThemeColors.textPrimary(context),
             ),
           ),
           const SizedBox(height: 8),
@@ -118,10 +119,10 @@ class SummaryCard extends StatelessWidget {
             data.subtitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF6B7280),
+              color: AppThemeColors.textSecondary(context),
             ),
           ),
         ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
 import 'settings_shared_widgets.dart';
 
 class ThemeSettingsCard extends StatelessWidget {
@@ -30,7 +31,7 @@ class ThemeSettingsCard extends StatelessWidget {
 
               const SizedBox(width: 12),
 
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -39,17 +40,17 @@ class ThemeSettingsCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF111827),
+                        color: AppThemeColors.textPrimary(context),
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
                       'اختر بين الوضع الفاتح أو الداكن حسب راحتك أثناء العمل.',
                       style: TextStyle(
                         fontSize: 13,
                         height: 1.6,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
+                        color: AppThemeColors.textSecondary(context),
                       ),
                     ),
                   ],
@@ -63,9 +64,9 @@ class ThemeSettingsCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8F3ED),
+              color: AppThemeColors.softCard(context),
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFFE8D8B8)),
+              border: Border.all(color: AppThemeColors.border(context)),
             ),
             child: Row(
               children: [
@@ -149,7 +150,9 @@ class _ThemeModeButton extends StatelessWidget {
               Icon(
                 icon,
                 size: 17,
-                color: isActive ? Colors.white : const Color(0xFF6B5D52),
+                color: isActive
+                    ? Colors.white
+                    : AppThemeColors.textSecondary(context),
               ),
               const SizedBox(width: 7),
               Flexible(
@@ -160,7 +163,9 @@ class _ThemeModeButton extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
-                    color: isActive ? Colors.white : const Color(0xFF6B5D52),
+                    color: isActive
+                        ? Colors.white
+                        : AppThemeColors.textSecondary(context),
                   ),
                 ),
               ),

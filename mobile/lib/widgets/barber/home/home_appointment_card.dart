@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/mock_appointment.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class HomeAppointmentCard extends StatelessWidget {
   const HomeAppointmentCard({
@@ -28,9 +29,9 @@ class HomeAppointmentCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFDFCFA),
+        color: AppThemeColors.elevatedCard(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0x1A4A3428)),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0D000000),
@@ -66,10 +67,10 @@ class HomeAppointmentCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   appointment.customerName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF2A2018),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -146,9 +147,9 @@ class HomeAppointmentDetailLine extends StatelessWidget {
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: const Color(0xFFF8F2EC),
+            color: AppThemeColors.softCard(context),
             borderRadius: BorderRadius.circular(11),
-            border: Border.all(color: const Color(0x38C8AA8C)),
+            border: Border.all(color: AppThemeColors.border(context)),
           ),
           child: Icon(icon, color: const Color(0xFF6B4F3E), size: 17),
         ),
@@ -156,11 +157,11 @@ class HomeAppointmentDetailLine extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14.5,
               height: 1.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF374151),
+              color: AppThemeColors.textSecondary(context),
             ),
           ),
         ),
@@ -170,10 +171,7 @@ class HomeAppointmentDetailLine extends StatelessWidget {
 }
 
 class HomeAppointmentStatusBadge extends StatelessWidget {
-  const HomeAppointmentStatusBadge({
-    super.key,
-    required this.status,
-  });
+  const HomeAppointmentStatusBadge({super.key, required this.status});
 
   final String status;
 

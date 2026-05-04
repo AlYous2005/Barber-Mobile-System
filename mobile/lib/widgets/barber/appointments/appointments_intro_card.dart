@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class AppointmentsSectionIntro extends StatelessWidget {
   const AppointmentsSectionIntro({super.key});
 
@@ -13,11 +15,7 @@ class AppointmentsSectionIntro extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF6E3F2F),
-            Color(0xFF9B5A3D),
-            Color(0xFFC37A49),
-          ],
+          colors: [Color(0xFF6E3F2F), Color(0xFF9B5A3D), Color(0xFFC37A49)],
         ),
         boxShadow: const [
           BoxShadow(
@@ -27,23 +25,23 @@ class AppointmentsSectionIntro extends StatelessWidget {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppointmentsCenterPill(),
-          SizedBox(height: 14),
+          const AppointmentsCenterPill(),
+          const SizedBox(height: 14),
           Text(
             'المواعيد',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 27,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF111111),
+              color: AppThemeColors.textPrimary(context),
               height: 1.1,
             ),
           ),
-          SizedBox(height: 10),
-          Text(
+          const SizedBox(height: 10),
+          const Text(
             'إدارة مواعيد اليوم والحجوزات الأخرى بسهولة',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -70,9 +68,7 @@ class AppointmentsCenterPill extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.18),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
@@ -87,11 +83,7 @@ class AppointmentsCenterPill extends StatelessWidget {
               ),
             ),
             SizedBox(width: 6),
-            Icon(
-              Icons.close_rounded,
-              size: 14,
-              color: Colors.white,
-            ),
+            Icon(Icons.close_rounded, size: 14, color: Colors.white),
           ],
         ),
       ),

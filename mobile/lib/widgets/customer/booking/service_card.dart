@@ -31,7 +31,9 @@ class ServiceCard extends StatelessWidget {
                 : CustomerTheme.cardFill,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: selected ? CustomerTheme.accentOrange : CustomerTheme.cardBorder,
+              color: selected
+                  ? CustomerTheme.accentOrange
+                  : CustomerTheme.cardBorder,
               width: selected ? 1.6 : 1,
             ),
           ),
@@ -52,7 +54,10 @@ class ServiceCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       '${service.durationMinutes} دقيقة',
-                      style: const TextStyle(color: Colors.white60, fontSize: 13),
+                      style: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
@@ -71,7 +76,11 @@ class ServiceCard extends StatelessWidget {
                   if (selected)
                     const Padding(
                       padding: EdgeInsets.only(top: 6),
-                      child: Icon(Icons.check_circle, color: CustomerTheme.accentOrange, size: 22),
+                      child: Icon(
+                        Icons.check_circle,
+                        color: CustomerTheme.accentOrange,
+                        size: 22,
+                      ),
                     ),
                 ],
               ),

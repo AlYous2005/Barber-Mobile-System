@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/working_day_model.dart';
+import '../../../utils/app_theme_colors.dart';
 import 'working_hours_edit_sheet_widgets.dart';
 
 class WorkingHoursEditSheet extends StatefulWidget {
@@ -74,7 +75,7 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppThemeColors.card(context),
             borderRadius: BorderRadius.circular(28),
             boxShadow: const [
               BoxShadow(
@@ -92,7 +93,7 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE5E7EB),
+                    color: AppThemeColors.border(context),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -108,8 +109,9 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
                         color: const Color(0xFFC47A3D).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color:
-                              const Color(0xFFC47A3D).withValues(alpha: 0.18),
+                          color: const Color(
+                            0xFFC47A3D,
+                          ).withValues(alpha: 0.18),
                         ),
                       ),
                       child: const Icon(
@@ -125,21 +127,21 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'تعديل ساعات العمل',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF111827),
+                              color: AppThemeColors.textPrimary(context),
                             ),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             widget.day.dayName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF6B7280),
+                              color: AppThemeColors.textSecondary(context),
                             ),
                           ),
                         ],
@@ -147,17 +149,17 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
                     ),
 
                     Material(
-                      color: const Color(0xFFF5F5F4),
+                      color: AppThemeColors.softCard(context),
                       borderRadius: BorderRadius.circular(14),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(14),
                         onTap: () => Navigator.of(context).pop(),
-                        child: const SizedBox(
+                        child: SizedBox(
                           width: 40,
                           height: 40,
                           child: Icon(
                             Icons.close_rounded,
-                            color: Color(0xFF374151),
+                            color: AppThemeColors.textPrimary(context),
                           ),
                         ),
                       ),
@@ -171,11 +173,9 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF9FBFA),
+                    color: AppThemeColors.softCard(context),
                     borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: const Color(0xFFE4ECE7),
-                    ),
+                    border: Border.all(color: AppThemeColors.border(context)),
                   ),
                   child: Row(
                     children: [
@@ -183,12 +183,12 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'حالة اليوم',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF111827),
+                                color: AppThemeColors.textPrimary(context),
                               ),
                             ),
                             const SizedBox(height: 5),
@@ -196,11 +196,11 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
                               editIsActive
                                   ? 'هذا اليوم مفتوح للحجوزات'
                                   : 'هذا اليوم مغلق ولن تظهر فيه حجوزات',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12.5,
                                 height: 1.5,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF6B7280),
+                                color: AppThemeColors.textSecondary(context),
                               ),
                             ),
                           ],
@@ -275,9 +275,7 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF1F2),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: const Color(0xFFFECACA),
-                      ),
+                      border: Border.all(color: const Color(0xFFFECACA)),
                     ),
                     child: const Row(
                       children: [

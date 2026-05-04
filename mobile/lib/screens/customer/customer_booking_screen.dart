@@ -15,6 +15,7 @@ import '../../widgets/customer/booking/choose_services_step.dart';
 import '../../widgets/customer/booking/services_live_counter.dart';
 import '../../widgets/customer/booking/available_times_step.dart';
 import '../../widgets/customer/booking/booking_bottom_action_button.dart';
+import '../../utils/app_theme_colors.dart';
 
 import 'booking_success_screen.dart';
 
@@ -163,24 +164,24 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color pageBg = Theme.of(context).scaffoldBackgroundColor;
+    final Color titleColor = AppThemeColors.textPrimary(context);
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFFF7ED),
+        backgroundColor: pageBg,
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             'حجز موعد',
-            style: TextStyle(
-              color: Color(0xFF111827),
-              fontWeight: FontWeight.w900,
-            ),
+            style: TextStyle(color: titleColor, fontWeight: FontWeight.w900),
           ),
           centerTitle: true,
-          backgroundColor: const Color(0xFFFFF7ED),
-          surfaceTintColor: const Color(0xFFFFF7ED),
+          backgroundColor: pageBg,
+          surfaceTintColor: pageBg,
           leading: IconButton(
             onPressed: _back,
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            icon: Icon(Icons.arrow_back_ios_new_rounded, color: titleColor),
           ),
         ),
         body: Column(

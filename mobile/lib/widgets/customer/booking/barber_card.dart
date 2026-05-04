@@ -31,7 +31,9 @@ class BarberCard extends StatelessWidget {
                 : CustomerTheme.cardFill,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: selected ? CustomerTheme.accentOrange : CustomerTheme.cardBorder,
+              color: selected
+                  ? CustomerTheme.accentOrange
+                  : CustomerTheme.cardBorder,
               width: selected ? 1.6 : 1,
             ),
           ),
@@ -42,7 +44,11 @@ class BarberCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     backgroundColor: CustomerTheme.coffeeBrown,
-                    child: const Icon(Icons.content_cut, color: CustomerTheme.accentOrange, size: 20),
+                    child: const Icon(
+                      Icons.content_cut,
+                      color: CustomerTheme.accentOrange,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -59,26 +65,40 @@ class BarberCard extends StatelessWidget {
                         ),
                         Text(
                           barber.shopName,
-                          style: const TextStyle(color: Colors.white60, fontSize: 13),
+                          style: const TextStyle(
+                            color: Colors.white60,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   if (selected)
-                    const Icon(Icons.check_circle, color: CustomerTheme.accentOrange),
+                    const Icon(
+                      Icons.check_circle,
+                      color: CustomerTheme.accentOrange,
+                    ),
                 ],
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Icon(Icons.place_outlined, size: 18, color: Colors.white54),
+                  const Icon(
+                    Icons.place_outlined,
+                    size: 18,
+                    color: Colors.white54,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     barber.distance,
                     style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                   const SizedBox(width: 16),
-                  const Icon(Icons.star_rounded, size: 20, color: CustomerTheme.accentOrange),
+                  const Icon(
+                    Icons.star_rounded,
+                    size: 20,
+                    color: CustomerTheme.accentOrange,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     barber.rating.toStringAsFixed(1),

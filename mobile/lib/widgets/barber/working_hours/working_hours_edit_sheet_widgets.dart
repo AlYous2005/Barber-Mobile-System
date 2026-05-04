@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
+
 class TimePickerBox extends StatelessWidget {
   const TimePickerBox({
     super.key,
@@ -32,17 +34,17 @@ class TimePickerBox extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w900,
-            color: Color(0xFF374151),
+            color: AppThemeColors.textPrimary(context),
           ),
         ),
 
         const SizedBox(height: 9),
 
         Material(
-          color: const Color(0xFFF9FBFA),
+          color: AppThemeColors.softCard(context),
           borderRadius: BorderRadius.circular(18),
           child: InkWell(
             onTap: onTap,
@@ -51,15 +53,13 @@ class TimePickerBox extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: const Color(0xFFE4ECE7),
-                ),
+                border: Border.all(color: AppThemeColors.border(context)),
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.access_time_rounded,
-                    color: Color(0xFF5C4030),
+                    color: AppThemeColors.brandBrown(context),
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -68,10 +68,10 @@ class TimePickerBox extends StatelessWidget {
                       _formatTime(value),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF111827),
+                        color: AppThemeColors.textPrimary(context),
                       ),
                     ),
                   ),
@@ -121,11 +121,7 @@ class PrimaryActionButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 18,
-              ),
+              Icon(icon, color: Colors.white, size: 18),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
@@ -162,7 +158,7 @@ class SecondaryActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppThemeColors.card(context),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -172,28 +168,22 @@ class SecondaryActionButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFE5E7EB),
-            ),
+            border: Border.all(color: AppThemeColors.border(context)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: const Color(0xFF374151),
-                size: 18,
-              ),
+              Icon(icon, color: AppThemeColors.textPrimary(context), size: 18),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF374151),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ),

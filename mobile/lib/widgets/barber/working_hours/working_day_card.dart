@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/working_day_model.dart';
+import '../../../utils/app_theme_colors.dart';
 
 class WorkingDayCard extends StatelessWidget {
   const WorkingDayCard({
@@ -17,16 +18,15 @@ class WorkingDayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isOpen = day.isActive;
+    final bool dark = AppThemeColors.isDark(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFFEDF1F3),
-        ),
+        border: Border.all(color: AppThemeColors.border(context)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x100F172A),
@@ -43,15 +43,13 @@ class WorkingDayCard extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEEF7F1),
+                  color: AppThemeColors.softCard(context),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: const Color(0xFFDCEFE2),
-                  ),
+                  border: Border.all(color: AppThemeColors.border(context)),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.calendar_today_rounded,
-                  color: Color(0xFF5C4030),
+                  color: AppThemeColors.brandBrown(context),
                   size: 20,
                 ),
               ),
@@ -61,10 +59,10 @@ class WorkingDayCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   day.dayName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF111827),
+                    color: AppThemeColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -80,36 +78,28 @@ class WorkingDayCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFFFBFFFC),
-                    Color(0xFFF5FBF7),
-                  ],
-                ),
+                color: dark ? AppThemeColors.softCard(context) : null,
+                gradient: dark
+                    ? null
+                    : const LinearGradient(
+                        colors: [Color(0xFFFBFFFC), Color(0xFFF5FBF7)],
+                      ),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: const Color(0xFFE3EFE7),
-                ),
+                border: Border.all(color: AppThemeColors.border(context)),
               ),
               child: Column(
                 children: [
-                  HourRow(
-                    label: 'من',
-                    value: formatTime(day.startTime),
-                  ),
+                  HourRow(label: 'من', value: formatTime(day.startTime)),
 
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     child: Divider(
                       height: 1,
-                      color: Color(0xFFDCEFE2),
+                      color: AppThemeColors.border(context),
                     ),
                   ),
 
-                  HourRow(
-                    label: 'إلى',
-                    value: formatTime(day.endTime),
-                  ),
+                  HourRow(label: 'إلى', value: formatTime(day.endTime)),
                 ],
               ),
             )
@@ -119,15 +109,10 @@ class WorkingDayCard extends StatelessWidget {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFFFFF7F7),
-                    Color(0xFFFEF2F2),
-                  ],
+                  colors: [Color(0xFFFFF7F7), Color(0xFFFEF2F2)],
                 ),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: const Color(0xFFF8D3D3),
-                ),
+                border: Border.all(color: const Color(0xFFF8D3D3)),
               ),
               child: const Column(
                 children: [
@@ -153,9 +138,7 @@ class WorkingDayCard extends StatelessWidget {
 
           SizedBox(
             width: double.infinity,
-            child: EditDayButton(
-              onTap: onEdit,
-            ),
+            child: EditDayButton(onTap: onEdit),
           ),
         ],
       ),
@@ -164,10 +147,7 @@ class WorkingDayCard extends StatelessWidget {
 }
 
 class DayStatusBadge extends StatelessWidget {
-  const DayStatusBadge({
-    super.key,
-    required this.isOpen,
-  });
+  const DayStatusBadge({super.key, required this.isOpen});
 
   final bool isOpen;
 
@@ -178,14 +158,8 @@ class DayStatusBadge extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isOpen
-              ? const [
-                  Color(0xFFDCFCE7),
-                  Color(0xFFBBF7D0),
-                ]
-              : const [
-                  Color(0xFFFEE2E2),
-                  Color(0xFFFECACA),
-                ],
+              ? const [Color(0xFFDCFCE7), Color(0xFFBBF7D0)]
+              : const [Color(0xFFFEE2E2), Color(0xFFFECACA)],
         ),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
@@ -205,8 +179,7 @@ class DayStatusBadge extends StatelessWidget {
             style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w900,
-              color:
-                  isOpen ? const Color(0xFF166534) : const Color(0xFF991B1B),
+              color: isOpen ? const Color(0xFF166534) : const Color(0xFF991B1B),
             ),
           ),
         ],
@@ -216,11 +189,7 @@ class DayStatusBadge extends StatelessWidget {
 }
 
 class HourRow extends StatelessWidget {
-  const HourRow({
-    super.key,
-    required this.label,
-    required this.value,
-  });
+  const HourRow({super.key, required this.label, required this.value});
 
   final String label;
   final String value;
@@ -231,18 +200,18 @@ class HourRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: Color(0xFF4B5563),
+            color: AppThemeColors.textSecondary(context),
             fontWeight: FontWeight.w900,
           ),
         ),
         const Spacer(),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
-            color: Color(0xFF111827),
+            color: AppThemeColors.textPrimary(context),
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -252,10 +221,7 @@ class HourRow extends StatelessWidget {
 }
 
 class EditDayButton extends StatelessWidget {
-  const EditDayButton({
-    super.key,
-    required this.onTap,
-  });
+  const EditDayButton({super.key, required this.onTap});
 
   final VoidCallback onTap;
 
@@ -283,11 +249,7 @@ class EditDayButton extends StatelessWidget {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.edit_rounded,
-                color: Colors.white,
-                size: 17,
-              ),
+              Icon(Icons.edit_rounded, color: Colors.white, size: 17),
               SizedBox(width: 8),
               Text(
                 'تعديل',
