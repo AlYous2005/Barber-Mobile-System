@@ -56,6 +56,8 @@ class _CustomerSettingsScreenState extends State<CustomerSettingsScreen> {
     appThemeMode.value = dark ? ThemeMode.dark : ThemeMode.light;
     await saveAppThemeMode(appThemeMode.value);
 
+  if (!mounted) return;
+
     await showCustomerFeedbackPopup(
       context: context,
       title: 'تم تغيير ألوان التطبيق',
