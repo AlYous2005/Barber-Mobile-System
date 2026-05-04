@@ -73,10 +73,7 @@ class _RoleButton extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.black : Colors.white70,
-            ),
+            Icon(icon, color: isSelected ? Colors.black : Colors.white70),
             const SizedBox(height: 6),
             Text(
               title,

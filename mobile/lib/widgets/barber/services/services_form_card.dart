@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/app_theme_colors.dart';
 import 'service_form_widgets.dart';
 
 class ServicesFormCard extends StatelessWidget {
@@ -14,6 +15,12 @@ class ServicesFormCard extends StatelessWidget {
     required this.onDecreasePrice,
     required this.onSubmit,
     required this.onReset,
+    this.serviceNameError,
+    this.durationError,
+    this.priceError,
+    this.serviceNameShakeTrigger = 0,
+    this.durationShakeTrigger = 0,
+    this.priceShakeTrigger = 0,
   });
 
   final TextEditingController serviceNameController;
@@ -27,21 +34,28 @@ class ServicesFormCard extends StatelessWidget {
   final VoidCallback onSubmit;
   final VoidCallback onReset;
 
+  final String? serviceNameError;
+  final String? durationError;
+  final String? priceError;
+  final int serviceNameShakeTrigger;
+  final int durationShakeTrigger;
+  final int priceShakeTrigger;
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppThemeColors.card(context),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: const Color(0xFFEDF1F3),
-        ),
-        boxShadow: const [
+        border: Border.all(color: AppThemeColors.border(context)),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x140F172A),
+            color: Colors.black.withValues(
+              alpha: AppThemeColors.isDark(context) ? 0.35 : 0.08,
+            ),
             blurRadius: 28,
-            offset: Offset(0, 12),
+            offset: const Offset(0, 12),
           ),
         ],
       ),
@@ -55,10 +69,7 @@ class ServicesFormCard extends StatelessWidget {
                 height: 38,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF9A5A38),
-                      Color(0xFFB8774A),
-                    ],
+                    colors: [Color(0xFF9A5A38), Color(0xFFB8774A)],
                   ),
                   borderRadius: BorderRadius.circular(13),
                   boxShadow: const [
@@ -78,12 +89,12 @@ class ServicesFormCard extends StatelessWidget {
 
               const SizedBox(width: 10),
 
-              const Text(
+              Text(
                 'إضافة خدمة جديدة',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF111827),
+                  color: AppThemeColors.textPrimary(context),
                 ),
               ),
             ],
@@ -91,11 +102,11 @@ class ServicesFormCard extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          const Text(
+          Text(
             'أضف الخدمة مع مدتها وسعرها بطريقة مرتبة وواضحة',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF6B7280),
+              color: AppThemeColors.textSecondary(context),
               fontSize: 13.5,
               height: 1.7,
               fontWeight: FontWeight.w600,
@@ -109,6 +120,8 @@ class ServicesFormCard extends StatelessWidget {
             hint: 'مثال: قص شعر',
             icon: Icons.content_cut_rounded,
             controller: serviceNameController,
+            errorText: serviceNameError,
+            shakeTrigger: serviceNameShakeTrigger,
           ),
 
           const SizedBox(height: 14),
@@ -120,6 +133,8 @@ class ServicesFormCard extends StatelessWidget {
             controller: durationController,
             onIncrease: onIncreaseDuration,
             onDecrease: onDecreaseDuration,
+            errorText: durationError,
+            shakeTrigger: durationShakeTrigger,
           ),
 
           const SizedBox(height: 14),
@@ -131,6 +146,8 @@ class ServicesFormCard extends StatelessWidget {
             controller: priceController,
             onIncrease: onIncreasePrice,
             onDecrease: onDecreasePrice,
+            errorText: priceError,
+            shakeTrigger: priceShakeTrigger,
           ),
 
           const SizedBox(height: 18),

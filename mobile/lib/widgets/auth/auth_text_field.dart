@@ -12,6 +12,7 @@ class AuthTextField extends StatelessWidget {
     this.prefixText,
     this.prefixStyle,
     this.prefixIconWidget,
+    this.errorText,
   });
 
   final TextEditingController controller;
@@ -27,8 +28,24 @@ class AuthTextField extends StatelessWidget {
   // بنقدر نحط بدل الأيقونة العادية Widget كامل فيه أيقونة + Dropdown
   final Widget? prefixIconWidget;
 
+  /// When non-null and non-empty, shows validation under the field.
+  final String? errorText;
+
   @override
   Widget build(BuildContext context) {
+    final String? trimmedError = errorText?.trim();
+    final bool showFieldError = trimmedError != null && trimmedError.isNotEmpty;
+
+    final OutlineInputBorder baseBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide.none,
+    );
+
+    final OutlineInputBorder errorOutline = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: Color(0xFFFF7043)),
+    );
+
     return TextField(
       controller: controller,
       obscureText: obscureText,
@@ -47,10 +64,18 @@ class AuthTextField extends StatelessWidget {
         hintText: hintText,
         hintStyle: const TextStyle(color: Colors.white38),
 
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
+        errorText: showFieldError ? trimmedError : null,
+        errorStyle: const TextStyle(
+          color: Color(0xFFFFCCBC),
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
         ),
+
+        border: baseBorder,
+        enabledBorder: baseBorder,
+        focusedBorder: baseBorder,
+        errorBorder: errorOutline,
+        focusedErrorBorder: errorOutline,
       ),
     );
   }

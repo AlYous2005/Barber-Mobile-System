@@ -13,6 +13,7 @@ import '../../widgets/barber/notifications/notifications_filter_bar.dart';
 import '../../widgets/barber/notifications/empty_notifications_state.dart';
 import '../../widgets/barber/notifications/notification_luxury_card.dart';
 import '../../widgets/barber/notifications/notifications_intro_card.dart';
+import '../../widgets/barber/shared/barber_feedback_popup.dart';
 
 class BarberNotificationsScreen extends StatefulWidget {
   const BarberNotificationsScreen({super.key});
@@ -207,15 +208,41 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
     }
   }
 
+  static const Color _successGreenStart = Color(0xFF16A34A);
+  static const Color _successGreenEnd = Color(0xFF86EFAC);
+  static const Color _mutedIconStart = Color(0xFF9A8B7E);
+  static const Color _mutedIconEnd = Color(0xFFC4B8AD);
+
   void _markAllAsRead() {
+    final bool hadUnread = notifications.any((item) => !item.isRead);
+
+    if (!hadUnread) {
+      if (!mounted) return;
+      showBarberFeedbackPopup(
+        context: context,
+        title: 'لا توجد إشعارات جديدة',
+        message: 'جميع الإشعارات مقروءة بالفعل',
+        icon: Icons.notifications_none_rounded,
+        iconStartColor: _mutedIconStart,
+        iconEndColor: _mutedIconEnd,
+      );
+      return;
+    }
+
     setState(() {
-      notifications = notifications.map((item) {
-        return item.copyWith(isRead: true);
-      }).toList();
+      notifications = notifications
+          .map((item) => item.copyWith(isRead: true))
+          .toList();
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('تم تعليم كل الإشعارات كمقروءة')),
+    if (!mounted) return;
+    showBarberFeedbackPopup(
+      context: context,
+      title: 'تم تعيين الإشعارات كمقروءة',
+      message: 'تم تعيين جميع الإشعارات كمقروءة بنجاح',
+      icon: Icons.done_all_rounded,
+      iconStartColor: _successGreenStart,
+      iconEndColor: _successGreenEnd,
     );
   }
 

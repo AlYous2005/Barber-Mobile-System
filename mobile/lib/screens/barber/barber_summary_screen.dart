@@ -142,6 +142,13 @@ class _BarberSummaryScreenState extends State<BarberSummaryScreen> {
       initialDate: selectedSpecificDate ?? now,
       firstDate: DateTime(now.year - 2),
       lastDate: DateTime(now.year + 1),
+      locale: const Locale('ar'),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
 
     if (pickedDate == null) return;

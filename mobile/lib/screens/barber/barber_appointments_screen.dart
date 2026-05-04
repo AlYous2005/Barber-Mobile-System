@@ -8,6 +8,7 @@ import '../../widgets/barber/appointments/appointments_subnav.dart';
 import '../../widgets/barber/appointments/appointment_action_widgets.dart';
 import '../../widgets/barber/appointments/appointments_list_section.dart';
 import '../../widgets/barber/appointments/add_manual_appointment_sheet.dart';
+import '../../widgets/barber/shared/barber_feedback_popup.dart';
 
 class BarberAppointmentsScreen extends StatefulWidget {
   const BarberAppointmentsScreen({super.key});
@@ -90,14 +91,19 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
               context,
             ).showSnackBar(SnackBar(content: Text(message)));
           },
+          onAddedSuccessfully: () async {
+            if (!mounted) return;
+            await showBarberFeedbackPopup(
+              context: this.context,
+              title: 'تمت إضافة الموعد',
+              message: 'تمت إضافة الموعد الجديد بنجاح',
+              icon: Icons.check_circle_rounded,
+            );
+          },
           onAddAppointment: (appointment) {
             setState(() {
               appointments.insert(0, appointment);
             });
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('تمت إضافة الموعد اليدوي بنجاح')),
-            );
           },
         );
       },
@@ -111,6 +117,11 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
     required String message,
     required String confirmText,
     required Color color,
+    required String successTitle,
+    required String successMessage,
+    required IconData successIcon,
+    required Color successStartColor,
+    required Color successEndColor,
   }) {
     showDialog<void>(
       context: context,
@@ -154,9 +165,18 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
                       label: confirmText,
                       icon: Icons.check_rounded,
                       color: color,
-                      onTap: () {
+                      onTap: () async {
                         Navigator.of(context).pop();
                         _updateStatus(appointment.id, newStatus);
+                        if (!mounted) return;
+                        await showBarberFeedbackPopup(
+                          context: this.context,
+                          title: successTitle,
+                          message: successMessage,
+                          icon: successIcon,
+                          iconStartColor: successStartColor,
+                          iconEndColor: successEndColor,
+                        );
                       },
                     ),
                   ),
@@ -186,6 +206,11 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
       message: 'هل تريد تأكيد موعد الزبون "${appointment.customerName}"؟',
       confirmText: 'تأكيد',
       color: const Color(0xFF3D7A5C),
+      successTitle: 'تم تأكيد الموعد',
+      successMessage: 'تم تأكيد موعد الزبون بنجاح',
+      successIcon: Icons.check_circle_rounded,
+      successStartColor: const Color(0xFF16A34A),
+      successEndColor: const Color(0xFF86EFAC),
     );
   }
 
@@ -198,6 +223,11 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
           'هل تريد تسجيل حضور "${appointment.customerName}" وإنهاء الموعد؟',
       confirmText: 'تسجيل حضور',
       color: const Color(0xFF4A6FA8),
+      successTitle: 'تم تسجيل الحضور',
+      successMessage: 'تم تسجيل حضور الزبون وإنهاء الموعد بنجاح',
+      successIcon: Icons.person_pin_circle_rounded,
+      successStartColor: const Color(0xFF2563EB),
+      successEndColor: const Color(0xFF93C5FD),
     );
   }
 
@@ -209,6 +239,11 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
       message: 'هل تريد تسجيل أن الزبون "${appointment.customerName}" لم يحضر؟',
       confirmText: 'عدم حضور',
       color: const Color(0xFFC2783A),
+      successTitle: 'تم تسجيل عدم الحضور',
+      successMessage: 'تم تسجيل أن الزبون لم يحضر للموعد',
+      successIcon: Icons.person_off_rounded,
+      successStartColor: const Color(0xFFF59E0B),
+      successEndColor: const Color(0xFFFCD34D),
     );
   }
 
@@ -220,6 +255,11 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
       message: 'هل تريد إلغاء موعد الزبون "${appointment.customerName}"؟',
       confirmText: 'إلغاء الموعد',
       color: const Color(0xFFC9544A),
+      successTitle: 'تم إلغاء الموعد',
+      successMessage: 'تم إلغاء موعد الزبون بنجاح',
+      successIcon: Icons.event_busy_rounded,
+      successStartColor: const Color(0xFFDC2626),
+      successEndColor: const Color(0xFFFCA5A5),
     );
   }
 

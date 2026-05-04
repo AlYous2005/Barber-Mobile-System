@@ -4,13 +4,20 @@ import '../../../models/mock_notification.dart';
 import '../../../utils/app_theme_colors.dart';
 
 class CustomerNotificationsDropdown extends StatelessWidget {
-  const CustomerNotificationsDropdown({super.key, required this.onClose});
+  const CustomerNotificationsDropdown({
+    super.key,
+    required this.notifications,
+    required this.onMarkAllAsRead,
+    required this.onClose,
+  });
 
+  final List<MockNotification> notifications;
+  final VoidCallback onMarkAllAsRead;
   final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
-    final notifications = mockCustomerNotifications;
+    final bool hasUnread = notifications.any((item) => !item.isRead);
 
     return Container(
       width: double.infinity,
@@ -65,6 +72,50 @@ class CustomerNotificationsDropdown extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: hasUnread ? onMarkAllAsRead : null,
+              icon: Icon(
+                Icons.done_all_rounded,
+                size: 18,
+                color: hasUnread
+                    ? AppThemeColors.brandBrown(context)
+                    : AppThemeColors.textMuted(context),
+              ),
+              label: Text(
+                'تعيين الكل كمقروء',
+                style: TextStyle(
+                  color: hasUnread
+                      ? AppThemeColors.brandBrown(context)
+                      : AppThemeColors.textMuted(context),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13.5,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 12,
+                ),
+                backgroundColor: hasUnread
+                    ? AppThemeColors.brandBrown(context).withValues(alpha: 0.08)
+                    : AppThemeColors.softCard(context),
+                side: BorderSide(
+                  color: hasUnread
+                      ? AppThemeColors.brandBrown(
+                          context,
+                        ).withValues(alpha: 0.5)
+                      : AppThemeColors.border(context),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
           ),
 
           const SizedBox(height: 10),

@@ -5,27 +5,36 @@ import '../../../utils/app_theme_colors.dart';
 import 'working_hours_edit_sheet_widgets.dart';
 
 class WorkingHoursEditSheet extends StatefulWidget {
-  const WorkingHoursEditSheet({
-    super.key,
-    required this.day,
-    required this.onSave,
-  });
+  const WorkingHoursEditSheet({super.key, required this.day});
 
   final WorkingDay day;
-  final ValueChanged<WorkingDay> onSave;
 
   @override
   State<WorkingHoursEditSheet> createState() => _WorkingHoursEditSheetState();
 }
 
 class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
+  late bool originalIsActive;
+  late String originalStartTime;
+  late String originalEndTime;
+
   late String editStartTime;
   late String editEndTime;
   late bool editIsActive;
 
+  bool get _hasChanges {
+    return editIsActive != originalIsActive ||
+        editStartTime != originalStartTime ||
+        editEndTime != originalEndTime;
+  }
+
   @override
   void initState() {
     super.initState();
+
+    originalStartTime = widget.day.startTime;
+    originalEndTime = widget.day.endTime;
+    originalIsActive = widget.day.isActive;
 
     editStartTime = widget.day.startTime;
     editEndTime = widget.day.endTime;
@@ -39,8 +48,7 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
       isActive: editIsActive,
     );
 
-    widget.onSave(updatedDay);
-    Navigator.of(context).pop();
+    Navigator.of(context).pop(updatedDay);
   }
 
   static Future<String?> _pickTime({
@@ -309,7 +317,7 @@ class _WorkingHoursEditSheetState extends State<WorkingHoursEditSheet> {
                       child: PrimaryActionButton(
                         label: 'حفظ التعديلات',
                         icon: Icons.save_rounded,
-                        onTap: _saveChanges,
+                        onTap: _hasChanges ? _saveChanges : null,
                       ),
                     ),
 

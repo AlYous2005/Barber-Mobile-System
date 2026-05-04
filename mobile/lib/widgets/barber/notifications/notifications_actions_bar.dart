@@ -14,6 +14,8 @@ class NotificationsActionsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool hasUnread = unreadCount > 0;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -27,12 +29,19 @@ class NotificationsActionsBar extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: const Color(0xFFC47A3D).withValues(alpha: 0.12),
+              color: hasUnread
+                  ? const Color(0xFFC47A3D).withValues(alpha: 0.12)
+                  : AppThemeColors.softCard(context),
               borderRadius: BorderRadius.circular(14),
+              border: hasUnread
+                  ? null
+                  : Border.all(color: AppThemeColors.border(context)),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.mark_email_read_rounded,
-              color: Color(0xFFC47A3D),
+              color: hasUnread
+                  ? const Color(0xFFC47A3D)
+                  : AppThemeColors.textMuted(context),
               size: 21,
             ),
           ),
@@ -51,29 +60,41 @@ class NotificationsActionsBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          if (unreadCount > 0)
-            Material(
-              color: const Color(0xFFC47A3D),
+          Material(
+            color: hasUnread
+                ? const Color(0xFFC47A3D)
+                : AppThemeColors.softCard(context),
+            borderRadius: BorderRadius.circular(14),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onMarkAllAsRead,
               borderRadius: BorderRadius.circular(14),
-              child: InkWell(
-                onTap: onMarkAllAsRead,
-                borderRadius: BorderRadius.circular(14),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  child: const Text(
-                    'قراءة الكل',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: hasUnread
+                    ? null
+                    : BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppThemeColors.border(context),
+                        ),
+                      ),
+                child: Text(
+                  'قراءة الكل',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    color: hasUnread
+                        ? Colors.white
+                        : AppThemeColors.textMuted(context),
                   ),
                 ),
               ),
             ),
+          ),
         ],
       ),
     );

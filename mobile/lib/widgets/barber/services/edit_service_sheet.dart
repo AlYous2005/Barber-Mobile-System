@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/ui_service_model.dart';
+import '../../../utils/app_theme_colors.dart';
+import 'service_field_validation.dart';
 import 'service_form_widgets.dart';
 
 class EditServiceSheet extends StatefulWidget {
@@ -24,9 +26,29 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
   late final TextEditingController durationController;
   late final TextEditingController priceController;
 
+  late final String _originalName;
+  late final int _originalDuration;
+  late final int _originalPrice;
+
+  late final VoidCallback _onNameChanged;
+  late final VoidCallback _onDurationChanged;
+  late final VoidCallback _onPriceChanged;
+
+  String? nameError;
+  String? durationError;
+  String? priceError;
+
+  int nameShakeTrigger = 0;
+  int durationShakeTrigger = 0;
+  int priceShakeTrigger = 0;
+
   @override
   void initState() {
     super.initState();
+
+    _originalName = widget.service.name.trim();
+    _originalDuration = widget.service.durationMinutes;
+    _originalPrice = widget.service.price.round();
 
     nameController = TextEditingController(text: widget.service.name);
     durationController = TextEditingController(
@@ -35,65 +57,111 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
     priceController = TextEditingController(
       text: widget.service.price.toStringAsFixed(0),
     );
+
+    _onNameChanged = () {
+      if (!mounted) return;
+      setState(() => nameError = null);
+    };
+    _onDurationChanged = () {
+      if (!mounted) return;
+      setState(() => durationError = null);
+    };
+    _onPriceChanged = () {
+      if (!mounted) return;
+      setState(() => priceError = null);
+    };
+
+    nameController.addListener(_onNameChanged);
+    durationController.addListener(_onDurationChanged);
+    priceController.addListener(_onPriceChanged);
   }
 
-  @override
-  void dispose() {
-    nameController.dispose();
-    durationController.dispose();
-    priceController.dispose();
-    super.dispose();
+  bool get _hasChanges {
+    final String n = nameController.text.trim();
+    final int? d = int.tryParse(durationController.text.trim());
+    final int? p = int.tryParse(priceController.text.trim());
+    return n != _originalName || d != _originalDuration || p != _originalPrice;
+  }
+
+  bool _validate() {
+    final String n = nameController.text;
+    final String d = durationController.text;
+    final String p = priceController.text;
+
+    final String? ne = ServiceFieldValidation.nameError(n);
+    final String? de = ServiceFieldValidation.durationError(d);
+    final String? pe = ServiceFieldValidation.priceError(p);
+
+    final bool ok = ne == null && de == null && pe == null;
+    if (!ok) {
+      setState(() {
+        nameError = ne;
+        durationError = de;
+        priceError = pe;
+        if (ne != null) nameShakeTrigger++;
+        if (de != null) durationShakeTrigger++;
+        if (pe != null) priceShakeTrigger++;
+      });
+    } else {
+      setState(() {
+        nameError = null;
+        durationError = null;
+        priceError = null;
+      });
+    }
+    return ok;
   }
 
   void _increaseDuration() {
-    final int current = int.tryParse(durationController.text) ?? 0;
-    durationController.text = (current + 1).toString();
+    ServiceStepperHelper.increaseMultipleOf5(durationController);
+    setState(() {});
   }
 
   void _decreaseDuration() {
-    final int current = int.tryParse(durationController.text) ?? 1;
-    durationController.text = (current <= 1 ? 1 : current - 1).toString();
+    ServiceStepperHelper.decreaseMultipleOf5(durationController);
+    setState(() {});
   }
 
   void _increasePrice() {
-    final double current = double.tryParse(priceController.text) ?? 0;
-    priceController.text = (current + 1).toStringAsFixed(0);
+    ServiceStepperHelper.increaseMultipleOf5(priceController);
+    setState(() {});
   }
 
   void _decreasePrice() {
-    final double current = double.tryParse(priceController.text) ?? 0;
-    final double next = current <= 0 ? 0 : current - 1;
-    priceController.text = next.toStringAsFixed(0);
+    ServiceStepperHelper.decreaseMultipleOf5(priceController);
+    setState(() {});
   }
 
   void _saveChanges() {
+    if (!_hasChanges) return;
+
+    if (!_validate()) {
+      return;
+    }
+
     final String newName = nameController.text.trim();
-    final int? newDuration = int.tryParse(durationController.text.trim());
-    final double? newPrice = double.tryParse(priceController.text.trim());
-
-    if (newName.isEmpty) {
-      widget.onMessage('يرجى إدخال اسم الخدمة');
-      return;
-    }
-
-    if (newDuration == null || newDuration <= 0) {
-      widget.onMessage('يرجى إدخال مدة صحيحة');
-      return;
-    }
-
-    if (newPrice == null || newPrice < 0) {
-      widget.onMessage('يرجى إدخال سعر صحيح');
-      return;
-    }
+    final int newDuration = int.parse(durationController.text.trim());
+    final int newPriceInt = int.parse(priceController.text.trim());
 
     final updatedService = widget.service.copyWith(
       name: newName,
       durationMinutes: newDuration,
-      price: newPrice,
+      price: newPriceInt.toDouble(),
     );
 
     widget.onSave(updatedService);
     Navigator.of(context).pop();
+  }
+
+  @override
+  void dispose() {
+    nameController.removeListener(_onNameChanged);
+    durationController.removeListener(_onDurationChanged);
+    priceController.removeListener(_onPriceChanged);
+    nameController.dispose();
+    durationController.dispose();
+    priceController.dispose();
+    super.dispose();
   }
 
   @override
@@ -110,13 +178,16 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppThemeColors.card(context),
             borderRadius: BorderRadius.circular(28),
-            boxShadow: const [
+            border: Border.all(color: AppThemeColors.border(context)),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x33000000),
+                color: Colors.black.withValues(
+                  alpha: AppThemeColors.isDark(context) ? 0.45 : 0.2,
+                ),
                 blurRadius: 28,
-                offset: Offset(0, 14),
+                offset: const Offset(0, 14),
               ),
             ],
           ),
@@ -128,7 +199,7 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE5E7EB),
+                    color: AppThemeColors.border(context),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -144,8 +215,9 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
                         color: const Color(0xFFC47A3D).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color:
-                              const Color(0xFFC47A3D).withValues(alpha: 0.18),
+                          color: const Color(
+                            0xFFC47A3D,
+                          ).withValues(alpha: 0.18),
                         ),
                       ),
                       child: const Icon(
@@ -157,31 +229,32 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
 
                     const SizedBox(width: 10),
 
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'تعديل الخدمة',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF111827),
+                          color: AppThemeColors.textPrimary(context),
                         ),
                       ),
                     ),
 
                     Material(
-                      color: const Color(0xFFF5F5F4),
+                      color: AppThemeColors.softCard(context),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(color: AppThemeColors.border(context)),
                       ),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(14),
                         onTap: () => Navigator.of(context).pop(),
-                        child: const SizedBox(
+                        child: SizedBox(
                           width: 40,
                           height: 40,
                           child: Icon(
                             Icons.close_rounded,
-                            color: Color(0xFF374151),
+                            color: AppThemeColors.textSecondary(context),
                           ),
                         ),
                       ),
@@ -196,6 +269,8 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
                   hint: 'مثال: قص شعر',
                   icon: Icons.content_cut_rounded,
                   controller: nameController,
+                  errorText: nameError,
+                  shakeTrigger: nameShakeTrigger,
                 ),
 
                 const SizedBox(height: 14),
@@ -207,6 +282,8 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
                   controller: durationController,
                   onIncrease: _increaseDuration,
                   onDecrease: _decreaseDuration,
+                  errorText: durationError,
+                  shakeTrigger: durationShakeTrigger,
                 ),
 
                 const SizedBox(height: 14),
@@ -218,6 +295,8 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
                   controller: priceController,
                   onIncrease: _increasePrice,
                   onDecrease: _decreasePrice,
+                  errorText: priceError,
+                  shakeTrigger: priceShakeTrigger,
                 ),
 
                 const SizedBox(height: 18),
@@ -229,7 +308,7 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
                         label: 'حفظ التعديلات',
                         icon: Icons.edit_rounded,
                         color: const Color(0xFFC47A3D),
-                        onTap: _saveChanges,
+                        onTap: _hasChanges ? _saveChanges : null,
                       ),
                     ),
 

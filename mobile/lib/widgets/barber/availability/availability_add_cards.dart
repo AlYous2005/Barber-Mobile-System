@@ -10,6 +10,9 @@ class ClosureAddCard extends StatelessWidget {
     required this.onPickDate,
     required this.onAdd,
     required this.onReset,
+    this.dateErrorText,
+    this.hasDateError = false,
+    this.dateShakeTrigger = 0,
   });
 
   final String selectedDateLabel;
@@ -17,6 +20,9 @@ class ClosureAddCard extends StatelessWidget {
   final VoidCallback onPickDate;
   final VoidCallback onAdd;
   final VoidCallback onReset;
+  final String? dateErrorText;
+  final bool hasDateError;
+  final int dateShakeTrigger;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +37,9 @@ class ClosureAddCard extends StatelessWidget {
             value: selectedDateLabel,
             icon: Icons.calendar_month_rounded,
             onTap: onPickDate,
+            errorText: dateErrorText,
+            hasError: hasDateError,
+            shakeTrigger: dateShakeTrigger,
           ),
           const SizedBox(height: 14),
           AvailabilityTextInputBox(
@@ -80,6 +89,15 @@ class TimeBlockAddCard extends StatelessWidget {
     required this.onPickEndTime,
     required this.onAdd,
     required this.onReset,
+    this.dateErrorText,
+    this.startTimeErrorText,
+    this.endTimeErrorText,
+    this.hasDateError = false,
+    this.hasStartTimeError = false,
+    this.hasEndTimeError = false,
+    this.dateShakeTrigger = 0,
+    this.startTimeShakeTrigger = 0,
+    this.endTimeShakeTrigger = 0,
   });
 
   final String selectedMode;
@@ -93,6 +111,15 @@ class TimeBlockAddCard extends StatelessWidget {
   final VoidCallback onPickEndTime;
   final VoidCallback onAdd;
   final VoidCallback onReset;
+  final String? dateErrorText;
+  final String? startTimeErrorText;
+  final String? endTimeErrorText;
+  final bool hasDateError;
+  final bool hasStartTimeError;
+  final bool hasEndTimeError;
+  final int dateShakeTrigger;
+  final int startTimeShakeTrigger;
+  final int endTimeShakeTrigger;
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +140,9 @@ class TimeBlockAddCard extends StatelessWidget {
               value: selectedDateLabel,
               icon: Icons.calendar_month_rounded,
               onTap: onPickDate,
+              errorText: dateErrorText,
+              hasError: hasDateError,
+              shakeTrigger: dateShakeTrigger,
             )
           else
             const AvailabilityInfoBox(
@@ -129,6 +159,9 @@ class TimeBlockAddCard extends StatelessWidget {
                   value: startTimeLabel,
                   icon: Icons.access_time_rounded,
                   onTap: onPickStartTime,
+                  errorText: startTimeErrorText,
+                  hasError: hasStartTimeError,
+                  shakeTrigger: startTimeShakeTrigger,
                 ),
               ),
               const SizedBox(width: 10),
@@ -138,6 +171,9 @@ class TimeBlockAddCard extends StatelessWidget {
                   value: endTimeLabel,
                   icon: Icons.access_time_rounded,
                   onTap: onPickEndTime,
+                  errorText: endTimeErrorText,
+                  hasError: hasEndTimeError,
+                  shakeTrigger: endTimeShakeTrigger,
                 ),
               ),
             ],

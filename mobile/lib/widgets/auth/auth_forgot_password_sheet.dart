@@ -103,10 +103,7 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
               const Text(
                 "أدخل رقم الهاتف المرتبط بحسابك",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white60,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.white60, fontSize: 14),
               ),
 
               const SizedBox(height: 18),
@@ -121,11 +118,7 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.phone,
-                        color: Colors.orange,
-                        size: 20,
-                      ),
+                      const Icon(Icons.phone, color: Colors.orange, size: 20),
 
                       const SizedBox(width: 6),
 
@@ -195,9 +188,7 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
                     backgroundColor: Colors.orange,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: Text(
-                    loading ? "جاري التحقق..." : "إرسال",
-                  ),
+                  child: Text(loading ? "جاري التحقق..." : "إرسال"),
                 ),
               ),
 

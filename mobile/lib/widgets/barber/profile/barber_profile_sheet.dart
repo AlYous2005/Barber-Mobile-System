@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../utils/app_theme_colors.dart';
+import '../shared/barber_feedback_popup.dart';
 import 'profile_action_widgets.dart';
 import 'profile_completion_card.dart';
 import 'profile_data_section.dart';
@@ -42,6 +43,13 @@ class BarberProfileSheet extends StatefulWidget {
 }
 
 class _BarberProfileSheetState extends State<BarberProfileSheet> {
+  static const Color _accentGreenStart = Color(0xFF16A34A);
+  static const Color _accentGreenEnd = Color(0xFF86EFAC);
+  static const Color _accentRedStart = Color(0xFFDC2626);
+  static const Color _accentRedEnd = Color(0xFFF87171);
+  static const Color _accentBrandStart = Color(0xFFC47A3D);
+  static const Color _accentBrandEnd = Color(0xFFEAB07A);
+
   late String _initialName;
   late String _initialPhone;
   late String _initialWhatsappCountryCode;
@@ -168,9 +176,15 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
       _isEditing = false;
     });
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('تم حفظ التعديلات مؤقتًا')));
+    if (!mounted) return;
+    showBarberFeedbackPopup(
+      context: context,
+      title: 'تم تحديث البيانات',
+      message: 'تم تحديث بيانات الحلاق بنجاح',
+      icon: Icons.verified_user_rounded,
+      iconStartColor: _accentGreenStart,
+      iconEndColor: _accentGreenEnd,
+    );
   }
 
   void _showImageUploadOptions() {
@@ -180,29 +194,50 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
       builder: (_) {
         return ProfileImageOptionsSheet(
           onPickImage: () {
+            final bool alreadyHadImage = _hasSelectedImage;
             Navigator.of(context).pop();
 
             setState(() {
               _hasSelectedImage = true;
             });
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('رفع الصورة الحقيقي سنفعّله لاحقًا'),
-              ),
-            );
+            if (!mounted) return;
+            if (!alreadyHadImage) {
+              showBarberFeedbackPopup(
+                context: context,
+                title: 'تمت إضافة الصورة',
+                message: 'تمت إضافة الصورة الشخصية بنجاح',
+                icon: Icons.add_a_photo_rounded,
+                iconStartColor: _accentGreenStart,
+                iconEndColor: _accentGreenEnd,
+              );
+            } else {
+              showBarberFeedbackPopup(
+                context: context,
+                title: 'تم تعديل الصورة',
+                message: 'تم تعديل الصورة الشخصية بنجاح',
+                icon: Icons.image_rounded,
+                iconStartColor: _accentBrandStart,
+                iconEndColor: _accentBrandEnd,
+              );
+            }
           },
           onRemoveImage: () {
+            final bool hadImage = _hasSelectedImage;
             Navigator.of(context).pop();
 
             setState(() {
-              _hasSelectedImage = true;
+              _hasSelectedImage = false;
             });
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('إزالة الصورة ستُربط لاحقًا بالبيانات الحقيقية'),
-              ),
+            if (!mounted || !hadImage) return;
+            showBarberFeedbackPopup(
+              context: context,
+              title: 'تمت إزالة الصورة',
+              message: 'تمت إزالة الصورة الشخصية بنجاح',
+              icon: Icons.delete_outline_rounded,
+              iconStartColor: _accentRedStart,
+              iconEndColor: _accentRedEnd,
             );
           },
         );

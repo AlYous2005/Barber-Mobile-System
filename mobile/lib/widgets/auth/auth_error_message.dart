@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AuthErrorMessage extends StatelessWidget {
-  const AuthErrorMessage({
-    super.key,
-    required this.message,
-  });
+  const AuthErrorMessage({super.key, required this.message});
 
   final String? message;
 

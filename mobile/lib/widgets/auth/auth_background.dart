@@ -8,16 +8,11 @@ class AuthBackground extends StatelessWidget {
     return Stack(
       children: [
         Positioned.fill(
-          child: Image.asset(
-            'assets/images/login_bg.jpg',
-            fit: BoxFit.cover,
-          ),
+          child: Image.asset('assets/images/login_bg.jpg', fit: BoxFit.cover),
         ),
 
         Positioned.fill(
-          child: Container(
-            color: Colors.black.withValues(alpha: 0.85),
-          ),
+          child: Container(color: Colors.black.withValues(alpha: 0.85)),
         ),
       ],
     );

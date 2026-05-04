@@ -13,6 +13,7 @@ import '../../utils/appointment_filters.dart';
 import '../../widgets/customer/home/customer_booking_cta_card.dart';
 import '../../widgets/customer/home/customer_section_title_card.dart';
 import '../../widgets/customer/home/customer_appointments_section.dart';
+import '../../widgets/customer/shared/customer_feedback_popup.dart';
 import 'customer_booking_screen.dart';
 import 'customer_profile_screen.dart';
 import 'customer_settings_screen.dart';
@@ -41,6 +42,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   bool isNotificationsDropdownOpen = false;
   String selectedAppointmentsTab = 'upcoming';
   late List<MockAppointment> appointments;
+  late List<MockNotification> customerNotifications;
 
   late final AnimationController _greetingAnimController;
   late final Animation<double> _greetingFade;
@@ -57,6 +59,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     }
 
     appointments = List<MockAppointment>.from(mockCustomerAppointments);
+    customerNotifications = List<MockNotification>.from(
+      mockCustomerNotifications,
+    );
 
     _greetingAnimController = AnimationController(
       vsync: this,
@@ -85,7 +90,33 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   }
 
   int get unreadNotifications =>
-      mockCustomerNotifications.where((item) => !item.isRead).length;
+      customerNotifications.where((item) => !item.isRead).length;
+
+  /// First token of [displayName] for the home greeting (full name stays in header/profile).
+  String get _greetingFirstName {
+    final String trimmed = displayName.trim();
+    if (trimmed.isEmpty) return trimmed;
+    final List<String> parts = trimmed.split(RegExp(r'\s+'));
+    return parts.isNotEmpty ? parts.first : trimmed;
+  }
+
+  void _markAllNotificationsAsRead() {
+    if (unreadNotifications == 0) return;
+
+    setState(() {
+      customerNotifications = customerNotifications
+          .map(
+            (item) => item.isRead
+                ? item
+                : MockNotification(
+                    id: item.id,
+                    message: item.message,
+                    isRead: true,
+                  ),
+          )
+          .toList();
+    });
+  }
 
   Future<void> _openProfile() async {
     final result = await Navigator.of(context).push<CustomerProfileResult>(
@@ -191,9 +222,15 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
       }).toList();
     });
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('تم إلغاء الموعد مؤقتًا')));
+    await showCustomerFeedbackPopup(
+      context: context,
+      title: 'تم إلغاء موعدك',
+      message:
+          'يجب التواصل مع الحلاق لإعادة الموعد، أو قم بحجزه مرة أخرى بنفسك إذا ما زال متوفرًا.',
+      icon: Icons.event_busy_rounded,
+      iconStartColor: const Color(0xFFEF4444),
+      iconEndColor: const Color(0xFFFCA5A5),
+    );
   }
 
   Future<void> _openRatingDialog(MockAppointment appointment) async {
@@ -205,8 +242,33 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
     if (!mounted || selectedStars == null) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('تم إرسال تقييمك: $selectedStars نجوم (محلياً)')),
+    if (selectedStars > 4) {
+      await showCustomerFeedbackPopup(
+        context: context,
+        title: 'تم إرسال التقييم',
+        message: 'شكلو الحلاق مزبطك 😉',
+        icon: Icons.celebration_rounded,
+      );
+      return;
+    }
+
+    if (selectedStars < 4) {
+      await showCustomerFeedbackPopup(
+        context: context,
+        title: 'تم إرسال تقييمك',
+        message: 'نتمنى لك تجربة أجمل',
+        icon: Icons.favorite_rounded,
+        iconStartColor: const Color(0xFFEF4444),
+        iconEndColor: const Color(0xFFFCA5A5),
+      );
+      return;
+    }
+
+    await showCustomerFeedbackPopup(
+      context: context,
+      title: 'تم إرسال تقييمك',
+      message: 'شكرًا لمشاركتك رأيك معنا',
+      icon: Icons.star_rounded,
     );
   }
 
@@ -248,7 +310,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  'أهلاً $displayName',
+                                  'أهلًا $_greetingFirstName',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: AppThemeColors.isDark(context)
@@ -330,6 +392,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                   left: 20,
                   right: 20,
                   child: CustomerNotificationsDropdown(
+                    notifications: customerNotifications,
+                    onMarkAllAsRead: _markAllNotificationsAsRead,
                     onClose: () {
                       setState(() {
                         isNotificationsDropdownOpen = false;

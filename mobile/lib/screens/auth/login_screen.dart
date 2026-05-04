@@ -25,6 +25,9 @@ class _LoginScreenState extends State<LoginScreen>
   bool loading = false;
   String selectedRole = "customer";
 
+  /// Full display name from customer signup ("الاسم الأول اسم العائلة"); used for HomeScreen greeting.
+  String? _signedUpCustomerDisplayName;
+
   String? errorMessage;
   Timer? _errorTimer;
 
@@ -93,13 +96,21 @@ class _LoginScreenState extends State<LoginScreen>
 
       setState(() => loading = false);
 
+      final String loginUsername = usernameController.text.trim();
+      final String userNameForHome =
+          selectedRole == 'customer' &&
+              _signedUpCustomerDisplayName != null &&
+              _signedUpCustomerDisplayName!.trim().isNotEmpty
+          ? _signedUpCustomerDisplayName!.trim()
+          : loginUsername;
+
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 650),
           pageBuilder: (context, animation, secondaryAnimation) {
             return AuthTransitionScreen(
-              userName: usernameController.text.trim(),
+              userName: userNameForHome,
               role: selectedRole,
             );
           },
@@ -260,13 +271,22 @@ class _LoginScreenState extends State<LoginScreen>
                           ? Center(
                               key: const ValueKey("signup-button-visible"),
                               child: TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const SignUpScreen(),
-                                    ),
-                                  );
+                                onPressed: () async {
+                                  final String? displayName =
+                                      await Navigator.push<String?>(
+                                        context,
+                                        MaterialPageRoute<String?>(
+                                          builder: (_) => const SignUpScreen(),
+                                        ),
+                                      );
+                                  if (!mounted) return;
+                                  setState(() {
+                                    _signedUpCustomerDisplayName =
+                                        displayName != null &&
+                                            displayName.trim().isNotEmpty
+                                        ? displayName.trim()
+                                        : null;
+                                  });
                                 },
                                 child: const Text(
                                   "إنشاء حساب جديد",

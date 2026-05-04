@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/customer/settings/customer_settings_intro_card.dart';
 import '../../widgets/customer/settings/customer_appearance_settings_card.dart';
 import '../../widgets/customer/settings/customer_notifications_settings_card.dart';
+import '../../widgets/customer/shared/customer_feedback_popup.dart';
 import '../../main.dart';
 
 class CustomerSettingsScreen extends StatefulWidget {
@@ -24,38 +25,46 @@ class _CustomerSettingsScreenState extends State<CustomerSettingsScreen> {
     isDarkMode = appThemeMode.value == ThemeMode.dark;
   }
 
-  void _toggleNotifications(bool value) {
+  Future<void> _toggleNotifications(bool value) async {
     setState(() {
       notificationsEnabled = value;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          notificationsEnabled
-              ? 'تم تفعيل إشعارات المواعيد'
-              : 'تم إيقاف إشعارات المواعيد',
-        ),
-      ),
+    await showCustomerFeedbackPopup(
+      context: context,
+      title: notificationsEnabled ? 'تم تفعيل الإشعارات' : 'تم إيقاف الإشعارات',
+      message: notificationsEnabled
+          ? 'تم تفعيل الإشعارات للتطبيق'
+          : 'تم إيقاف إشعارات التطبيق مؤقتًا',
+      icon: notificationsEnabled
+          ? Icons.notifications_active_rounded
+          : Icons.notifications_off_rounded,
+      iconStartColor: notificationsEnabled
+          ? const Color(0xFF22C55E)
+          : const Color(0xFFEF4444),
+      iconEndColor: notificationsEnabled
+          ? const Color(0xFF86EFAC)
+          : const Color(0xFFFCA5A5),
     );
   }
 
-  void _setThemeMode(bool dark) {
+  Future<void> _setThemeMode(bool dark) async {
     setState(() {
       isDarkMode = dark;
     });
 
     appThemeMode.value = dark ? ThemeMode.dark : ThemeMode.light;
-    unawaited(saveAppThemeMode(appThemeMode.value));
+    await saveAppThemeMode(appThemeMode.value);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isDarkMode
-              ? 'تم تفعيل الوضع الداكن للتطبيق'
-              : 'تم تفعيل الوضع الفاتح للتطبيق',
-        ),
-      ),
+    await showCustomerFeedbackPopup(
+      context: context,
+      title: 'تم تغيير ألوان التطبيق',
+      message: dark
+          ? 'Dark Mode - تم إلى الوضع الداكن'
+          : 'Light Mode - إلى الوضع الفاتح',
+      icon: dark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+      iconStartColor: dark ? const Color(0xFFC47A3D) : const Color(0xFFF59E0B),
+      iconEndColor: dark ? const Color(0xFFF6D38B) : const Color(0xFFFDE68A),
     );
   }
 

@@ -15,6 +15,12 @@ class CustomerPasswordBox extends StatelessWidget {
     required this.onToggleCurrent,
     required this.onToggleNew,
     required this.onToggleConfirm,
+    this.currentPasswordError,
+    this.newPasswordError,
+    this.confirmPasswordError,
+    this.currentPasswordShakeTrigger = 0,
+    this.newPasswordShakeTrigger = 0,
+    this.confirmPasswordShakeTrigger = 0,
   });
 
   final TextEditingController currentPasswordController;
@@ -28,6 +34,14 @@ class CustomerPasswordBox extends StatelessWidget {
   final VoidCallback onToggleCurrent;
   final VoidCallback onToggleNew;
   final VoidCallback onToggleConfirm;
+
+  final String? currentPasswordError;
+  final String? newPasswordError;
+  final String? confirmPasswordError;
+
+  final int currentPasswordShakeTrigger;
+  final int newPasswordShakeTrigger;
+  final int confirmPasswordShakeTrigger;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +60,8 @@ class CustomerPasswordBox extends StatelessWidget {
             controller: currentPasswordController,
             isVisible: showCurrentPassword,
             onToggleVisibility: onToggleCurrent,
+            errorText: currentPasswordError,
+            shakeTrigger: currentPasswordShakeTrigger,
           ),
           const SizedBox(height: 14),
           CustomerPasswordField(
@@ -53,6 +69,8 @@ class CustomerPasswordBox extends StatelessWidget {
             controller: newPasswordController,
             isVisible: showNewPassword,
             onToggleVisibility: onToggleNew,
+            errorText: newPasswordError,
+            shakeTrigger: newPasswordShakeTrigger,
           ),
           const SizedBox(height: 14),
           CustomerPasswordField(
@@ -60,6 +78,8 @@ class CustomerPasswordBox extends StatelessWidget {
             controller: confirmPasswordController,
             isVisible: showConfirmPassword,
             onToggleVisibility: onToggleConfirm,
+            errorText: confirmPasswordError,
+            shakeTrigger: confirmPasswordShakeTrigger,
           ),
         ],
       ),

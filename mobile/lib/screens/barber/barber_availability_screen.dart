@@ -8,6 +8,7 @@ import '../../widgets/barber/availability/availability_lists.dart';
 import '../../widgets/barber/availability/edit_closure_sheet.dart';
 import '../../widgets/barber/availability/edit_time_block_sheet.dart';
 import '../../widgets/barber/availability/availability_confirm_dialog.dart';
+import '../../widgets/barber/shared/barber_feedback_popup.dart';
 
 class BarberAvailabilityScreen extends StatefulWidget {
   const BarberAvailabilityScreen({super.key});
@@ -26,11 +27,19 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
       TextEditingController();
 
   DateTime? selectedClosureDate;
+  String? closureDateError;
+  int closureDateShakeTrigger = 0;
 
   String timeBlockMode = 'recurring';
   DateTime? selectedTimeBlockDate;
   String selectedStartTime = '13:00';
   String selectedEndTime = '14:00';
+  String? timeBlockDateError;
+  String? timeBlockStartError;
+  String? timeBlockEndError;
+  int timeBlockDateShakeTrigger = 0;
+  int timeBlockStartShakeTrigger = 0;
+  int timeBlockEndShakeTrigger = 0;
 
   late List<ClosureDay> closures;
   late List<TimeBlock> timeBlocks;
@@ -79,12 +88,20 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
       initialDate: selectedClosureDate ?? now,
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
+      locale: const Locale('ar'),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
 
     if (pickedDate == null) return;
 
     setState(() {
       selectedClosureDate = pickedDate;
+      closureDateError = null;
     });
   }
 
@@ -96,12 +113,20 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
       initialDate: selectedTimeBlockDate ?? now,
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
+      locale: const Locale('ar'),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
 
     if (pickedDate == null) return;
 
     setState(() {
       selectedTimeBlockDate = pickedDate;
+      timeBlockDateError = null;
     });
   }
 
@@ -115,6 +140,7 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
 
     setState(() {
       selectedStartTime = picked;
+      timeBlockStartError = null;
     });
   }
 
@@ -128,6 +154,7 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
 
     setState(() {
       selectedEndTime = picked;
+      timeBlockEndError = null;
     });
   }
 
@@ -168,8 +195,15 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
   }
 
   void _addClosure() {
+    setState(() {
+      closureDateError = null;
+    });
+
     if (selectedClosureDate == null) {
-      _showMessage('يرجى اختيار تاريخ الإغلاق');
+      setState(() {
+        closureDateError = 'يرجى اختيار تاريخ الإغلاق';
+        closureDateShakeTrigger++;
+      });
       return;
     }
 
@@ -187,14 +221,54 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
 
       selectedClosureDate = null;
       _closureReasonController.clear();
+      closureDateError = null;
     });
-
-    _showMessage('تمت إضافة يوم الإغلاق بنجاح');
+    _showSuccessPopup(
+      title: 'تمت إضافة يوم الإغلاق',
+      message: 'تمت إضافة يوم الإغلاق بنجاح',
+      icon: Icons.event_busy_rounded,
+      iconStartColor: const Color(0xFF16A34A),
+      iconEndColor: const Color(0xFF86EFAC),
+    );
   }
 
   void _addTimeBlock() {
+    setState(() {
+      timeBlockDateError = null;
+      timeBlockStartError = null;
+      timeBlockEndError = null;
+    });
+
     if (timeBlockMode == 'specific' && selectedTimeBlockDate == null) {
-      _showMessage('يرجى اختيار تاريخ فترة عدم التوفر');
+      setState(() {
+        timeBlockDateError = 'يرجى اختيار تاريخ فترة عدم التوفر';
+        timeBlockDateShakeTrigger++;
+      });
+      return;
+    }
+
+    if (selectedStartTime.trim().isEmpty) {
+      setState(() {
+        timeBlockStartError = 'يرجى اختيار وقت البداية';
+        timeBlockStartShakeTrigger++;
+      });
+      return;
+    }
+
+    if (selectedEndTime.trim().isEmpty) {
+      setState(() {
+        timeBlockEndError = 'يرجى اختيار وقت النهاية';
+        timeBlockEndShakeTrigger++;
+      });
+      return;
+    }
+
+    if (!_isStartBeforeEnd(selectedStartTime, selectedEndTime)) {
+      setState(() {
+        timeBlockEndError = 'وقت البداية يجب أن يكون قبل وقت النهاية';
+        timeBlockStartShakeTrigger++;
+        timeBlockEndShakeTrigger++;
+      });
       return;
     }
 
@@ -220,9 +294,17 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
       selectedEndTime = '14:00';
       timeBlockReasonController.clear();
       timeBlockMode = 'recurring';
+      timeBlockDateError = null;
+      timeBlockStartError = null;
+      timeBlockEndError = null;
     });
-
-    _showMessage('تمت إضافة فترة عدم التوفر بنجاح');
+    _showSuccessPopup(
+      title: 'تمت إضافة فترة عدم التوفر',
+      message: 'تمت إضافة فترة عدم التوفر بنجاح',
+      icon: Icons.block_rounded,
+      iconStartColor: const Color(0xFF16A34A),
+      iconEndColor: const Color(0xFF86EFAC),
+    );
   }
 
   void _deleteClosure(ClosureDay closure) {
@@ -235,8 +317,13 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
         setState(() {
           closures.removeWhere((item) => item.id == closure.id);
         });
-
-        _showMessage('تم حذف يوم الإغلاق');
+        _showSuccessPopup(
+          title: 'تم حذف يوم الإغلاق',
+          message: 'تم حذف يوم الإغلاق بنجاح',
+          icon: Icons.delete_outline_rounded,
+          iconStartColor: const Color(0xFFDC2626),
+          iconEndColor: const Color(0xFFFCA5A5),
+        );
       },
     );
   }
@@ -252,8 +339,13 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
         setState(() {
           timeBlocks.removeWhere((item) => item.id == block.id);
         });
-
-        _showMessage('تم حذف فترة عدم التوفر');
+        _showSuccessPopup(
+          title: 'تم حذف فترة عدم التوفر',
+          message: 'تم حذف فترة عدم التوفر بنجاح',
+          icon: Icons.delete_outline_rounded,
+          iconStartColor: const Color(0xFFDC2626),
+          iconEndColor: const Color(0xFFFCA5A5),
+        );
       },
     );
   }
@@ -274,8 +366,13 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
                 return updatedClosure;
               }).toList();
             });
-
-            _showMessage('تم تعديل يوم الإغلاق');
+            _showSuccessPopup(
+              title: 'تم تعديل يوم الإغلاق',
+              message: 'تم حفظ تغييرات يوم الإغلاق بنجاح',
+              icon: Icons.edit_calendar_rounded,
+              iconStartColor: const Color(0xFFC47A3D),
+              iconEndColor: const Color(0xFFF6D38B),
+            );
           },
         );
       },
@@ -291,7 +388,6 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
       builder: (context) {
         return EditTimeBlockSheet(
           block: block,
-          onMessage: _showMessage,
           onSave: (updatedBlock) {
             setState(() {
               timeBlocks = timeBlocks.map((item) {
@@ -299,8 +395,13 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
                 return updatedBlock;
               }).toList();
             });
-
-            _showMessage('تم تعديل فترة عدم التوفر');
+            _showSuccessPopup(
+              title: 'تم تعديل فترة عدم التوفر',
+              message: 'تم تعديل فترة عدم التوفر بنجاح',
+              icon: Icons.edit_note_rounded,
+              iconStartColor: const Color(0xFFC47A3D),
+              iconEndColor: const Color(0xFFF6D38B),
+            );
           },
         );
       },
@@ -328,10 +429,34 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
     );
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+  bool _isStartBeforeEnd(String start, String end) {
+    final List<String> startParts = start.split(':');
+    final List<String> endParts = end.split(':');
+    final int startMinutes =
+        ((int.tryParse(startParts[0]) ?? 0) * 60) +
+        (startParts.length > 1 ? int.tryParse(startParts[1]) ?? 0 : 0);
+    final int endMinutes =
+        ((int.tryParse(endParts[0]) ?? 0) * 60) +
+        (endParts.length > 1 ? int.tryParse(endParts[1]) ?? 0 : 0);
+    return startMinutes < endMinutes;
+  }
+
+  Future<void> _showSuccessPopup({
+    required String title,
+    required String message,
+    required IconData icon,
+    Color iconStartColor = const Color(0xFF16A34A),
+    Color iconEndColor = const Color(0xFF86EFAC),
+  }) async {
+    if (!mounted) return;
+    await showBarberFeedbackPopup(
+      context: context,
+      title: title,
+      message: message,
+      icon: icon,
+      iconStartColor: iconStartColor,
+      iconEndColor: iconEndColor,
+    );
   }
 
   @override
@@ -384,10 +509,14 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
                 reasonController: _closureReasonController,
                 onPickDate: _pickClosureDate,
                 onAdd: _addClosure,
+                dateErrorText: closureDateError,
+                hasDateError: closureDateError != null,
+                dateShakeTrigger: closureDateShakeTrigger,
                 onReset: () {
                   setState(() {
                     selectedClosureDate = null;
                     _closureReasonController.clear();
+                    closureDateError = null;
                   });
                 },
               ),
@@ -403,6 +532,7 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
                 onModeChanged: (value) {
                   setState(() {
                     timeBlockMode = value;
+                    timeBlockDateError = null;
                   });
                 },
                 selectedDateLabel: _dateLabel(selectedTimeBlockDate),
@@ -413,6 +543,15 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
                 onPickStartTime: _pickStartTime,
                 onPickEndTime: _pickEndTime,
                 onAdd: _addTimeBlock,
+                dateErrorText: timeBlockDateError,
+                hasDateError: timeBlockDateError != null,
+                dateShakeTrigger: timeBlockDateShakeTrigger,
+                startTimeErrorText: timeBlockStartError,
+                hasStartTimeError: timeBlockStartError != null,
+                startTimeShakeTrigger: timeBlockStartShakeTrigger,
+                endTimeErrorText: timeBlockEndError,
+                hasEndTimeError: timeBlockEndError != null,
+                endTimeShakeTrigger: timeBlockEndShakeTrigger,
                 onReset: () {
                   setState(() {
                     timeBlockMode = 'recurring';
@@ -420,6 +559,9 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
                     selectedStartTime = '13:00';
                     selectedEndTime = '14:00';
                     timeBlockReasonController.clear();
+                    timeBlockDateError = null;
+                    timeBlockStartError = null;
+                    timeBlockEndError = null;
                   });
                 },
               ),

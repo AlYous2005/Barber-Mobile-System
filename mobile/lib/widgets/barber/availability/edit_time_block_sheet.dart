@@ -10,12 +10,10 @@ class EditTimeBlockSheet extends StatefulWidget {
     super.key,
     required this.block,
     required this.onSave,
-    required this.onMessage,
   });
 
   final TimeBlock block;
   final ValueChanged<TimeBlock> onSave;
-  final ValueChanged<String> onMessage;
 
   @override
   State<EditTimeBlockSheet> createState() => _EditTimeBlockSheetState();
@@ -27,6 +25,12 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
   late String editStart;
   late String editEnd;
   late final TextEditingController reasonController;
+  String? dateError;
+  String? startTimeError;
+  String? endTimeError;
+  int dateShakeTrigger = 0;
+  int startTimeShakeTrigger = 0;
+  int endTimeShakeTrigger = 0;
 
   @override
   void initState() {
@@ -52,12 +56,20 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
       initialDate: editDate ?? now,
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
+      locale: const Locale('ar'),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
 
     if (pickedDate == null) return;
 
     setState(() {
       editDate = pickedDate;
+      dateError = null;
     });
   }
 
@@ -68,6 +80,7 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
 
     setState(() {
       editStart = picked;
+      startTimeError = null;
     });
   }
 
@@ -78,14 +91,49 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
 
     setState(() {
       editEnd = picked;
+      endTimeError = null;
     });
   }
 
   void _saveEdit() {
+    setState(() {
+      dateError = null;
+      startTimeError = null;
+      endTimeError = null;
+    });
+
     if (editType == 'specific' &&
         editDate == null &&
         widget.block.dateLabel == null) {
-      widget.onMessage('يرجى اختيار التاريخ');
+      setState(() {
+        dateError = 'يرجى اختيار تاريخ فترة عدم التوفر';
+        dateShakeTrigger++;
+      });
+      return;
+    }
+
+    if (editStart.trim().isEmpty) {
+      setState(() {
+        startTimeError = 'يرجى اختيار وقت البداية';
+        startTimeShakeTrigger++;
+      });
+      return;
+    }
+
+    if (editEnd.trim().isEmpty) {
+      setState(() {
+        endTimeError = 'يرجى اختيار وقت النهاية';
+        endTimeShakeTrigger++;
+      });
+      return;
+    }
+
+    if (!_isStartBeforeEnd(editStart, editEnd)) {
+      setState(() {
+        endTimeError = 'وقت البداية يجب أن يكون قبل وقت النهاية';
+        startTimeShakeTrigger++;
+        endTimeShakeTrigger++;
+      });
       return;
     }
 
@@ -139,6 +187,18 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
     final period = time.period == DayPeriod.am ? 'صباحًا' : 'مساءً';
 
     return '$displayHour:$displayMinute $period';
+  }
+
+  bool _isStartBeforeEnd(String start, String end) {
+    final List<String> startParts = start.split(':');
+    final List<String> endParts = end.split(':');
+    final int startMinutes =
+        ((int.tryParse(startParts[0]) ?? 0) * 60) +
+        (startParts.length > 1 ? int.tryParse(startParts[1]) ?? 0 : 0);
+    final int endMinutes =
+        ((int.tryParse(endParts[0]) ?? 0) * 60) +
+        (endParts.length > 1 ? int.tryParse(endParts[1]) ?? 0 : 0);
+    return startMinutes < endMinutes;
   }
 
   @override
@@ -197,6 +257,9 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
                         : _dateLabel(editDate),
                     icon: Icons.calendar_month_rounded,
                     onTap: _pickEditDate,
+                    errorText: dateError,
+                    hasError: dateError != null,
+                    shakeTrigger: dateShakeTrigger,
                   )
                 else
                   const AvailabilityInfoBox(
@@ -213,6 +276,9 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
                         value: _formatTime(editStart),
                         icon: Icons.access_time_rounded,
                         onTap: _pickEditStart,
+                        errorText: startTimeError,
+                        hasError: startTimeError != null,
+                        shakeTrigger: startTimeShakeTrigger,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -222,6 +288,9 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
                         value: _formatTime(editEnd),
                         icon: Icons.access_time_rounded,
                         onTap: _pickEditEnd,
+                        errorText: endTimeError,
+                        hasError: endTimeError != null,
+                        shakeTrigger: endTimeShakeTrigger,
                       ),
                     ),
                   ],

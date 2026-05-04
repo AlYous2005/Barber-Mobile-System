@@ -20,9 +20,7 @@ class AuthCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: hasError ? Colors.redAccent : Colors.white24,
-        ),
+        border: Border.all(color: hasError ? Colors.redAccent : Colors.white24),
         boxShadow: showErrorGlow && hasError
             ? [
                 BoxShadow(

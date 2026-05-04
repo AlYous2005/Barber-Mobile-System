@@ -162,12 +162,23 @@ class CustomerProfilePrimarySaveButton extends StatelessWidget {
 
   final String label;
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final bool isEnabled = onTap != null;
+    final Color buttonColor = isEnabled
+        ? const Color(0xFFC47A3D)
+        : AppThemeColors.softCard(context);
+    final Color borderColor = isEnabled
+        ? const Color(0xFFC47A3D)
+        : AppThemeColors.border(context);
+    final Color iconAndTextColor = isEnabled
+        ? Colors.white
+        : AppThemeColors.textMuted(context);
+
     return Material(
-      color: const Color(0xFFC47A3D),
+      color: buttonColor,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
@@ -177,23 +188,25 @@ class CustomerProfilePrimarySaveButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x33C47A3D),
-                blurRadius: 18,
-                offset: Offset(0, 8),
-              ),
+            border: Border.all(color: borderColor),
+            boxShadow: [
+              if (isEnabled)
+                const BoxShadow(
+                  color: Color(0x33C47A3D),
+                  blurRadius: 18,
+                  offset: Offset(0, 8),
+                ),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 20),
+              Icon(icon, color: iconAndTextColor, size: 20),
               const SizedBox(width: 8),
               Text(
                 label,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: iconAndTextColor,
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
                 ),

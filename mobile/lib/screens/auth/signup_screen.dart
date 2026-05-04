@@ -14,7 +14,8 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen>
     with SingleTickerProviderStateMixin {
-  final usernameController = TextEditingController();
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
@@ -27,12 +28,16 @@ class _SignUpScreenState extends State<SignUpScreen>
   String? errorMessage;
   DateTime? selectedBirthDate;
 
+  String? firstNameFieldError;
+  String? lastNameFieldError;
+
   Timer? _errorTimer;
 
   late AnimationController _shakeController;
   Animation<double>? _shakeAnimation;
 
-  String get phoneCode => selectedCountry == "فلسطين" ? "+970" : "+972";
+  late final VoidCallback _onFirstNameChanged;
+  late final VoidCallback _onLastNameChanged;
 
   @override
   void initState() {
@@ -47,11 +52,29 @@ class _SignUpScreenState extends State<SignUpScreen>
       begin: 0,
       end: 12,
     ).chain(CurveTween(curve: Curves.elasticIn)).animate(_shakeController);
+
+    _onFirstNameChanged = () {
+      if (firstNameFieldError != null && mounted) {
+        setState(() => firstNameFieldError = null);
+      }
+    };
+
+    _onLastNameChanged = () {
+      if (lastNameFieldError != null && mounted) {
+        setState(() => lastNameFieldError = null);
+      }
+    };
+
+    firstNameController.addListener(_onFirstNameChanged);
+    lastNameController.addListener(_onLastNameChanged);
   }
 
   @override
   void dispose() {
-    usernameController.dispose();
+    firstNameController.removeListener(_onFirstNameChanged);
+    lastNameController.removeListener(_onLastNameChanged);
+    firstNameController.dispose();
+    lastNameController.dispose();
     phoneController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
@@ -61,7 +84,11 @@ class _SignUpScreenState extends State<SignUpScreen>
   }
 
   void showError(String message) {
-    setState(() => errorMessage = message);
+    setState(() {
+      errorMessage = message;
+      firstNameFieldError = null;
+      lastNameFieldError = null;
+    });
 
     _shakeController.forward(from: 0);
 
@@ -111,12 +138,18 @@ class _SignUpScreenState extends State<SignUpScreen>
   }
 
   void register() {
-    final u = usernameController.text.trim();
+    final firstName = firstNameController.text.trim();
+    final lastName = lastNameController.text.trim();
     final p = phoneController.text.trim();
     final pass = passwordController.text.trim();
     final conf = confirmPasswordController.text.trim();
 
-    if (u.isEmpty &&
+    setState(() {
+      errorMessage = null;
+    });
+
+    if (firstName.isEmpty &&
+        lastName.isEmpty &&
         p.isEmpty &&
         selectedBirthDate == null &&
         pass.isEmpty &&
@@ -124,7 +157,23 @@ class _SignUpScreenState extends State<SignUpScreen>
       return showError("الرجاء إدخال البيانات");
     }
 
-    if (u.isEmpty) return showError("الرجاء إدخال اسم المستخدم");
+    String? nextFirstError;
+    String? nextLastError;
+    if (firstName.isEmpty) {
+      nextFirstError = 'الرجاء إدخال الاسم الأول';
+    }
+    if (lastName.isEmpty) {
+      nextLastError = 'الرجاء إدخال اسم العائلة';
+    }
+    if (nextFirstError != null || nextLastError != null) {
+      setState(() {
+        firstNameFieldError = nextFirstError;
+        lastNameFieldError = nextLastError;
+      });
+      _shakeController.forward(from: 0);
+      return;
+    }
+
     if (p.isEmpty) return showError("الرجاء إدخال رقم الهاتف");
     if (selectedBirthDate == null) {
       return showError("الرجاء إدخال تاريخ الميلاد");
@@ -134,12 +183,18 @@ class _SignUpScreenState extends State<SignUpScreen>
 
     if (pass != conf) return showError("كلمة المرور غير متطابقة");
 
-    setState(() => loading = true);
+    final displayName = '$firstName $lastName'.trim();
+
+    setState(() {
+      firstNameFieldError = null;
+      lastNameFieldError = null;
+      loading = true;
+    });
 
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
       setState(() => loading = false);
-      Navigator.pop(context);
+      Navigator.pop(context, displayName);
     });
   }
 
@@ -160,7 +215,10 @@ class _SignUpScreenState extends State<SignUpScreen>
                 );
               },
               child: AuthCard(
-                hasError: errorMessage != null,
+                hasError:
+                    errorMessage != null ||
+                    firstNameFieldError != null ||
+                    lastNameFieldError != null,
 
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -177,9 +235,19 @@ class _SignUpScreenState extends State<SignUpScreen>
                     const SizedBox(height: 15),
 
                     AuthTextField(
-                      controller: usernameController,
-                      hintText: "اسم المستخدم",
-                      icon: Icons.person,
+                      controller: firstNameController,
+                      hintText: "الاسم الأول",
+                      icon: Icons.person_outline,
+                      errorText: firstNameFieldError,
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    AuthTextField(
+                      controller: lastNameController,
+                      hintText: "اسم العائلة",
+                      icon: Icons.badge_outlined,
+                      errorText: lastNameFieldError,
                     ),
 
                     const SizedBox(height: 12),

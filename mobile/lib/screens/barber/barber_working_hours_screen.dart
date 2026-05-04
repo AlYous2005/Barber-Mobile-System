@@ -5,6 +5,7 @@ import '../../models/working_day_model.dart';
 import '../../widgets/barber/working_hours/working_hours_intro_card.dart';
 import '../../widgets/barber/working_hours/working_day_card.dart';
 import '../../widgets/barber/working_hours/working_hours_edit_sheet.dart';
+import '../../widgets/barber/shared/barber_feedback_popup.dart';
 
 class BarberWorkingHoursScreen extends StatefulWidget {
   const BarberWorkingHoursScreen({super.key});
@@ -75,30 +76,35 @@ class _BarberWorkingHoursScreenState extends State<BarberWorkingHoursScreen> {
   }
 
   void _openEditSheet(WorkingDay day) {
-    showModalBottomSheet(
+    showModalBottomSheet<WorkingDay?>(
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return WorkingHoursEditSheet(
-          day: day,
-          onSave: (updatedDay) {
-            setState(() {
-              workingDays = workingDays.map((item) {
-                if (item.dayKey != updatedDay.dayKey) return item;
-                return updatedDay;
-              }).toList();
-            });
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('تم حفظ ساعات عمل يوم ${updatedDay.dayName}'),
-              ),
-            );
-          },
-        );
+        return WorkingHoursEditSheet(day: day);
       },
+    ).then((updatedDay) {
+      if (!mounted || updatedDay == null) return;
+      setState(() {
+        workingDays = workingDays.map((item) {
+          if (item.dayKey != updatedDay.dayKey) return item;
+          return updatedDay;
+        }).toList();
+      });
+      _showWorkingHoursSavedPopup();
+    });
+  }
+
+  Future<void> _showWorkingHoursSavedPopup() async {
+    if (!mounted) return;
+    await showBarberFeedbackPopup(
+      context: context,
+      title: 'تم تحديث ساعات العمل',
+      message: 'تم حفظ تغييرات اليوم بنجاح',
+      icon: Icons.schedule_rounded,
+      iconStartColor: const Color(0xFF16A34A),
+      iconEndColor: const Color(0xFF86EFAC),
     );
   }
 

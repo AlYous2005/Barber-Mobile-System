@@ -95,12 +95,23 @@ class PrimaryActionButton extends StatelessWidget {
 
   final String label;
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final bool isEnabled = onTap != null;
+    final Color buttonColor = isEnabled
+        ? const Color(0xFFC47A3D)
+        : AppThemeColors.softCard(context);
+    final Color borderColor = isEnabled
+        ? const Color(0xFFC47A3D)
+        : AppThemeColors.border(context);
+    final Color iconAndTextColor = isEnabled
+        ? Colors.white
+        : AppThemeColors.textMuted(context);
+
     return Material(
-      color: const Color(0xFFC47A3D),
+      color: buttonColor,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -110,28 +121,30 @@ class PrimaryActionButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor),
             boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFC47A3D).withValues(alpha: 0.22),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
+              if (isEnabled)
+                BoxShadow(
+                  color: const Color(0xFFC47A3D).withValues(alpha: 0.22),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 18),
+              Icon(icon, color: iconAndTextColor, size: 18),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                    color: iconAndTextColor,
                   ),
                 ),
               ),

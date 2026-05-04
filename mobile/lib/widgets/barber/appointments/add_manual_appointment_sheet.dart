@@ -9,10 +9,12 @@ class AddManualAppointmentSheet extends StatefulWidget {
   const AddManualAppointmentSheet({
     super.key,
     required this.onAddAppointment,
+    required this.onAddedSuccessfully,
     required this.onMessage,
   });
 
   final ValueChanged<MockAppointment> onAddAppointment;
+  final VoidCallback onAddedSuccessfully;
   final ValueChanged<String> onMessage;
 
   @override
@@ -26,93 +28,159 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
   String? selectedServiceName;
   int selectedServiceDuration = 30;
 
-  DateTime selectedDate = DateTime.now();
-  TimeOfDay selectedTime = TimeOfDay.now();
+  DateTime? selectedDate;
+  TimeOfDay? selectedTime;
+
+  String? customerNameError;
+  String? serviceError;
+  String? dateError;
+  String? timeError;
+
+  int customerNameShakeTrigger = 0;
+  int serviceShakeTrigger = 0;
+  int dateShakeTrigger = 0;
+  int timeShakeTrigger = 0;
+
+  late final FocusNode customerNameFocusNode;
 
   @override
   void initState() {
     super.initState();
     customerNameController = TextEditingController();
+    customerNameFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
     customerNameController.dispose();
+    customerNameFocusNode.dispose();
     super.dispose();
   }
 
   Future<void> _pickDate() async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
+      locale: const Locale('ar'),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
 
     if (pickedDate == null) return;
 
     setState(() {
       selectedDate = pickedDate;
+      dateError = null;
     });
   }
 
   Future<void> _pickTime() async {
     final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
-      initialTime: selectedTime,
+      initialTime: selectedTime ?? TimeOfDay.now(),
     );
 
     if (pickedTime == null) return;
 
     setState(() {
       selectedTime = pickedTime;
+      timeError = null;
     });
   }
 
+  bool _validateForm() {
+    bool isValid = true;
+    bool shouldFocusCustomerName = false;
+
+    setState(() {
+      customerNameError = null;
+      serviceError = null;
+      dateError = null;
+      timeError = null;
+
+      final String customerName = customerNameController.text.trim();
+
+      if (customerName.isEmpty) {
+        customerNameError = 'الرجاء إدخال اسم الزبون';
+        customerNameShakeTrigger++;
+        isValid = false;
+        shouldFocusCustomerName = true;
+      }
+
+      if (selectedServiceName == null) {
+        serviceError = 'الرجاء اختيار نوع الخدمة';
+        serviceShakeTrigger++;
+        isValid = false;
+      }
+
+      if (selectedDate == null) {
+        dateError = 'الرجاء اختيار تاريخ الموعد';
+        dateShakeTrigger++;
+        isValid = false;
+      }
+
+      if (selectedTime == null) {
+        timeError = 'الرجاء اختيار وقت الموعد';
+        timeShakeTrigger++;
+        isValid = false;
+      }
+    });
+
+    if (shouldFocusCustomerName) {
+      customerNameFocusNode.requestFocus();
+    }
+
+    return isValid;
+  }
+
   void _addManualAppointment() {
-    final String customerName = customerNameController.text.trim();
-
-    if (customerName.isEmpty) {
-      widget.onMessage('يرجى إدخال اسم الزبون');
+    if (!_validateForm()) {
       return;
     }
+    try {
+      final String customerName = customerNameController.text.trim();
 
-    if (selectedServiceName == null) {
-      widget.onMessage('يرجى اختيار نوع الخدمة');
-      return;
+      final DateTime startDateTime = DateTime(
+        selectedDate!.year,
+        selectedDate!.month,
+        selectedDate!.day,
+        selectedTime!.hour,
+        selectedTime!.minute,
+      );
+
+      final DateTime endDateTime = startDateTime.add(
+        Duration(minutes: selectedServiceDuration),
+      );
+
+      final String dateLabel = _dateLabelFor(selectedDate!);
+      final String timeLabel =
+          '${_formatTimeOfDay(selectedTime!)} - ${_formatDateTimeTime(endDateTime)}';
+
+      final appointment = MockAppointment(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        customerName: customerName,
+        barberName: 'أنت',
+        barberRating: 0,
+        serviceName: selectedServiceName!,
+        dateLabel: dateLabel,
+        timeLabel: timeLabel,
+        status: 'مؤكد',
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
+      );
+
+      widget.onAddAppointment(appointment);
+      Navigator.of(context).pop();
+      widget.onAddedSuccessfully();
+    } catch (_) {
+      widget.onMessage('حدث خطأ أثناء إضافة الموعد');
     }
-
-    final DateTime startDateTime = DateTime(
-      selectedDate.year,
-      selectedDate.month,
-      selectedDate.day,
-      selectedTime.hour,
-      selectedTime.minute,
-    );
-
-    final DateTime endDateTime = startDateTime.add(
-      Duration(minutes: selectedServiceDuration),
-    );
-
-    final String dateLabel = _dateLabelFor(selectedDate);
-    final String timeLabel =
-        '${_formatTimeOfDay(selectedTime)} - ${_formatDateTimeTime(endDateTime)}';
-
-    final appointment = MockAppointment(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      customerName: customerName,
-      barberName: 'أنت',
-      barberRating: 0,
-      serviceName: selectedServiceName!,
-      dateLabel: dateLabel,
-      timeLabel: timeLabel,
-      status: 'مؤكد',
-      startDateTime: startDateTime,
-      endDateTime: endDateTime,
-    );
-
-    widget.onAddAppointment(appointment);
-    Navigator.of(context).pop();
   }
 
   String _dateLabelFor(DateTime date) {
@@ -231,10 +299,17 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                   hint: 'مثال: أحمد خالد',
                   icon: Icons.person_rounded,
                   controller: customerNameController,
+                  focusNode: customerNameFocusNode,
+                  errorText: customerNameError,
+                  hasError: customerNameError != null,
+                  shakeTrigger: customerNameShakeTrigger,
                 ),
                 const SizedBox(height: 14),
                 ManualServiceDropdown(
                   selectedServiceName: selectedServiceName,
+                  errorText: serviceError,
+                  hasError: serviceError != null,
+                  shakeTrigger: serviceShakeTrigger,
                   onChanged: (value) {
                     if (value == null) return;
 
@@ -247,6 +322,7 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                       selectedServiceDuration =
                           int.tryParse(service.durationMinutes.toString()) ??
                           30;
+                      serviceError = null;
                     });
                   },
                 ),
@@ -256,18 +332,28 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                     Expanded(
                       child: PickerBox(
                         label: 'تاريخ الموعد',
-                        value: _dateLabelFor(selectedDate),
+                        value: selectedDate == null
+                            ? 'اختر التاريخ'
+                            : _dateLabelFor(selectedDate!),
                         icon: Icons.calendar_month_rounded,
                         onTap: _pickDate,
+                        errorText: dateError,
+                        hasError: dateError != null,
+                        shakeTrigger: dateShakeTrigger,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: PickerBox(
                         label: 'وقت الموعد',
-                        value: _formatTimeOfDay(selectedTime),
+                        value: selectedTime == null
+                            ? 'اختر الوقت'
+                            : _formatTimeOfDay(selectedTime!),
                         icon: Icons.access_time_rounded,
                         onTap: _pickTime,
+                        errorText: timeError,
+                        hasError: timeError != null,
+                        shakeTrigger: timeShakeTrigger,
                       ),
                     ),
                   ],
