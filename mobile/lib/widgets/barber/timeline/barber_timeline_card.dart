@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../models/mock_appointment.dart';
+import '../../../models/mock_appointment.dart';
+import 'timeline_marquee_text.dart';
+import 'timeline_radar_circle.dart';
+import 'timeline_status_badge.dart';
 
 class BarberTimelineCard extends StatefulWidget {
   const BarberTimelineCard({
@@ -236,7 +239,7 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
                       children: [
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: _StatusBadge(
+                          child: TimelineStatusBadge(
                             isCurrentMode: isCurrentMode,
                             hasAppointment: hasAppointment,
                           ),
@@ -246,7 +249,7 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
 
                         Row(
                           children: [
-                            const _RadarCircle(),
+                            const TimelineRadarCircle(),
 
                             const SizedBox(width: 12),
 
@@ -255,7 +258,7 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
                                 children: [
                                   SizedBox(
                                     height: 30,
-                                    child: _MarqueeText(
+                                    child: TimelineMarqueeText(
                                       text: titleText,
                                       shouldAnimate: titleText.length > 12,
                                       style: const TextStyle(
@@ -474,245 +477,4 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({
-    required this.isCurrentMode,
-    required this.hasAppointment,
-  });
 
-  final bool isCurrentMode;
-  final bool hasAppointment;
-
-  @override
-  Widget build(BuildContext context) {
-    final String text = hasAppointment
-        ? isCurrentMode
-              ? 'جارية'
-              : 'قادم'
-        : 'متاح';
-
-    final Color color = hasAppointment
-        ? isCurrentMode
-              ? const Color(0xFF84CC16)
-              : const Color(0xFF38BDF8)
-        : const Color(0xFF22C55E);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(999),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.35),
-            blurRadius: 0,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 7,
-            height: 7,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RadarCircle extends StatefulWidget {
-  const _RadarCircle();
-
-  @override
-  State<_RadarCircle> createState() => _RadarCircleState();
-}
-
-class _RadarCircleState extends State<_RadarCircle>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _glowAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
-
-    _glowAnimation = Tween<double>(
-      begin: 0.35,
-      end: 0.75,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _glowAnimation,
-      builder: (context, child) {
-        return Container(
-          width: 74,
-          height: 74,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.08),
-          ),
-          child: Center(
-            child: Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-              ),
-              child: Center(
-                child: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFEFFFD8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(
-                          0xFF84CC16,
-                        ).withValues(alpha: _glowAnimation.value),
-                        blurRadius: 22,
-                        spreadRadius: 4,
-                      ),
-                      BoxShadow(
-                        color: const Color(
-                          0xFFBEF264,
-                        ).withValues(alpha: _glowAnimation.value * 0.55),
-                        blurRadius: 34,
-                        spreadRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.radar_rounded,
-                    color: Color(0xFF65A30D),
-                    size: 22,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _MarqueeText extends StatefulWidget {
-  const _MarqueeText({
-    required this.text,
-    required this.style,
-    required this.shouldAnimate,
-  });
-
-  final String text;
-  final TextStyle style;
-  final bool shouldAnimate;
-
-  @override
-  State<_MarqueeText> createState() => _MarqueeTextState();
-}
-
-class _MarqueeTextState extends State<_MarqueeText>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<Offset> _offsetAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 8),
-    );
-
-    _offsetAnimation = Tween<Offset>(
-      begin: const Offset(0.90, 0),
-      end: const Offset(-0.90, 0),
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
-
-    if (widget.shouldAnimate) {
-      _controller.repeat();
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant _MarqueeText oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.shouldAnimate && !_controller.isAnimating) {
-      _controller.repeat();
-    }
-
-    if (!widget.shouldAnimate && _controller.isAnimating) {
-      _controller.stop();
-      _controller.reset();
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.shouldAnimate) {
-      return Center(
-        child: Text(
-          widget.text,
-          maxLines: 1,
-          textAlign: TextAlign.center,
-          style: widget.style,
-        ),
-      );
-    }
-
-    return ClipRect(
-      child: SlideTransition(
-        position: _offsetAnimation,
-        child: Center(
-          child: Text(
-            widget.text,
-            maxLines: 1,
-            softWrap: false,
-            style: widget.style,
-          ),
-        ),
-      ),
-    );
-  }
-}

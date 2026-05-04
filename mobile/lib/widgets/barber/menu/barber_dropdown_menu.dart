@@ -1,6 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'barber_logout_item.dart';
+import 'barber_menu_item.dart';
 
 class BarberDropdownMenu extends StatelessWidget {
   const BarberDropdownMenu({
@@ -40,9 +42,7 @@ class BarberDropdownMenu extends StatelessWidget {
             child: ClipRect(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 9, sigmaY: 9),
-                child: Container(
-                  color: Colors.black.withValues(alpha: 0.42),
-                ),
+                child: Container(color: Colors.black.withValues(alpha: 0.42)),
               ),
             ),
           ),
@@ -87,11 +87,13 @@ class BarberDropdownMenu extends StatelessWidget {
                                 height: 38,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: const Color(0xFFC47A3D)
-                                      .withValues(alpha: 0.18),
+                                  color: const Color(
+                                    0xFFC47A3D,
+                                  ).withValues(alpha: 0.18),
                                   border: Border.all(
-                                    color: const Color(0xFFC47A3D)
-                                        .withValues(alpha: 0.35),
+                                    color: const Color(
+                                      0xFFC47A3D,
+                                    ).withValues(alpha: 0.35),
                                   ),
                                 ),
                                 child: const Icon(
@@ -150,38 +152,38 @@ class BarberDropdownMenu extends StatelessWidget {
 
                           const SizedBox(height: 16),
 
-                          _MenuItem(
+                          BarberMenuItem(
                             label: 'الخدمات',
                             icon: Icons.content_cut_outlined,
                             onTap: onServicesTap,
                             isSelected: true,
                           ),
 
-                          _MenuItem(
+                          BarberMenuItem(
                             label: 'المواعيد',
                             icon: Icons.calendar_month_outlined,
                             onTap: onAppointmentsTap,
                           ),
 
-                          _MenuItem(
+                          BarberMenuItem(
                             label: 'التوفر والإغلاقات',
                             icon: Icons.event_busy_rounded,
                             onTap: onAvailabilityTap,
                           ),
 
-                          _MenuItem(
+                          BarberMenuItem(
                             label: 'ساعات العمل',
                             icon: Icons.schedule_rounded,
                             onTap: onWorkingHoursTap,
                           ),
 
-                          _MenuItem(
+                          BarberMenuItem(
                             label: 'الملخصات والإنجازات',
                             icon: Icons.bar_chart_rounded,
                             onTap: onSummaryTap,
                           ),
 
-                          _MenuItem(
+                          BarberMenuItem(
                             label: 'الإعدادات',
                             icon: Icons.settings_outlined,
                             onTap: onSettingsTap,
@@ -189,9 +191,7 @@ class BarberDropdownMenu extends StatelessWidget {
 
                           const SizedBox(height: 8),
 
-                          _LogoutItem(
-                            onTap: onLogoutTap,
-                          ),
+                         BarberLogoutItem(onTap: onLogoutTap),
                         ],
                       ),
                     ),
@@ -206,134 +206,5 @@ class BarberDropdownMenu extends StatelessWidget {
   }
 }
 
-class _MenuItem extends StatelessWidget {
-  const _MenuItem({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-    this.isSelected = false,
-  });
 
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-  final bool isSelected;
 
-  @override
-  Widget build(BuildContext context) {
-    final Color accentColor =
-        isSelected ? const Color(0xFFC47A3D) : const Color(0xFF8B6B55);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 9),
-      child: Material(
-        color: isSelected
-            ? const Color(0xFFC47A3D).withValues(alpha: 0.24)
-            : Colors.white.withValues(alpha: 0.055),
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFFC47A3D).withValues(alpha: 0.32)
-                    : Colors.white.withValues(alpha: 0.06),
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isSelected
-                        ? const Color(0xFFF2C99A)
-                        : const Color(0xFFBFA898),
-                    size: 19,
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child: Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-
-                Icon(
-                  Icons.chevron_left_rounded,
-                  color: Colors.white.withValues(alpha: 0.45),
-                  size: 22,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LogoutItem extends StatelessWidget {
-  const _LogoutItem({
-    required this.onTap,
-  });
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: const Color(0xFF7F1D1D).withValues(alpha: 0.18),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFEF4444).withValues(alpha: 0.28),
-            ),
-          ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.logout_rounded,
-                color: Color(0xFFFCA5A5),
-                size: 18,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'تسجيل الخروج',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFFFCA5A5),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

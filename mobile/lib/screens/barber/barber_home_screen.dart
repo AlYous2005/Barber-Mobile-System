@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../models/mock_appointment.dart';
 import '../../models/mock_notification.dart';
-import '../../widgets/barber/barber_dropdown_menu.dart';
-import '../../widgets/barber/barber_header.dart';
+import '../../widgets/barber/menu/barber_dropdown_menu.dart';
+import '../../widgets/barber/header/barber_header.dart';
 import '../../widgets/barber/barber_profile_sheet.dart';
-import '../../widgets/barber/barber_timeline_card.dart';
+import '../../widgets/barber/timeline/barber_timeline_card.dart';
 import 'barber_availability_screen.dart';
 import 'barber_working_hours_screen.dart';
 import '../../widgets/shared/star_rating_display.dart';
