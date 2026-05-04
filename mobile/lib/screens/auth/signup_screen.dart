@@ -5,7 +5,6 @@ import '../../widgets/auth/auth_text_field.dart';
 import '../../widgets/auth/auth_card.dart';
 import '../../widgets/auth/auth_error_message.dart';
 
-
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -162,7 +161,7 @@ class _SignUpScreenState extends State<SignUpScreen>
               },
               child: AuthCard(
                 hasError: errorMessage != null,
-                
+
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -183,7 +182,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                       icon: Icons.person,
                     ),
 
-                    
                     const SizedBox(height: 12),
 
                     AuthTextField(
@@ -255,7 +253,10 @@ class _SignUpScreenState extends State<SignUpScreen>
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.calendar_month, color: Colors.orange),
+                            const Icon(
+                              Icons.calendar_month,
+                              color: Colors.orange,
+                            ),
                             const SizedBox(width: 12),
                             Text(
                               formattedBirthDate,

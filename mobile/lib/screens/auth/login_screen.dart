@@ -7,7 +7,7 @@ import '../../widgets/auth/auth_card.dart';
 import '../../widgets/auth/auth_error_message.dart';
 import '../../widgets/auth/auth_role_selector.dart';
 import '../../widgets/auth/auth_forgot_password_sheet.dart';
-import 'auth_transition_screen.dart';
+import 'login_transition_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -231,8 +231,6 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 8),
 
                     const SizedBox(height: 8),
 

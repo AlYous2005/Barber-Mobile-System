@@ -124,3 +124,7 @@ app.*.symbols
 !mobile/android/gradlew
 !mobile/android/gradlew.bat
 !mobile/android/gradle/wrapper/gradle-wrapper.jar
+
+
+
+.VSCodeCounter/

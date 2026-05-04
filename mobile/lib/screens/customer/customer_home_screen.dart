@@ -5,19 +5,19 @@ import 'package:flutter/material.dart';
 import '../../models/barber_model.dart';
 import '../../models/mock_appointment.dart';
 import '../../models/mock_notification.dart';
-import '../../widgets/customer/home/appointments_tabs_selector.dart';
-import '../../widgets/customer/appointments/customer_appointment_card.dart';
 import '../../widgets/customer/home/customer_home_top_bar.dart';
 import '../../widgets/customer/home/customer_notifications_dropdown.dart';
-import '../../widgets/customer/home/empty_appointments_box.dart';
 import '../../widgets/customer/appointments/cancel_appointment_dialog.dart';
 import '../../widgets/customer/appointments/rating_dialog.dart';
 import '../../utils/appointment_filters.dart';
 import '../../widgets/customer/home/customer_booking_cta_card.dart';
 import '../../widgets/customer/home/customer_section_title_card.dart';
+import '../../widgets/customer/home/customer_appointments_section.dart';
 import 'customer_booking_screen.dart';
 import 'customer_profile_screen.dart';
 import 'customer_settings_screen.dart';
+import '../../models/customer_profile_result.dart';
+
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({
@@ -237,62 +237,19 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
                     const SizedBox(height: 14),
 
-                    AppointmentsTabsSelector(
+                    CustomerAppointmentsSection(
                       selectedTab: selectedAppointmentsTab,
-                      upcomingCount: upcomingAppointments.length,
-                      previousCount: previousAppointments.length,
+                      upcomingAppointments: upcomingAppointments,
+                      previousAppointments: previousAppointments,
                       onTabChanged: (tab) {
                         setState(() {
                           selectedAppointmentsTab = tab;
                         });
                       },
+                      onCancelAppointment: _cancelAppointment,
+                      onRateAppointment: _openRatingDialog,
+                      onRebookAppointment: _rebookAppointment,
                     ),
-
-                    const SizedBox(height: 14),
-
-                    if (selectedAppointmentsTab == 'upcoming') ...[
-                      if (upcomingAppointments.isEmpty)
-                        const EmptyAppointmentsBox(
-                          message: 'لا توجد مواعيد قادمة حالياً',
-                        )
-                      else
-                        ...upcomingAppointments.map(
-                          (item) => CustomerAppointmentCard(
-                            barberName: item.barberName,
-                            barberRating: item.barberRating,
-                            serviceName: item.serviceName,
-                            dateLabel: item.dateLabel,
-                            timeLabel: item.timeLabel,
-                            status: item.status,
-                            onRate: null,
-                            onCancel: canCancelAppointment(item)
-                                ? () => _cancelAppointment(item)
-                                : null,
-                            onRebook: null,
-                          ),
-                        ),
-                    ] else ...[
-                      if (previousAppointments.isEmpty)
-                        const EmptyAppointmentsBox(
-                          message: 'لا توجد مواعيد سابقة حالياً',
-                        )
-                      else
-                        ...previousAppointments.map(
-                          (item) => CustomerAppointmentCard(
-                            barberName: item.barberName,
-                            barberRating: item.barberRating,
-                            serviceName: item.serviceName,
-                            dateLabel: item.dateLabel,
-                            timeLabel: item.timeLabel,
-                            status: item.status,
-                            onRate: item.isCompleted
-                                ? () => _openRatingDialog(item)
-                                : null,
-                            onCancel: null,
-                            onRebook: () => _rebookAppointment(item),
-                          ),
-                        ),
-                    ],
                   ],
                 ),
               ),
