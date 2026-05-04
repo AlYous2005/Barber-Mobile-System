@@ -236,10 +236,7 @@ class AppointmentCard extends StatelessWidget {
               right: 0,
               top: 0,
               bottom: 0,
-              child: Container(
-                width: 6,
-                color: accentColor,
-              ),
+              child: Container(width: 6, color: accentColor),
             ),
 
             Padding(
@@ -302,9 +299,7 @@ class AppointmentCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.72),
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: const Color(0xFFE5E7EB),
-                      ),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
                     ),
                     child: Row(
                       children: [
@@ -338,15 +333,13 @@ class AppointmentCard extends StatelessWidget {
                             ),
                           ),
 
-                        if (_canChangeStatus && showRateButton && onRate != null)
+                        if (_canChangeStatus &&
+                            showRateButton &&
+                            onRate != null)
                           const SizedBox(width: 10),
 
                         if (showRateButton && onRate != null)
-                          Expanded(
-                            child: _RateButton(
-                              onTap: onRate!,
-                            ),
-                          ),
+                          Expanded(child: _RateButton(onTap: onRate!)),
                       ],
                     ),
                   ],
@@ -361,10 +354,7 @@ class AppointmentCard extends StatelessWidget {
 }
 
 class _CustomerAvatar extends StatelessWidget {
-  const _CustomerAvatar({
-    required this.accentColor,
-    required this.image,
-  });
+  const _CustomerAvatar({required this.accentColor, required this.image});
 
   final Color accentColor;
   final ImageProvider? image;
@@ -385,19 +375,13 @@ class _CustomerAvatar extends StatelessWidget {
             accentColor.withValues(alpha: 0.10),
           ],
         ),
-        border: Border.all(
-          color: accentColor.withValues(alpha: 0.22),
-        ),
+        border: Border.all(color: accentColor.withValues(alpha: 0.22)),
       ),
       child: CircleAvatar(
         backgroundColor: const Color(0xFFF8FAFC),
         backgroundImage: image,
         child: image == null
-            ? Icon(
-                Icons.person_rounded,
-                color: accentColor,
-                size: 28,
-              )
+            ? Icon(Icons.person_rounded, color: accentColor, size: 28)
             : null,
       ),
     );
@@ -418,25 +402,16 @@ class _StatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: color.withValues(alpha: 0.22),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 15,
-            color: color,
-          ),
+          Icon(icon, size: 15, color: color),
           const SizedBox(width: 5),
           Text(
             status,
@@ -453,10 +428,7 @@ class _StatusPill extends StatelessWidget {
 }
 
 class _InfoChip extends StatelessWidget {
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-  });
+  const _InfoChip({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
@@ -464,24 +436,15 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 9,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-        ),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color: const Color(0xFF64748B),
-          ),
+          Icon(icon, size: 16, color: const Color(0xFF64748B)),
           const SizedBox(width: 7),
           Expanded(
             child: Text(
@@ -502,10 +465,7 @@ class _InfoChip extends StatelessWidget {
 }
 
 class _ChangeStatusButton extends StatelessWidget {
-  const _ChangeStatusButton({
-    required this.color,
-    required this.onTap,
-  });
+  const _ChangeStatusButton({required this.color, required this.onTap});
 
   final Color color;
   final VoidCallback onTap;
@@ -519,24 +479,15 @@ class _ChangeStatusButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(15),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 11,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(
-              color: color.withValues(alpha: 0.22),
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.22)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.tune_rounded,
-                size: 17,
-                color: color,
-              ),
+              Icon(Icons.tune_rounded, size: 17, color: color),
               const SizedBox(width: 7),
               Flexible(
                 child: Text(
@@ -559,9 +510,7 @@ class _ChangeStatusButton extends StatelessWidget {
 }
 
 class _RateButton extends StatelessWidget {
-  const _RateButton({
-    required this.onTap,
-  });
+  const _RateButton({required this.onTap});
 
   final VoidCallback onTap;
 
@@ -576,24 +525,15 @@ class _RateButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(15),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 11,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(
-              color: color.withValues(alpha: 0.22),
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.22)),
           ),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.star_rounded,
-                size: 17,
-                color: color,
-              ),
+              Icon(Icons.star_rounded, size: 17, color: color),
               SizedBox(width: 7),
               Flexible(
                 child: Text(
@@ -638,23 +578,14 @@ class _SheetActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 14,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: color.withValues(alpha: 0.22),
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.22)),
           ),
           child: Row(
             children: [
-              Icon(
-                icon,
-                color: color,
-                size: 22,
-              ),
+              Icon(icon, color: color, size: 22),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(

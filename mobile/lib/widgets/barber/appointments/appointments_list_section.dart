@@ -1,0 +1,578 @@
+import 'package:flutter/material.dart';
+
+import '../../../models/mock_appointment.dart';
+import 'appointment_action_widgets.dart';
+
+class AppointmentsListSection extends StatelessWidget {
+  const AppointmentsListSection({
+    super.key,
+    required this.title,
+    required this.emptyText,
+    required this.appointments,
+    required this.isFinalStatus,
+    required this.onConfirm,
+    required this.onCheckIn,
+    required this.onNoShow,
+    required this.onCancel,
+  });
+
+  final String title;
+  final String emptyText;
+  final List<MockAppointment> appointments;
+  final bool Function(String status) isFinalStatus;
+  final ValueChanged<MockAppointment> onConfirm;
+  final ValueChanged<MockAppointment> onCheckIn;
+  final ValueChanged<MockAppointment> onNoShow;
+  final ValueChanged<MockAppointment> onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFFFFFF),
+            Color(0xFFFDFCFA),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: const Color(0x14744F40),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x142C221C),
+            blurRadius: 44,
+            offset: Offset(0, 20),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFFAF4EE),
+                    Color(0xFFF6EEE6),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: const Color(0x29B4825A),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x14B8774A),
+                    blurRadius: 24,
+                    offset: Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF8F4E2C),
+                          Color(0xFFB86A3D),
+                          Color(0xFFA85C34),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(13),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x288F4E2C),
+                          blurRadius: 20,
+                          offset: Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.calendar_month_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF2A2018),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          if (appointments.isEmpty)
+            EmptyAppointmentsState(emptyText: emptyText)
+          else
+            ...appointments.map(
+              (appointment) => AppointmentLuxuryCard(
+                appointment: appointment,
+                isFinal: isFinalStatus(appointment.status),
+                onConfirm: () => onConfirm(appointment),
+                onCheckIn: () => onCheckIn(appointment),
+                onNoShow: () => onNoShow(appointment),
+                onCancel: () => onCancel(appointment),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class EmptyAppointmentsState extends StatelessWidget {
+  const EmptyAppointmentsState({
+    super.key,
+    required this.emptyText,
+  });
+
+  final String emptyText;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFFAF6F1),
+            Color(0xFFF6F0E9),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: const Color(0x22785A46),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFFFAECE0),
+                  Color(0xFFF4E2D2),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Icon(
+              Icons.calendar_month_rounded,
+              color: Color(0xFF8A4A2A),
+              size: 23,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'لا توجد مواعيد هنا الآن',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF2A2018),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  emptyText,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    height: 1.6,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF8A7A72),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AppointmentLuxuryCard extends StatefulWidget {
+  const AppointmentLuxuryCard({
+    super.key,
+    required this.appointment,
+    required this.isFinal,
+    required this.onConfirm,
+    required this.onCheckIn,
+    required this.onNoShow,
+    required this.onCancel,
+  });
+
+  final MockAppointment appointment;
+  final bool isFinal;
+  final VoidCallback onConfirm;
+  final VoidCallback onCheckIn;
+  final VoidCallback onNoShow;
+  final VoidCallback onCancel;
+
+  @override
+  State<AppointmentLuxuryCard> createState() => _AppointmentLuxuryCardState();
+}
+
+class _AppointmentLuxuryCardState extends State<AppointmentLuxuryCard> {
+  bool isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final MockAppointment appointment = widget.appointment;
+
+    return AnimatedScale(
+      scale: isPressed ? 0.985 : 1,
+      duration: const Duration(milliseconds: 120),
+      child: GestureDetector(
+        onTapDown: (_) {
+          setState(() {
+            isPressed = true;
+          });
+        },
+        onTapCancel: () {
+          setState(() {
+            isPressed = false;
+          });
+        },
+        onTapUp: (_) {
+          setState(() {
+            isPressed = false;
+          });
+        },
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFDFCFA),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: const Color(0x1A4A3428),
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0D000000),
+                blurRadius: 18,
+                offset: Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              StatusBadge(status: appointment.status),
+
+              const SizedBox(height: 14),
+
+              Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAECE0),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: const Color(0x33C8A078),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.person_rounded,
+                      color: Color(0xFF5C4030),
+                      size: 21,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      appointment.customerName,
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF2A2018),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+
+              AppointmentDetailLine(
+                icon: Icons.content_cut_rounded,
+                text: appointment.serviceName,
+              ),
+
+              const SizedBox(height: 10),
+
+              AppointmentDetailLine(
+                icon: Icons.access_time_rounded,
+                text: appointment.timeLabel,
+              ),
+
+              const SizedBox(height: 10),
+
+              AppointmentDetailLine(
+                icon: Icons.calendar_month_rounded,
+                text: appointment.dateLabel,
+              ),
+
+              if (!widget.isFinal) ...[
+                const SizedBox(height: 16),
+                ActionsGrid(
+                  onConfirm: widget.onConfirm,
+                  onCheckIn: widget.onCheckIn,
+                  onNoShow: widget.onNoShow,
+                  onCancel: widget.onCancel,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AppointmentDetailLine extends StatelessWidget {
+  const AppointmentDetailLine({
+    super.key,
+    required this.icon,
+    required this.text,
+  });
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8F2EC),
+            borderRadius: BorderRadius.circular(11),
+            border: Border.all(
+              color: const Color(0x38C8AA8C),
+            ),
+          ),
+          child: Icon(
+            icon,
+            color: const Color(0xFF6B4F3E),
+            size: 17,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 14.5,
+              height: 1.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF374151),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class StatusBadge extends StatelessWidget {
+  const StatusBadge({
+    super.key,
+    required this.status,
+  });
+
+  final String status;
+
+  String get label {
+    switch (status) {
+      case 'قادم':
+        return 'محجوز';
+      case 'مؤكد':
+        return 'مؤكد';
+      case 'مكتمل':
+      case 'مكتملة':
+        return 'منجز';
+      case 'ملغي':
+      case 'ملغية':
+        return 'ملغي';
+      case 'لم يحضر':
+        return 'لم يحضر';
+      case 'جاري':
+        return 'جاري';
+      default:
+        return status;
+    }
+  }
+
+  Color get textColor {
+    switch (status) {
+      case 'مؤكد':
+        return const Color(0xFF1E4A36);
+      case 'ملغي':
+      case 'ملغية':
+        return const Color(0xFF7A2E2A);
+      case 'لم يحضر':
+        return const Color(0xFF6B3D28);
+      case 'مكتمل':
+      case 'مكتملة':
+        return const Color(0xFF2C4F78);
+      default:
+        return const Color(0xFF4C3D66);
+    }
+  }
+
+  List<Color> get gradientColors {
+    switch (status) {
+      case 'مؤكد':
+        return const [
+          Color(0xFFE8F2EC),
+          Color(0xFFD4E8DC),
+        ];
+      case 'ملغي':
+      case 'ملغية':
+        return const [
+          Color(0xFFF8E9E8),
+          Color(0xFFEFD5D3),
+        ];
+      case 'لم يحضر':
+        return const [
+          Color(0xFFFAF3EB),
+          Color(0xFFF0E0D0),
+        ];
+      case 'مكتمل':
+      case 'مكتملة':
+        return const [
+          Color(0xFFE8EEF6),
+          Color(0xFFD6E2F0),
+        ];
+      default:
+        return const [
+          Color(0xFFF2EEF8),
+          Color(0xFFE6DFF0),
+        ];
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: gradientColors,
+          ),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: textColor.withValues(alpha: 0.22),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+            color: textColor,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ActionsGrid extends StatelessWidget {
+  const ActionsGrid({
+    super.key,
+    required this.onConfirm,
+    required this.onCheckIn,
+    required this.onNoShow,
+    required this.onCancel,
+  });
+
+  final VoidCallback onConfirm;
+  final VoidCallback onCheckIn;
+  final VoidCallback onNoShow;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: AppointmentActionButton(
+                label: 'تأكيد',
+                icon: Icons.verified_rounded,
+                color: const Color(0xFF3D7A5C),
+                onTap: onConfirm,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: AppointmentActionButton(
+                label: 'تسجيل حضور',
+                icon: Icons.done_all_rounded,
+                color: const Color(0xFF4A6FA8),
+                onTap: onCheckIn,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: AppointmentActionButton(
+                label: 'عدم حضور',
+                icon: Icons.person_off_rounded,
+                color: const Color(0xFFC2783A),
+                onTap: onNoShow,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: AppointmentActionButton(
+                label: 'إلغاء',
+                icon: Icons.close_rounded,
+                color: const Color(0xFFC9544A),
+                onTap: onCancel,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}

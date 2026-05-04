@@ -52,6 +52,8 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
   }
 
   void _addOrChangeSalonImage() {
+    final bool alreadyHadImage = hasSalonImage;
+
     setState(() {
       hasSalonImage = true;
     });
@@ -59,7 +61,7 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          hasSalonImage
+          alreadyHadImage
               ? 'تم تحديث صورة الصالون مؤقتًا'
               : 'تمت إضافة صورة الصالون مؤقتًا',
         ),
@@ -135,7 +137,3 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
     );
   }
 }
-
-
-
-
