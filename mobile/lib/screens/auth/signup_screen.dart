@@ -227,6 +227,8 @@ class _SignUpScreenState extends State<SignUpScreen>
 
     if (pass.isEmpty) {
       nextPasswordError = "الرجاء إدخال كلمة المرور";
+    } else if (pass.length < 8) {
+      nextPasswordError = "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل";
     }
 
     if (confirmPass.isEmpty) {
