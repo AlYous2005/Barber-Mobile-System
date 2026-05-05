@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/auth/auth_background.dart';
 import '../../widgets/auth/auth_text_field.dart';
 import '../../widgets/auth/auth_card.dart';
 import '../../widgets/auth/auth_error_message.dart';
+import '../../widgets/auth/auth_legal_agreement_text.dart';
+import '../../widgets/auth/auth_country_code_selector.dart';
+import '../../widgets/auth/auth_birth_date_selector.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -30,6 +34,10 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   String? firstNameFieldError;
   String? lastNameFieldError;
+  String? phoneFieldError;
+  String? birthDateFieldError;
+  String? passwordFieldError;
+  String? confirmPasswordFieldError;
 
   Timer? _errorTimer;
 
@@ -38,6 +46,9 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   late final VoidCallback _onFirstNameChanged;
   late final VoidCallback _onLastNameChanged;
+  late final VoidCallback _onPhoneChanged;
+  late final VoidCallback _onPasswordChanged;
+  late final VoidCallback _onConfirmPasswordChanged;
 
   @override
   void initState() {
@@ -65,21 +76,48 @@ class _SignUpScreenState extends State<SignUpScreen>
       }
     };
 
+    _onPhoneChanged = () {
+      if (phoneFieldError != null && mounted) {
+        setState(() => phoneFieldError = null);
+      }
+    };
+
+    _onPasswordChanged = () {
+      if (passwordFieldError != null && mounted) {
+        setState(() => passwordFieldError = null);
+      }
+    };
+
+    _onConfirmPasswordChanged = () {
+      if (confirmPasswordFieldError != null && mounted) {
+        setState(() => confirmPasswordFieldError = null);
+      }
+    };
+
     firstNameController.addListener(_onFirstNameChanged);
     lastNameController.addListener(_onLastNameChanged);
+    phoneController.addListener(_onPhoneChanged);
+    passwordController.addListener(_onPasswordChanged);
+    confirmPasswordController.addListener(_onConfirmPasswordChanged);
   }
 
   @override
   void dispose() {
     firstNameController.removeListener(_onFirstNameChanged);
     lastNameController.removeListener(_onLastNameChanged);
+    phoneController.removeListener(_onPhoneChanged);
+    passwordController.removeListener(_onPasswordChanged);
+    confirmPasswordController.removeListener(_onConfirmPasswordChanged);
+
     firstNameController.dispose();
     lastNameController.dispose();
     phoneController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+
     _shakeController.dispose();
     _errorTimer?.cancel();
+
     super.dispose();
   }
 
@@ -88,6 +126,10 @@ class _SignUpScreenState extends State<SignUpScreen>
       errorMessage = message;
       firstNameFieldError = null;
       lastNameFieldError = null;
+      phoneFieldError = null;
+      birthDateFieldError = null;
+      passwordFieldError = null;
+      confirmPasswordFieldError = null;
     });
 
     _shakeController.forward(from: 0);
@@ -98,317 +140,439 @@ class _SignUpScreenState extends State<SignUpScreen>
     });
   }
 
-  String get formattedBirthDate {
-    if (selectedBirthDate == null) {
-      return "تاريخ الميلاد";
-    }
-
-    final day = selectedBirthDate!.day.toString().padLeft(2, '0');
-    final month = selectedBirthDate!.month.toString().padLeft(2, '0');
-    final year = selectedBirthDate!.year.toString();
-
-    return "$day/$month/$year";
-  }
-
-  Future<void> pickBirthDate() async {
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2000),
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.orange,
-              surface: Colors.black,
-              onSurface: Colors.white,
-            ),
-          ),
-          child: child!,
+  Widget buildShakingField({required bool shouldShake, required Widget child}) {
+    return AnimatedBuilder(
+      animation: _shakeAnimation ?? const AlwaysStoppedAnimation(0),
+      builder: (context, animatedChild) {
+        return Transform.translate(
+          offset: shouldShake
+              ? Offset(_shakeAnimation?.value ?? 0, 0)
+              : Offset.zero,
+          child: animatedChild,
         );
       },
+      child: child,
     );
-
-    if (pickedDate != null) {
-      setState(() {
-        selectedBirthDate = pickedDate;
-      });
-    }
   }
 
   void register() {
     final firstName = firstNameController.text.trim();
     final lastName = lastNameController.text.trim();
-    final p = phoneController.text.trim();
+    final phone = phoneController.text.trim();
     final pass = passwordController.text.trim();
-    final conf = confirmPasswordController.text.trim();
+    final confirmPass = confirmPasswordController.text.trim();
+
+    final bool firstNameHasLetters = RegExp(
+      r'[A-Za-z\u0600-\u06FF]',
+    ).hasMatch(firstName);
+
+    final bool lastNameHasLetters = RegExp(
+      r'[A-Za-z\u0600-\u06FF]',
+    ).hasMatch(lastName);
+
+    final bool isPhoneOnlyDigits = RegExp(r'^\d+$').hasMatch(phone);
 
     setState(() {
       errorMessage = null;
+      firstNameFieldError = null;
+      lastNameFieldError = null;
+      phoneFieldError = null;
+      birthDateFieldError = null;
+      passwordFieldError = null;
+      confirmPasswordFieldError = null;
     });
 
-    if (firstName.isEmpty &&
+    final bool allFieldsEmpty =
+        firstName.isEmpty &&
         lastName.isEmpty &&
-        p.isEmpty &&
+        phone.isEmpty &&
         selectedBirthDate == null &&
         pass.isEmpty &&
-        conf.isEmpty) {
-      return showError("الرجاء إدخال البيانات");
+        confirmPass.isEmpty;
+
+    if (allFieldsEmpty) {
+      showError("الرجاء إدخال البيانات");
+      return;
     }
 
-    String? nextFirstError;
-    String? nextLastError;
+    String? nextFirstNameError;
+    String? nextLastNameError;
+    String? nextPhoneError;
+    String? nextBirthDateError;
+    String? nextPasswordError;
+    String? nextConfirmPasswordError;
+
     if (firstName.isEmpty) {
-      nextFirstError = 'الرجاء إدخال الاسم الأول';
+      nextFirstNameError = "الرجاء إدخال الاسم الأول";
+    } else if (!firstNameHasLetters) {
+      nextFirstNameError = "يجب أن يحتوي الاسم الأول على حروف";
     }
+
     if (lastName.isEmpty) {
-      nextLastError = 'الرجاء إدخال اسم العائلة';
+      nextLastNameError = "الرجاء إدخال اسم العائلة";
+    } else if (!lastNameHasLetters) {
+      nextLastNameError = "يجب أن يحتوي اسم العائلة على حروف";
     }
-    if (nextFirstError != null || nextLastError != null) {
+    if (phone.isEmpty) {
+      nextPhoneError = "الرجاء إدخال رقم الهاتف";
+    } else if (!isPhoneOnlyDigits) {
+      nextPhoneError = "يجب أن يحتوي رقم الهاتف على أرقام فقط";
+    } else if (phone.length != 10) {
+      nextPhoneError = "يجب أن يتكون رقم الهاتف من 10 أرقام";
+    }
+
+    if (selectedBirthDate == null) {
+      nextBirthDateError = "الرجاء إدخال تاريخ الميلاد";
+    }
+
+    if (pass.isEmpty) {
+      nextPasswordError = "الرجاء إدخال كلمة المرور";
+    }
+
+    if (confirmPass.isEmpty) {
+      nextConfirmPasswordError = "الرجاء إدخال تأكيد كلمة المرور";
+    }
+
+    if (nextFirstNameError != null ||
+        nextLastNameError != null ||
+        nextPhoneError != null ||
+        nextBirthDateError != null ||
+        nextPasswordError != null ||
+        nextConfirmPasswordError != null) {
       setState(() {
-        firstNameFieldError = nextFirstError;
-        lastNameFieldError = nextLastError;
+        firstNameFieldError = nextFirstNameError;
+        lastNameFieldError = nextLastNameError;
+        phoneFieldError = nextPhoneError;
+        birthDateFieldError = nextBirthDateError;
+        passwordFieldError = nextPasswordError;
+        confirmPasswordFieldError = nextConfirmPasswordError;
       });
+
       _shakeController.forward(from: 0);
       return;
     }
 
-    if (p.isEmpty) return showError("الرجاء إدخال رقم الهاتف");
-    if (selectedBirthDate == null) {
-      return showError("الرجاء إدخال تاريخ الميلاد");
-    }
-    if (pass.isEmpty) return showError("الرجاء إدخال كلمة المرور");
-    if (conf.isEmpty) return showError("الرجاء إدخال تأكيد كلمة المرور");
+    if (pass != confirmPass) {
+      setState(() {
+        confirmPasswordFieldError = "كلمة المرور غير متطابقة";
+      });
 
-    if (pass != conf) return showError("كلمة المرور غير متطابقة");
+      _shakeController.forward(from: 0);
+      return;
+    }
 
     final displayName = '$firstName $lastName'.trim();
 
     setState(() {
-      firstNameFieldError = null;
-      lastNameFieldError = null;
       loading = true;
     });
 
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
+
       setState(() => loading = false);
       Navigator.pop(context, displayName);
     });
   }
 
+  void showLegalSheet({required String title, required String body}) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF151515),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: Colors.white24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  body,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 1.6,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                    ),
+                    child: const Text(
+                      "فهمت",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void openTermsOfUse() {
+    showLegalSheet(
+      title: "شروط الاستخدام",
+      body:
+          "باستخدامك للتطبيق، أنت توافق على استخدامه بطريقة صحيحة وعدم إنشاء حجوزات وهمية أو إساءة استخدام الخدمات. هذه نسخة مبدئية وسيتم تحديثها لاحقًا.",
+    );
+  }
+
+  void openPrivacyPolicy() {
+    showLegalSheet(
+      title: "سياسة الخصوصية",
+      body:
+          "نستخدم بياناتك مثل الاسم ورقم الهاتف ومعلومات الحجز فقط لتشغيل التطبيق وتحسين تجربة الحجز. هذه نسخة مبدئية وسيتم تحديثها لاحقًا.",
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          const AuthBackground(),
-
-          Center(
-            child: AnimatedBuilder(
-              animation: _shakeAnimation ?? const AlwaysStoppedAnimation(0),
-              builder: (context, child) {
-                return Transform.translate(
-                  offset: Offset(_shakeAnimation?.value ?? 0, 0),
-                  child: child,
-                );
-              },
-              child: AuthCard(
-                hasError:
-                    errorMessage != null ||
-                    firstNameFieldError != null ||
-                    lastNameFieldError != null,
-
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "إنشاء حساب",
-                      style: TextStyle(color: Colors.white, fontSize: 26),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    AuthErrorMessage(message: errorMessage),
-
-                    const SizedBox(height: 15),
-
-                    AuthTextField(
-                      controller: firstNameController,
-                      hintText: "الاسم الأول",
-                      icon: Icons.person_outline,
-                      errorText: firstNameFieldError,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    AuthTextField(
-                      controller: lastNameController,
-                      hintText: "اسم العائلة",
-                      icon: Icons.badge_outlined,
-                      errorText: lastNameFieldError,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    AuthTextField(
-                      controller: phoneController,
-                      hintText: "رقم الهاتف",
-                      icon: Icons.phone,
-                      keyboardType: TextInputType.phone,
-                      prefixIconWidget: SizedBox(
-                        width: 132,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          textTheme: GoogleFonts.tajawalTextTheme(Theme.of(context).textTheme),
+        ),
+        child: Scaffold(
+          body: Stack(
+            children: [
+              const AuthBackground(),
+              SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: AnimatedBuilder(
+                      animation:
+                          _shakeAnimation ?? const AlwaysStoppedAnimation(0),
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(_shakeAnimation?.value ?? 0, 0),
+                          child: child,
+                        );
+                      },
+                      child: AuthCard(
+                        hasError: errorMessage != null,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.phone,
-                              color: Colors.orange,
-                              size: 20,
+                            const Text(
+                              "إنشاء حساب",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-
-                            const SizedBox(width: 6),
-
-                            DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: selectedCountry,
-                                dropdownColor: Colors.black87,
-                                iconEnabledColor: Colors.orange,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                            const SizedBox(height: 8),
+                            const Text(
+                              "أدخل بياناتك وأنشئ حسابًا جديدًا",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFFFFC66D),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            AuthErrorMessage(message: errorMessage),
+                            const SizedBox(height: 15),
+                            buildShakingField(
+                              shouldShake: firstNameFieldError != null,
+                              child: AuthTextField(
+                                controller: firstNameController,
+                                hintText: "الاسم الأول",
+                                icon: Icons.person_outline,
+                                errorText: firstNameFieldError,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            buildShakingField(
+                              shouldShake: lastNameFieldError != null,
+                              child: AuthTextField(
+                                controller: lastNameController,
+                                hintText: "اسم العائلة",
+                                icon: Icons.badge_outlined,
+                                errorText: lastNameFieldError,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            buildShakingField(
+                              shouldShake: phoneFieldError != null,
+                              child: AuthTextField(
+                                controller: phoneController,
+                                hintText: "رقم الهاتف",
+                                icon: Icons.phone,
+                                keyboardType: TextInputType.phone,
+                                errorText: phoneFieldError,
+                                prefixIconWidget: AuthCountryCodeSelector(
+                                  selectedCountry: selectedCountry,
+                                  onCountryChanged: (value) {
+                                    setState(() {
+                                      selectedCountry = value;
+                                    });
+                                  },
                                 ),
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: "فلسطين",
-                                    child: Text("🇵🇸 +970"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: "إسرائيل",
-                                    child: Text("🇮🇱 +972"),
-                                  ),
-                                ],
-                                onChanged: (value) {
-                                  if (value == null) return;
-
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            buildShakingField(
+                              shouldShake: birthDateFieldError != null,
+                              child: AuthBirthDateSelector(
+                                selectedDate: selectedBirthDate,
+                                errorText: birthDateFieldError,
+                                onDateChanged: (date) {
                                   setState(() {
-                                    selectedCountry = value;
+                                    selectedBirthDate = date;
+                                    birthDateFieldError = null;
                                   });
                                 },
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    GestureDetector(
-                      onTap: pickBirthDate,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.transparent),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.calendar_month,
-                              color: Colors.orange,
+                            const SizedBox(height: 12),
+                            buildShakingField(
+                              shouldShake: passwordFieldError != null,
+                              child: AuthTextField(
+                                controller: passwordController,
+                                hintText: "كلمة المرور",
+                                icon: Icons.lock,
+                                obscureText: !showPassword,
+                                errorText: passwordFieldError,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    showPassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: Colors.white70,
+                                  ),
+                                  onPressed: () {
+                                    setState(
+                                      () => showPassword = !showPassword,
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
-                            const SizedBox(width: 12),
-                            Text(
-                              formattedBirthDate,
-                              style: TextStyle(
-                                color: selectedBirthDate == null
-                                    ? Colors.white38
-                                    : Colors.white,
+                            const SizedBox(height: 12),
+                            buildShakingField(
+                              shouldShake: confirmPasswordFieldError != null,
+                              child: AuthTextField(
+                                controller: confirmPasswordController,
+                                hintText: "تأكيد كلمة المرور",
+                                icon: Icons.lock_outline,
+                                obscureText: !showConfirmPassword,
+                                errorText: confirmPasswordFieldError,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    showConfirmPassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: Colors.white70,
+                                  ),
+                                  onPressed: () {
+                                    setState(
+                                      () => showConfirmPassword =
+                                          !showConfirmPassword,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            AuthLegalAgreementText(
+                              onTermsTap: openTermsOfUse,
+                              onPrivacyTap: openPrivacyPolicy,
+                            ),
+                            const SizedBox(height: 18),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: loading ? null : register,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                ),
+                                child: loading
+                                    ? const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.4,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          SizedBox(width: 10),
+                                          Text(
+                                            "جاري الإنشاء...",
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : const Text(
+                                        "إنشاء حساب",
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text(
+                                "هل لديك حساب؟ تسجيل الدخول",
+                                style: TextStyle(color: Colors.white70),
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 12),
-
-                    AuthTextField(
-                      controller: passwordController,
-                      hintText: "كلمة المرور",
-                      icon: Icons.lock,
-                      obscureText: !showPassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          showPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.white70,
-                        ),
-                        onPressed: () {
-                          setState(() => showPassword = !showPassword);
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-                    AuthTextField(
-                      controller: confirmPasswordController,
-                      hintText: "تأكيد كلمة المرور",
-                      icon: Icons.lock_outline,
-                      obscureText: !showConfirmPassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          showConfirmPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.white70,
-                        ),
-                        onPressed: () {
-                          setState(
-                            () => showConfirmPassword = !showConfirmPassword,
-                          );
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: loading ? null : register,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                        ),
-                        child: Text(loading ? "جاري الإنشاء..." : "إنشاء حساب"),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text(
-                        "هل لديك حساب؟ تسجيل الدخول",
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

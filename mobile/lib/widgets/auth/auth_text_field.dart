@@ -38,19 +38,36 @@ class AuthTextField extends StatelessWidget {
 
     final OutlineInputBorder baseBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide.none,
+      borderSide: BorderSide(
+        color: Colors.white.withValues(alpha: 0.12),
+      ),
+    );
+
+    final OutlineInputBorder focusedOutline = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(
+        color: Colors.orange,
+        width: 1.5,
+      ),
     );
 
     final OutlineInputBorder errorOutline = OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Color(0xFFFF7043)),
+      borderSide: const BorderSide(
+        color: Color(0xFFFF7043),
+        width: 1.5,
+      ),
     );
 
     return TextField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w700,
+      ),
+      cursorColor: Colors.orange,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.05),
@@ -61,8 +78,19 @@ class AuthTextField extends StatelessWidget {
         prefixStyle: prefixStyle,
         suffixIcon: suffixIcon,
 
-        hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.white38),
+        // بدل hint عادي، صرنا نستخدم Floating Label
+        // نفس قيمة hintText القديمة ستظهر داخل الحقل ثم تطلع للأعلى عند التركيز أو الكتابة.
+        labelText: hintText,
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+        labelStyle: TextStyle(
+          color: showFieldError ? const Color(0xFFFFCCBC) : Colors.white54,
+          fontWeight: FontWeight.w600,
+        ),
+        floatingLabelStyle: TextStyle(
+          color: showFieldError ? const Color(0xFFFFCCBC) : Colors.orange,
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+        ),
 
         errorText: showFieldError ? trimmedError : null,
         errorStyle: const TextStyle(
@@ -73,7 +101,7 @@ class AuthTextField extends StatelessWidget {
 
         border: baseBorder,
         enabledBorder: baseBorder,
-        focusedBorder: baseBorder,
+        focusedBorder: focusedOutline,
         errorBorder: errorOutline,
         focusedErrorBorder: errorOutline,
       ),
