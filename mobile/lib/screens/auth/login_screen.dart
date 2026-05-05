@@ -1,14 +1,18 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'signup_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../models/app_user.dart';
+import '../../services/auth_service.dart';
 import '../../widgets/auth/auth_background.dart';
-import '../../widgets/auth/auth_text_field.dart';
 import '../../widgets/auth/auth_card.dart';
 import '../../widgets/auth/auth_error_message.dart';
-import '../../widgets/auth/auth_role_selector.dart';
 import '../../widgets/auth/auth_forgot_password_sheet.dart';
+import '../../widgets/auth/auth_role_selector.dart';
+import '../../widgets/auth/auth_text_field.dart';
 import 'login_transition_screen.dart';
+import 'signup_screen.dart';
+import '../../services/auth_session.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +23,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
+  final AuthService _authService = const AuthService();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -112,66 +117,20 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  void login() {
-    final u = usernameController.text.trim();
-    final p = passwordController.text.trim();
-
-    setState(() {
-      errorMessage = null;
-      usernameFieldError = null;
-      passwordFieldError = null;
-    });
-
-    final bool allFieldsEmpty = u.isEmpty && p.isEmpty;
-
-    if (allFieldsEmpty) {
-      showError("الرجاء إدخال البيانات");
-      return;
-    }
-
-    String? nextUsernameError;
-    String? nextPasswordError;
-
-    if (u.isEmpty) {
-      nextUsernameError = "الرجاء إدخال اسم المستخدم";
-    }
-
-    if (p.isEmpty) {
-      nextPasswordError = "الرجاء إدخال كلمة المرور";
-    }
-
-    if (nextUsernameError != null || nextPasswordError != null) {
-      setState(() {
-        usernameFieldError = nextUsernameError;
-        passwordFieldError = nextPasswordError;
-      });
-
-      _shakeController.forward(from: 0);
-      return;
-    }
-
-    if (selectedRole == "barber") {
-      if (u != "admin") return showError("هذا الحساب غير موجود");
-      if (p != "1234") return showError("كلمة المرور خطأ");
-    } else {
-      if (u != "customer") return showError("هذا الحساب غير موجود");
-      if (p != "1234") return showError("كلمة المرور خطأ");
-    }
-
+  Future<void> login() async {
     setState(() => loading = true);
 
-    Future.delayed(const Duration(milliseconds: 650), () {
+    try {
+      final AppUser user = await _authService.login(
+        username: usernameController.text,
+        password: passwordController.text,
+        role: selectedRole,
+        signedUpCustomerDisplayName: _signedUpCustomerDisplayName,
+      );
+      AuthSession.start(user);
       if (!mounted) return;
 
       setState(() => loading = false);
-
-      final String loginUsername = usernameController.text.trim();
-      final String userNameForHome =
-          selectedRole == 'customer' &&
-              _signedUpCustomerDisplayName != null &&
-              _signedUpCustomerDisplayName!.trim().isNotEmpty
-          ? _signedUpCustomerDisplayName!.trim()
-          : loginUsername;
 
       Navigator.pushReplacement(
         context,
@@ -179,8 +138,8 @@ class _LoginScreenState extends State<LoginScreen>
           transitionDuration: const Duration(milliseconds: 650),
           pageBuilder: (context, animation, secondaryAnimation) {
             return AuthTransitionScreen(
-              userName: userNameForHome,
-              role: selectedRole,
+              userName: user.displayName,
+              role: user.role,
             );
           },
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -202,7 +161,17 @@ class _LoginScreenState extends State<LoginScreen>
           },
         ),
       );
-    });
+    } on AuthException catch (error) {
+      if (!mounted) return;
+
+      setState(() => loading = false);
+      showError(error.message);
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() => loading = false);
+      showError('حدث خطأ غير متوقع، حاول مرة أخرى');
+    }
   }
 
   void openForgotPasswordSheet() {

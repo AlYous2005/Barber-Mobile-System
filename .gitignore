@@ -128,3 +128,4 @@ app.*.symbols
 
 
 .VSCodeCounter/
+.idea/

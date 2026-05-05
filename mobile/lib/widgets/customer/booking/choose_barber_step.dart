@@ -6,10 +6,12 @@ import '../../../utils/app_theme_colors.dart';
 class ChooseBarberStep extends StatelessWidget {
   const ChooseBarberStep({
     super.key,
+    required this.barbers,
     required this.selectedBarber,
     required this.onSelectBarber,
   });
 
+  final List<BarberModel> barbers;
   final BarberModel? selectedBarber;
   final ValueChanged<BarberModel> onSelectBarber;
 
@@ -17,7 +19,7 @@ class ChooseBarberStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ...mockBarbers.map(
+        ...barbers.map(
           (barber) => _WarmBarberChoiceCard(
             barber: barber,
             selected: selectedBarber?.id == barber.id,

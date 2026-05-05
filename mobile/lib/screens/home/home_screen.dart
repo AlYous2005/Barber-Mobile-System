@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../auth/logout_transition_screen.dart';
 import '../barber/barber_home_screen.dart';
 import '../customer/customer_home_screen.dart';
+import '../../services/auth_session.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.userName, required this.role});
@@ -15,6 +16,7 @@ class HomeScreen extends StatelessWidget {
     String footerTitle = 'شكرًا لاستخدام لوحة التحكم',
     String footerSubtitle = 'نتمنى لك يوم عمل موفق',
   }) {
+    AuthSession.clear();
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),

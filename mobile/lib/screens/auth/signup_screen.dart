@@ -8,6 +8,9 @@ import '../../widgets/auth/auth_error_message.dart';
 import '../../widgets/auth/auth_legal_agreement_text.dart';
 import '../../widgets/auth/auth_country_code_selector.dart';
 import '../../widgets/auth/auth_birth_date_selector.dart';
+import '../../models/app_user.dart';
+import '../../services/auth_service.dart';
+import '../../services/auth_session.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -18,6 +21,7 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen>
     with SingleTickerProviderStateMixin {
+  final AuthService _authService = const AuthService();
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final phoneController = TextEditingController();
@@ -155,126 +159,35 @@ class _SignUpScreenState extends State<SignUpScreen>
     );
   }
 
-  void register() {
-    final firstName = firstNameController.text.trim();
-    final lastName = lastNameController.text.trim();
-    final phone = phoneController.text.trim();
-    final pass = passwordController.text.trim();
-    final confirmPass = confirmPasswordController.text.trim();
+  Future<void> signUp() async {
+    setState(() => loading = true);
 
-    final bool firstNameHasLetters = RegExp(
-      r'[A-Za-z\u0600-\u06FF]',
-    ).hasMatch(firstName);
-
-    final bool lastNameHasLetters = RegExp(
-      r'[A-Za-z\u0600-\u06FF]',
-    ).hasMatch(lastName);
-
-    final bool isPhoneOnlyDigits = RegExp(r'^\d+$').hasMatch(phone);
-
-    setState(() {
-      errorMessage = null;
-      firstNameFieldError = null;
-      lastNameFieldError = null;
-      phoneFieldError = null;
-      birthDateFieldError = null;
-      passwordFieldError = null;
-      confirmPasswordFieldError = null;
-    });
-
-    final bool allFieldsEmpty =
-        firstName.isEmpty &&
-        lastName.isEmpty &&
-        phone.isEmpty &&
-        selectedBirthDate == null &&
-        pass.isEmpty &&
-        confirmPass.isEmpty;
-
-    if (allFieldsEmpty) {
-      showError("الرجاء إدخال البيانات");
-      return;
-    }
-
-    String? nextFirstNameError;
-    String? nextLastNameError;
-    String? nextPhoneError;
-    String? nextBirthDateError;
-    String? nextPasswordError;
-    String? nextConfirmPasswordError;
-
-    if (firstName.isEmpty) {
-      nextFirstNameError = "الرجاء إدخال الاسم الأول";
-    } else if (!firstNameHasLetters) {
-      nextFirstNameError = "يجب أن يحتوي الاسم الأول على حروف";
-    }
-
-    if (lastName.isEmpty) {
-      nextLastNameError = "الرجاء إدخال اسم العائلة";
-    } else if (!lastNameHasLetters) {
-      nextLastNameError = "يجب أن يحتوي اسم العائلة على حروف";
-    }
-    if (phone.isEmpty) {
-      nextPhoneError = "الرجاء إدخال رقم الهاتف";
-    } else if (!isPhoneOnlyDigits) {
-      nextPhoneError = "يجب أن يحتوي رقم الهاتف على أرقام فقط";
-    } else if (phone.length != 10) {
-      nextPhoneError = "يجب أن يتكون رقم الهاتف من 10 أرقام";
-    }
-
-    if (selectedBirthDate == null) {
-      nextBirthDateError = "الرجاء إدخال تاريخ الميلاد";
-    }
-
-    if (pass.isEmpty) {
-      nextPasswordError = "الرجاء إدخال كلمة المرور";
-    } else if (pass.length < 8) {
-      nextPasswordError = "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل";
-    }
-
-    if (confirmPass.isEmpty) {
-      nextConfirmPasswordError = "الرجاء إدخال تأكيد كلمة المرور";
-    }
-
-    if (nextFirstNameError != null ||
-        nextLastNameError != null ||
-        nextPhoneError != null ||
-        nextBirthDateError != null ||
-        nextPasswordError != null ||
-        nextConfirmPasswordError != null) {
-      setState(() {
-        firstNameFieldError = nextFirstNameError;
-        lastNameFieldError = nextLastNameError;
-        phoneFieldError = nextPhoneError;
-        birthDateFieldError = nextBirthDateError;
-        passwordFieldError = nextPasswordError;
-        confirmPasswordFieldError = nextConfirmPasswordError;
-      });
-
-      _shakeController.forward(from: 0);
-      return;
-    }
-
-    if (pass != confirmPass) {
-      setState(() {
-        confirmPasswordFieldError = "كلمة المرور غير متطابقة";
-      });
-
-      _shakeController.forward(from: 0);
-      return;
-    }
-
-    final displayName = '$firstName $lastName'.trim();
-
-    setState(() {
-      loading = true;
-    });
-
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      final AppUser user = await _authService.signUpCustomer(
+        firstName: firstNameController.text,
+        lastName: lastNameController.text,
+        phoneNumber: phoneController.text,
+        password: passwordController.text,
+        confirmPassword: confirmPasswordController.text,
+        birthDate: selectedBirthDate,
+      );
+      AuthSession.start(user);
       if (!mounted) return;
 
       setState(() => loading = false);
-      Navigator.pop(context, displayName);
-    });
+
+      Navigator.pop(context, user.displayName);
+    } on AuthException catch (error) {
+      if (!mounted) return;
+
+      setState(() => loading = false);
+      showError(error.message);
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() => loading = false);
+      showError('حدث خطأ غير متوقع، حاول مرة أخرى');
+    }
   }
 
   void showLegalSheet({required String title, required String body}) {
@@ -518,7 +431,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: loading ? null : register,
+                                onPressed: loading ? null : signUp,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.orange,
                                 ),

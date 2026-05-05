@@ -6,10 +6,12 @@ import '../../../utils/app_theme_colors.dart';
 class ChooseServicesStep extends StatelessWidget {
   const ChooseServicesStep({
     super.key,
+    required this.services,
     required this.selectedServices,
     required this.onToggleService,
   });
 
+  final List<ServiceModel> services;
   final List<ServiceModel> selectedServices;
   final ValueChanged<ServiceModel> onToggleService;
 
@@ -19,11 +21,11 @@ class ChooseServicesStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final regularServices = mockServices
+    final regularServices = services
         .where((service) => service.id != 'child_haircut')
         .toList();
 
-    final childServices = mockServices
+    final childServices = services
         .where((service) => service.id == 'child_haircut')
         .toList();
 

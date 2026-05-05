@@ -16,8 +16,9 @@ import '../../widgets/customer/booking/services_live_counter.dart';
 import '../../widgets/customer/booking/available_times_step.dart';
 import '../../widgets/customer/booking/booking_bottom_action_button.dart';
 import '../../utils/app_theme_colors.dart';
-
 import 'booking_success_screen.dart';
+import '../../repositories/barber_repository.dart';
+import '../../repositories/service_repository.dart';
 
 class CustomerBookingScreen extends StatefulWidget {
   const CustomerBookingScreen({super.key, this.preselectedBarber});
@@ -29,7 +30,15 @@ class CustomerBookingScreen extends StatefulWidget {
 }
 
 class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
+  final BarberRepository _barberRepository = const BarberRepository();
+  final ServiceRepository _serviceRepository = const ServiceRepository();
+
   int step = 0;
+  bool isLoadingData = true;
+  String? dataErrorMessage;
+
+  List<BarberModel> availableBarbers = [];
+  List<ServiceModel> availableServices = [];
 
   BarberModel? selectedBarber;
   List<ServiceModel> selectedServices = [];
@@ -44,6 +53,38 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
     if (widget.preselectedBarber != null) {
       selectedBarber = widget.preselectedBarber;
       step = 1;
+    }
+
+    _loadBookingData();
+  }
+
+  Future<void> _loadBookingData() async {
+    setState(() {
+      isLoadingData = true;
+      dataErrorMessage = null;
+    });
+
+    try {
+      final barbers = await _barberRepository.getAvailableBarbers();
+
+      final services = await _serviceRepository.getAvailableServices(
+        barberId: selectedBarber?.id ?? '',
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        availableBarbers = barbers;
+        availableServices = services;
+        isLoadingData = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        dataErrorMessage = 'تعذر تحميل بيانات الحجز، حاول مرة أخرى';
+        isLoadingData = false;
+      });
     }
   }
 
@@ -240,9 +281,45 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
   }
 
   Widget _buildStepBody() {
+    if (isLoadingData) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.only(top: 80),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (dataErrorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 80),
+          child: Column(
+            children: [
+              const Icon(Icons.error_outline_rounded, size: 42),
+              const SizedBox(height: 12),
+              Text(
+                dataErrorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 14),
+              ElevatedButton(
+                onPressed: _loadBookingData,
+                child: const Text('إعادة المحاولة'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     switch (step) {
       case 0:
         return ChooseBarberStep(
+          barbers: availableBarbers,
           selectedBarber: selectedBarber,
           onSelectBarber: (barber) {
             setState(() {
@@ -254,6 +331,7 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
         );
       case 1:
         return ChooseServicesStep(
+          services: availableServices,
           selectedServices: selectedServices,
           onToggleService: _toggleService,
         );
