@@ -1,27 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../../../models/mock_appointment.dart';
 import '../../../utils/app_theme_colors.dart';
+import '../../../utils/booking_formatters.dart';
 
 class CustomerAppointmentCard extends StatelessWidget {
   const CustomerAppointmentCard({
     super.key,
-    required this.barberName,
-    required this.barberRating,
-    required this.serviceName,
-    required this.dateLabel,
-    required this.timeLabel,
-    required this.status,
+    required this.appointment,
     this.onRate,
     this.onCancel,
     this.onRebook,
   });
 
-  final String barberName;
-  final double barberRating;
-  final String serviceName;
-  final String dateLabel;
-  final String timeLabel;
-  final String status;
+  final MockAppointment appointment;
   final VoidCallback? onRate;
   final VoidCallback? onCancel;
   final VoidCallback? onRebook;
@@ -32,7 +24,7 @@ class CustomerAppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusVisual = _statusFor(status);
+    final statusVisual = _statusFor(appointment.status);
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -53,6 +45,34 @@ class CustomerAppointmentCard extends StatelessWidget {
         ),
         child: Column(
           children: [
+            Row(
+              textDirection: TextDirection.ltr,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: appointment.createdAt != null
+                        ? Text(
+                            formatAppointmentBookedAtLine(
+                              appointment.createdAt!,
+                            ),
+                            textDirection: TextDirection.rtl,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppThemeColors.textMuted(context),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ),
+                _StatusBadge(visual: statusVisual),
+              ],
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Container(
@@ -78,7 +98,7 @@ class CustomerAppointmentCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'الحلاق $barberName',
+                        'الحلاق ${appointment.barberName}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -88,11 +108,10 @@ class CustomerAppointmentCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      FiveStarsBarberRating(rating: barberRating),
+                      FiveStarsBarberRating(rating: appointment.barberRating),
                     ],
                   ),
                 ),
-                _StatusBadge(visual: statusVisual),
               ],
             ),
             const SizedBox(height: 14),
@@ -109,19 +128,19 @@ class CustomerAppointmentCard extends StatelessWidget {
                   _AppointmentInfoRow(
                     icon: Icons.design_services_rounded,
                     label: 'الخدمة',
-                    value: serviceName,
+                    value: appointment.serviceName,
                   ),
                   const SizedBox(height: 10),
                   _AppointmentInfoRow(
                     icon: Icons.calendar_month_rounded,
                     label: 'التاريخ',
-                    value: dateLabel,
+                    value: appointment.dateLabel,
                   ),
                   const SizedBox(height: 10),
                   _AppointmentInfoRow(
                     icon: Icons.access_time_filled_rounded,
                     label: 'الوقت',
-                    value: timeLabel,
+                    value: appointment.displayTimeRange,
                   ),
                   const SizedBox(height: 10),
                   _AppointmentInfoRow(

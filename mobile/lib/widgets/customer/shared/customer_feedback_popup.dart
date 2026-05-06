@@ -26,9 +26,7 @@ Future<void> showCustomerFeedbackPopup({
             decoration: BoxDecoration(
               color: AppThemeColors.card(dialogContext),
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: AppThemeColors.border(dialogContext),
-              ),
+              border: Border.all(color: AppThemeColors.border(dialogContext)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.18),
@@ -48,10 +46,7 @@ Future<void> showCustomerFeedbackPopup({
                     gradient: LinearGradient(
                       begin: Alignment.topRight,
                       end: Alignment.bottomLeft,
-                      colors: [
-                        iconStartColor,
-                        iconEndColor,
-                      ],
+                      colors: [iconStartColor, iconEndColor],
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -61,11 +56,7 @@ Future<void> showCustomerFeedbackPopup({
                       ),
                     ],
                   ),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 36,
-                  ),
+                  child: Icon(icon, color: Colors.white, size: 36),
                 ),
 
                 const SizedBox(height: 18),

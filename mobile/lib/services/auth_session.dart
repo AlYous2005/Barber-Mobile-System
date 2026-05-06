@@ -11,6 +11,10 @@ class AuthSession {
     currentUser = user;
   }
 
+  static void updateCurrentUser(AppUser user) {
+    currentUser = user;
+  }
+
   static void clear() {
     currentUser = null;
   }

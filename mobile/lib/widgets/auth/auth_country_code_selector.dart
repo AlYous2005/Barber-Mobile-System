@@ -42,9 +42,7 @@ class AuthCountryCodeSelector extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFF151515),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.16),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.35),
@@ -187,9 +185,7 @@ class _CountryOptionTile extends StatelessWidget {
             ? Colors.orange.withValues(alpha: 0.18)
             : Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isSelected ? Colors.orange : Colors.white24,
-        ),
+        border: Border.all(color: isSelected ? Colors.orange : Colors.white24),
       ),
       child: InkWell(
         onTap: onTap,
@@ -198,10 +194,7 @@ class _CountryOptionTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           child: Row(
             children: [
-              Text(
-                flag,
-                style: const TextStyle(fontSize: 24),
-              ),
+              Text(flag, style: const TextStyle(fontSize: 24)),
 
               const SizedBox(width: 12),
 

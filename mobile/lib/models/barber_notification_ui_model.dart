@@ -24,9 +24,7 @@ class UiNotification {
   final NotificationType type;
   final String timeLabel;
 
-  UiNotification copyWith({
-    bool? isRead,
-  }) {
+  UiNotification copyWith({bool? isRead}) {
     return UiNotification(
       id: id,
       message: message,

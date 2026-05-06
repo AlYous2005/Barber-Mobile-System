@@ -1,24 +1,24 @@
+// UI + navigation + dialogs/popups
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../models/barber_model.dart';
+import '../../controllers/customer/customer_home_controller.dart';
+import '../../models/customer_profile_result.dart';
 import '../../models/mock_appointment.dart';
-import '../../models/mock_notification.dart';
-import '../../widgets/customer/home/customer_home_top_bar.dart';
-import '../../widgets/customer/home/customer_notifications_dropdown.dart';
+import '../../utils/app_theme_colors.dart';
 import '../../widgets/customer/appointments/cancel_appointment_dialog.dart';
 import '../../widgets/customer/appointments/rating_dialog.dart';
-import '../../utils/appointment_filters.dart';
-import '../../widgets/customer/home/customer_booking_cta_card.dart';
-import '../../widgets/customer/home/customer_section_title_card.dart';
 import '../../widgets/customer/home/customer_appointments_section.dart';
+import '../../widgets/customer/home/customer_booking_cta_card.dart';
+import '../../widgets/customer/home/customer_home_top_bar.dart';
+import '../../widgets/customer/home/customer_notifications_dropdown.dart';
+import '../../widgets/customer/home/customer_section_title_card.dart';
 import '../../widgets/customer/shared/customer_feedback_popup.dart';
 import 'customer_booking_screen.dart';
 import 'customer_profile_screen.dart';
+
 import 'customer_settings_screen.dart';
-import '../../models/customer_profile_result.dart';
-import '../../utils/app_theme_colors.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({
@@ -36,13 +36,7 @@ class CustomerHomeScreen extends StatefulWidget {
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     with SingleTickerProviderStateMixin {
-  String displayName = 'يوسف';
-  String countryCode = '+970';
-  String phoneNumber = '599999999';
-  bool isNotificationsDropdownOpen = false;
-  String selectedAppointmentsTab = 'upcoming';
-  late List<MockAppointment> appointments;
-  late List<MockNotification> customerNotifications;
+  late final CustomerHomeController controller;
 
   late final AnimationController _greetingAnimController;
   late final Animation<double> _greetingFade;
@@ -53,15 +47,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   void initState() {
     super.initState();
 
-    final normalizedName = widget.userName.trim();
-    if (normalizedName.isNotEmpty && normalizedName != 'customer') {
-      displayName = normalizedName;
-    }
-
-    appointments = List<MockAppointment>.from(mockCustomerAppointments);
-    customerNotifications = List<MockNotification>.from(
-      mockCustomerNotifications,
-    );
+    controller = CustomerHomeController(initialUserName: widget.userName);
+    controller.loadCustomerAppointments();
 
     _greetingAnimController = AnimationController(
       vsync: this,
@@ -86,80 +73,44 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   @override
   void dispose() {
     _greetingAnimController.dispose();
+    controller.dispose();
     super.dispose();
-  }
-
-  int get unreadNotifications =>
-      customerNotifications.where((item) => !item.isRead).length;
-
-  /// First token of [displayName] for the home greeting (full name stays in header/profile).
-  String get _greetingFirstName {
-    final String trimmed = displayName.trim();
-    if (trimmed.isEmpty) return trimmed;
-    final List<String> parts = trimmed.split(RegExp(r'\s+'));
-    return parts.isNotEmpty ? parts.first : trimmed;
-  }
-
-  void _markAllNotificationsAsRead() {
-    if (unreadNotifications == 0) return;
-
-    setState(() {
-      customerNotifications = customerNotifications
-          .map(
-            (item) => item.isRead
-                ? item
-                : MockNotification(
-                    id: item.id,
-                    message: item.message,
-                    isRead: true,
-                  ),
-          )
-          .toList();
-    });
   }
 
   Future<void> _openProfile() async {
     final result = await Navigator.of(context).push<CustomerProfileResult>(
       MaterialPageRoute(
         builder: (_) => CustomerProfileScreen(
-          initialDisplayName: displayName,
-          initialCountryCode: countryCode,
-          initialPhoneNumber: phoneNumber,
+          initialDisplayName: controller.displayName,
+          initialCountryCode: controller.countryCode,
+          initialPhoneNumber: controller.phoneNumber,
         ),
       ),
     );
 
     if (!mounted || result == null) return;
 
-    setState(() {
-      displayName = result.displayName;
-      countryCode = result.countryCode;
-      phoneNumber = result.phoneNumber;
-    });
+    controller.updateProfile(result);
 
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('تم تحديث بياناتك بنجاح')));
   }
 
-  void _openBooking() {
-    Navigator.of(context).push(
+  Future<void> _openBooking() async {
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const CustomerBookingScreen()),
     );
+
+    if (!mounted) return;
+
+    await controller.loadCustomerAppointments();
   }
 
-  BarberModel? _findBarberForAppointment(MockAppointment appointment) {
-    for (final barber in mockBarbers) {
-      if (barber.name == appointment.barberName) {
-        return barber;
-      }
-    }
+  Future<void> _rebookAppointment(MockAppointment appointment) async {
+    final barber = await controller.resolveBarberForRebook(appointment);
 
-    return null;
-  }
-
-  void _rebookAppointment(MockAppointment appointment) {
-    final barber = _findBarberForAppointment(appointment);
+    if (!mounted) return;
 
     if (barber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -168,31 +119,21 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
       return;
     }
 
-    Navigator.of(context).push(
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => CustomerBookingScreen(preselectedBarber: barber),
       ),
     );
-  }
 
-  void _toggleNotificationsDropdown() {
-    setState(() {
-      isNotificationsDropdownOpen = !isNotificationsDropdownOpen;
-    });
+    if (!mounted) return;
+
+    await controller.loadCustomerAppointments();
   }
 
   void _openSettings() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const CustomerSettingsScreen()),
     );
-  }
-
-  List<MockAppointment> get upcomingAppointments {
-    return appointments.where(isUpcomingAppointment).toList();
-  }
-
-  List<MockAppointment> get previousAppointments {
-    return appointments.where(isPreviousAppointment).toList();
   }
 
   Future<void> _cancelAppointment(MockAppointment appointment) async {
@@ -203,24 +144,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
     if (!mounted || shouldCancel != true) return;
 
-    setState(() {
-      appointments = appointments.map((item) {
-        if (item.id != appointment.id) return item;
-
-        return MockAppointment(
-          id: item.id,
-          customerName: item.customerName,
-          barberName: item.barberName,
-          barberRating: item.barberRating,
-          serviceName: item.serviceName,
-          dateLabel: item.dateLabel,
-          timeLabel: item.timeLabel,
-          status: 'ملغي',
-          startDateTime: item.startDateTime,
-          endDateTime: item.endDateTime,
-        );
-      }).toList();
-    });
+    controller.cancelAppointmentLocally(appointment);
 
     await showCustomerFeedbackPopup(
       context: context,
@@ -274,137 +198,171 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: pageBackground,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    CustomerHomeTopBar(
-                      displayName: displayName,
-                      unreadCount: unreadNotifications,
-                      onProfileTap: _openProfile,
-                      onNotificationsTap: _toggleNotificationsDropdown,
-                      onSettingsTap: _openSettings,
-                      onLogoutTap: widget.onLogout,
-                    ),
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
 
-                    const SizedBox(height: 18),
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Scaffold(
+            backgroundColor: pageBackground,
+            body: SafeArea(
+              child: Stack(
+                children: [
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        CustomerHomeTopBar(
+                          displayName: controller.displayName,
+                          unreadCount: controller.unreadNotifications,
+                          onProfileTap: _openProfile,
+                          onNotificationsTap:
+                              controller.toggleNotificationsDropdown,
+                          onSettingsTap: _openSettings,
+                          onLogoutTap: widget.onLogout,
+                        ),
 
-                    FadeTransition(
-                      opacity: _greetingFade,
-                      child: SlideTransition(
-                        position: _greetingSlide,
-                        child: ScaleTransition(
-                          scale: _greetingScale,
-                          child: Center(
+                        const SizedBox(height: 18),
+
+                        FadeTransition(
+                          opacity: _greetingFade,
+                          child: SlideTransition(
+                            position: _greetingSlide,
+                            child: ScaleTransition(
+                              scale: _greetingScale,
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'أهلًا ${controller.greetingFirstName}',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: AppThemeColors.isDark(context)
+                                            ? const Color(0xFFF6D38B)
+                                            : const Color(0xFF111827),
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 7),
+                                    Text(
+                                      'جاهز لحجز موعدك القادم؟',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: AppThemeColors.isDark(context)
+                                            ? AppThemeColors.textSecondary(
+                                                context,
+                                              )
+                                            : const Color(0xFF4B5563),
+                                        fontSize: 16,
+                                        height: 1.35,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 22),
+
+                        CustomerBookingCtaCard(onStartBooking: _openBooking),
+
+                        const SizedBox(height: 22),
+
+                        const CustomerSectionTitleCard(title: 'مواعيدي'),
+
+                        const SizedBox(height: 14),
+
+                        if (controller.isLoadingAppointments)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 28),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        else if (controller.appointmentsErrorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 28),
                             child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
+                                const Icon(
+                                  Icons.error_outline_rounded,
+                                  size: 42,
+                                ),
+                                const SizedBox(height: 12),
                                 Text(
-                                  'أهلًا $_greetingFirstName',
+                                  controller.appointmentsErrorMessage!,
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: AppThemeColors.isDark(context)
-                                        ? const Color(0xFFF6D38B)
-                                        : const Color(0xFF111827),
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w900,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                const SizedBox(height: 7),
-                                Text(
-                                  'جاهز لحجز موعدك القادم؟',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: AppThemeColors.isDark(context)
-                                        ? AppThemeColors.textSecondary(context)
-                                        : const Color(0xFF4B5563),
-                                    fontSize: 16,
-                                    height: 1.35,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                const SizedBox(height: 14),
+                                ElevatedButton(
+                                  onPressed:
+                                      controller.loadCustomerAppointments,
+                                  child: const Text('إعادة المحاولة'),
                                 ),
                               ],
+                            ),
+                          )
+                        else
+                          CustomerAppointmentsSection(
+                            selectedTab: controller.selectedAppointmentsTab,
+                            upcomingAppointments:
+                                controller.upcomingAppointments,
+                            previousAppointments:
+                                controller.previousAppointments,
+                            onTabChanged: controller.changeAppointmentsTab,
+                            onCancelAppointment: _cancelAppointment,
+                            onRateAppointment: _openRatingDialog,
+                            onRebookAppointment: (appointment) {
+                              _rebookAppointment(appointment);
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  if (controller.isNotificationsDropdownOpen)
+                    Positioned.fill(
+                      child: GestureDetector(
+                        onTap: controller.closeNotificationsDropdown,
+                        child: ClipRect(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                            child: Container(
+                              color: Colors.black.withValues(alpha: 0.18),
                             ),
                           ),
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 22),
-
-                    CustomerBookingCtaCard(onStartBooking: _openBooking),
-
-                    const SizedBox(height: 22),
-
-                    const CustomerSectionTitleCard(title: 'مواعيدي'),
-
-                    const SizedBox(height: 14),
-
-                    CustomerAppointmentsSection(
-                      selectedTab: selectedAppointmentsTab,
-                      upcomingAppointments: upcomingAppointments,
-                      previousAppointments: previousAppointments,
-                      onTabChanged: (tab) {
-                        setState(() {
-                          selectedAppointmentsTab = tab;
-                        });
-                      },
-                      onCancelAppointment: _cancelAppointment,
-                      onRateAppointment: _openRatingDialog,
-                      onRebookAppointment: _rebookAppointment,
-                    ),
-                  ],
-                ),
-              ),
-
-              if (isNotificationsDropdownOpen)
-                Positioned.fill(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        isNotificationsDropdownOpen = false;
-                      });
-                    },
-                    child: ClipRect(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0.18),
-                        ),
+                  if (controller.isNotificationsDropdownOpen)
+                    Positioned(
+                      top: 94,
+                      left: 20,
+                      right: 20,
+                      child: CustomerNotificationsDropdown(
+                        notifications: controller.customerNotifications,
+                        onMarkAllAsRead: controller.markAllNotificationsAsRead,
+                        onClose: controller.closeNotificationsDropdown,
                       ),
                     ),
-                  ),
-                ),
-
-              if (isNotificationsDropdownOpen)
-                Positioned(
-                  top: 94,
-                  left: 20,
-                  right: 20,
-                  child: CustomerNotificationsDropdown(
-                    notifications: customerNotifications,
-                    onMarkAllAsRead: _markAllNotificationsAsRead,
-                    onClose: () {
-                      setState(() {
-                        isNotificationsDropdownOpen = false;
-                      });
-                    },
-                  ),
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

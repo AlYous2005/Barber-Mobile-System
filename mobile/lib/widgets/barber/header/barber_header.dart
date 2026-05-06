@@ -80,7 +80,7 @@ class BarberHeader extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                     Text(
+                    Text(
                       'الحلاق',
                       textAlign: TextAlign.center,
                       style: TextStyle(

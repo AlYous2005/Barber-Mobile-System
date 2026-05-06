@@ -1,19 +1,19 @@
 import '../models/mock_appointment.dart';
+import 'appointment_status_utils.dart';
 
 bool isPreviousAppointment(MockAppointment appointment) {
-  final now = DateTime.now();
-
-  return appointment.status == 'مكتمل' ||
-      appointment.status == 'ملغي' ||
-      appointment.endDateTime.isBefore(now);
+  return AppointmentStatusUtils.isCompleted(appointment.status) ||
+      AppointmentStatusUtils.isCancelled(appointment.status) ||
+      AppointmentStatusUtils.isNoShow(appointment.status);
 }
 
 bool isUpcomingAppointment(MockAppointment appointment) {
-  return !isPreviousAppointment(appointment);
+  return AppointmentStatusUtils.isPending(appointment.status) ||
+      AppointmentStatusUtils.isConfirmed(appointment.status) ||
+      AppointmentStatusUtils.isCurrent(appointment.status);
 }
 
 bool canCancelAppointment(MockAppointment appointment) {
-  return appointment.status == 'معلق' ||
-      appointment.status == 'قادم' ||
-      appointment.status == 'تم التأكيد';
+  return AppointmentStatusUtils.isPending(appointment.status) ||
+      AppointmentStatusUtils.isConfirmed(appointment.status);
 }

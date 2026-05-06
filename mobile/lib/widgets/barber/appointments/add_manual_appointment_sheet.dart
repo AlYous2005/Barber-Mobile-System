@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/mock_appointment.dart';
-import '../../../models/mock_service.dart';
+
+import '../../../services/auth_session.dart';
 import '../../../utils/app_theme_colors.dart';
 import 'manual_appointment_widgets.dart';
+import '../../../data/mocks/mock_services.dart';
 
 class AddManualAppointmentSheet extends StatefulWidget {
   const AddManualAppointmentSheet({
@@ -173,6 +175,9 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
         status: 'مؤكد',
         startDateTime: startDateTime,
         endDateTime: endDateTime,
+        customerId: null,
+        barberId: AuthSession.currentUser?.barberId ?? 'b1',
+        createdAt: DateTime.now(),
       );
 
       widget.onAddAppointment(appointment);

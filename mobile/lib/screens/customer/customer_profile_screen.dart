@@ -1,11 +1,12 @@
+// UI + popups + navigation
 import 'package:flutter/material.dart';
 
-import '../../models/customer_profile_result.dart';
+import '../../controllers/customer/customer_profile_controller.dart';
 import '../../utils/app_theme_colors.dart';
-import '../../widgets/customer/profile/customer_profile_intro_card.dart';
-import '../../widgets/customer/profile/customer_profile_shared_widgets.dart';
 import '../../widgets/customer/profile/customer_password_box.dart';
 import '../../widgets/customer/profile/customer_profile_form_box.dart';
+import '../../widgets/customer/profile/customer_profile_intro_card.dart';
+import '../../widgets/customer/profile/customer_profile_shared_widgets.dart';
 import '../../widgets/customer/shared/customer_feedback_popup.dart';
 
 class CustomerProfileScreen extends StatefulWidget {
@@ -27,119 +28,30 @@ class CustomerProfileScreen extends StatefulWidget {
 }
 
 class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
-  /// TEMPORARY: replace with real auth / API check when backend is integrated.
-  static const String _mockCurrentPassword = '123456';
-
-  late final TextEditingController nameController;
-  late final TextEditingController phoneController;
-  late final TextEditingController currentPasswordController;
-  late final TextEditingController newPasswordController;
-  late final TextEditingController confirmPasswordController;
-
-  late final VoidCallback _onCurrentPasswordEdited;
-  late final VoidCallback _onNewPasswordEdited;
-  late final VoidCallback _onConfirmPasswordEdited;
-
-  String selectedCountry = 'فلسطين';
-  bool hasProfileImage = false;
-
-  bool showCurrentPassword = false;
-  bool showNewPassword = false;
-  bool showConfirmPassword = false;
-
-  String? currentPasswordError;
-  String? newPasswordError;
-  String? confirmPasswordError;
-
-  int currentPasswordShakeTrigger = 0;
-  int newPasswordShakeTrigger = 0;
-  int confirmPasswordShakeTrigger = 0;
-
-  String get phoneCode => selectedCountry == 'فلسطين' ? '+970' : '+972';
-
-  bool get _hasUnsavedChanges {
-    final String currentName = nameController.text.trim();
-    final String initialName = widget.initialDisplayName.trim();
-
-    final String currentPhone = phoneController.text.trim();
-    final String initialPhone = widget.initialPhoneNumber.trim();
-
-    return currentName != initialName ||
-        currentPhone != initialPhone ||
-        phoneCode != widget.initialCountryCode ||
-        hasProfileImage != widget.initialHasProfileImage ||
-        _passwordSectionHasInput();
-  }
-
-  void _refreshSaveButtonState() {
-    if (!mounted) return;
-    setState(() {});
-  }
+  late final CustomerProfileController controller;
 
   @override
   void initState() {
     super.initState();
 
-    nameController = TextEditingController(text: widget.initialDisplayName);
-    phoneController = TextEditingController(text: widget.initialPhoneNumber);
-    currentPasswordController = TextEditingController();
-    newPasswordController = TextEditingController();
-    confirmPasswordController = TextEditingController();
-
-    nameController.addListener(_refreshSaveButtonState);
-    phoneController.addListener(_refreshSaveButtonState);
-
-    _onCurrentPasswordEdited = () {
-      if (!mounted) return;
-      setState(() {
-        currentPasswordError = null;
-      });
-    };
-    _onNewPasswordEdited = () {
-      if (!mounted) return;
-      setState(() {
-        newPasswordError = null;
-      });
-    };
-    _onConfirmPasswordEdited = () {
-      if (!mounted) return;
-      setState(() {
-        confirmPasswordError = null;
-      });
-    };
-
-    currentPasswordController.addListener(_onCurrentPasswordEdited);
-    newPasswordController.addListener(_onNewPasswordEdited);
-    confirmPasswordController.addListener(_onConfirmPasswordEdited);
-
-    selectedCountry = widget.initialCountryCode == '+972'
-        ? 'إسرائيل'
-        : 'فلسطين';
-    hasProfileImage = widget.initialHasProfileImage;
+    controller = CustomerProfileController(
+      initialDisplayName: widget.initialDisplayName,
+      initialCountryCode: widget.initialCountryCode,
+      initialPhoneNumber: widget.initialPhoneNumber,
+      initialHasProfileImage: widget.initialHasProfileImage,
+    );
   }
 
   @override
   void dispose() {
-    nameController.removeListener(_refreshSaveButtonState);
-    phoneController.removeListener(_refreshSaveButtonState);
-    currentPasswordController.removeListener(_onCurrentPasswordEdited);
-    newPasswordController.removeListener(_onNewPasswordEdited);
-    confirmPasswordController.removeListener(_onConfirmPasswordEdited);
-
-    nameController.dispose();
-    phoneController.dispose();
-    currentPasswordController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
+    controller.dispose();
     super.dispose();
   }
 
   Future<void> _addOrChangeImage() async {
-    final bool alreadyHadImage = hasProfileImage;
+    final bool alreadyHadImage = controller.hasProfileImage;
 
-    setState(() {
-      hasProfileImage = true;
-    });
+    controller.setHasProfileImage(true);
 
     await showCustomerFeedbackPopup(
       context: context,
@@ -152,9 +64,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
   }
 
   Future<void> _removeImage() async {
-    setState(() {
-      hasProfileImage = false;
-    });
+    controller.setHasProfileImage(false);
 
     await showCustomerFeedbackPopup(
       context: context,
@@ -166,74 +76,9 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
     );
   }
 
-  bool _passwordSectionHasInput() {
-    return currentPasswordController.text.trim().isNotEmpty ||
-        newPasswordController.text.trim().isNotEmpty ||
-        confirmPasswordController.text.trim().isNotEmpty;
-  }
-
-  /// Returns `true` if password area is unused or all password rules pass.
-  bool _validatePasswordChange() {
-    if (!_passwordSectionHasInput()) {
-      setState(() {
-        currentPasswordError = null;
-        newPasswordError = null;
-        confirmPasswordError = null;
-      });
-      return true;
-    }
-
-    final String c = currentPasswordController.text.trim();
-    final String n = newPasswordController.text.trim();
-    final String cf = confirmPasswordController.text.trim();
-
-    String? curE;
-    String? newE;
-    String? confE;
-
-    if (c.isEmpty) {
-      curE = 'أدخل كلمة المرور الحالية';
-    } else if (c != _mockCurrentPassword) {
-      curE = 'كلمة المرور الحالية غير صحيحة';
-    }
-
-    if (n.isEmpty) {
-      newE = 'أدخل كلمة المرور الجديدة';
-    } else if (n.length < 6) {
-      newE = 'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل';
-    }
-
-    if (cf.isEmpty) {
-      confE = 'أكد كلمة المرور الجديدة';
-    } else if (n.isNotEmpty && n.length >= 6 && n != cf) {
-      confE = 'كلمة السر غير متطابقة';
-    }
-
-    final bool ok = curE == null && newE == null && confE == null;
-
-    if (!ok) {
-      setState(() {
-        currentPasswordError = curE;
-        newPasswordError = newE;
-        confirmPasswordError = confE;
-        if (curE != null) currentPasswordShakeTrigger++;
-        if (newE != null) newPasswordShakeTrigger++;
-        if (confE != null) confirmPasswordShakeTrigger++;
-      });
-      return false;
-    }
-
-    setState(() {
-      currentPasswordError = null;
-      newPasswordError = null;
-      confirmPasswordError = null;
-    });
-    return true;
-  }
-
   Future<void> save() async {
-    final name = nameController.text.trim();
-    final phone = phoneController.text.trim();
+    final name = controller.nameController.text.trim();
+    final phone = controller.phoneController.text.trim();
 
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -249,11 +94,11 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
       return;
     }
 
-    if (!_validatePasswordChange()) {
+    if (!controller.validatePasswordChange()) {
       return;
     }
 
-    final bool passwordChanged = _passwordSectionHasInput();
+    final bool passwordChanged = controller.passwordSectionHasInput;
 
     await showCustomerFeedbackPopup(
       context: context,
@@ -274,105 +119,93 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
 
     if (!mounted) return;
 
-    Navigator.of(context).pop(
-      CustomerProfileResult(
-        displayName: name,
-        countryCode: phoneCode,
-        phoneNumber: phone,
-        hasProfileImage: hasProfileImage,
-      ),
-    );
+    Navigator.of(context).pop(controller.buildResult());
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color pageBg = Theme.of(context).scaffoldBackgroundColor;
-    final Color titleColor = AppThemeColors.textPrimary(context);
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final Color pageBg = Theme.of(context).scaffoldBackgroundColor;
+        final Color titleColor = AppThemeColors.textPrimary(context);
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: pageBg,
-        appBar: AppBar(
-          title: const SizedBox.shrink(),
-          centerTitle: true,
-          backgroundColor: pageBg,
-          surfaceTintColor: pageBg,
-          elevation: 0,
-          iconTheme: IconThemeData(color: titleColor),
-        ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            child: Column(
-              children: [
-                const CustomerProfileIntroCard(),
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Scaffold(
+            backgroundColor: pageBg,
+            appBar: AppBar(
+              title: const SizedBox.shrink(),
+              centerTitle: true,
+              backgroundColor: pageBg,
+              surfaceTintColor: pageBg,
+              elevation: 0,
+              iconTheme: IconThemeData(color: titleColor),
+            ),
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                child: Column(
+                  children: [
+                    const CustomerProfileIntroCard(),
 
-                const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                CustomerProfileFormBox(
-                  hasProfileImage: hasProfileImage,
-                  nameController: nameController,
-                  phoneController: phoneController,
-                  selectedCountry: selectedCountry,
-                  phoneCode: phoneCode,
-                  onCountryChanged: (value) {
-                    if (value == null) return;
-                    setState(() {
-                      selectedCountry = value;
-                    });
-                  },
-                  onAddOrChangeImage: _addOrChangeImage,
-                  onRemoveImage: _removeImage,
+                    CustomerProfileFormBox(
+                      hasProfileImage: controller.hasProfileImage,
+                      nameController: controller.nameController,
+                      phoneController: controller.phoneController,
+                      selectedCountry: controller.selectedCountry,
+                      phoneCode: controller.phoneCode,
+                      onCountryChanged: controller.changeCountry,
+                      onAddOrChangeImage: _addOrChangeImage,
+                      onRemoveImage: _removeImage,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    CustomerPasswordBox(
+                      currentPasswordController:
+                          controller.currentPasswordController,
+                      newPasswordController: controller.newPasswordController,
+                      confirmPasswordController:
+                          controller.confirmPasswordController,
+                      showCurrentPassword: controller.showCurrentPassword,
+                      showNewPassword: controller.showNewPassword,
+                      showConfirmPassword: controller.showConfirmPassword,
+                      onToggleCurrent:
+                          controller.toggleCurrentPasswordVisibility,
+                      onToggleNew: controller.toggleNewPasswordVisibility,
+                      onToggleConfirm:
+                          controller.toggleConfirmPasswordVisibility,
+                      currentPasswordError: controller.currentPasswordError,
+                      newPasswordError: controller.newPasswordError,
+                      confirmPasswordError: controller.confirmPasswordError,
+                      currentPasswordShakeTrigger:
+                          controller.currentPasswordShakeTrigger,
+                      newPasswordShakeTrigger:
+                          controller.newPasswordShakeTrigger,
+                      confirmPasswordShakeTrigger:
+                          controller.confirmPasswordShakeTrigger,
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: CustomerProfilePrimarySaveButton(
+                        label: 'حفظ التغييرات',
+                        icon: Icons.save_rounded,
+                        onTap: controller.hasUnsavedChanges ? save : null,
+                      ),
+                    ),
+                  ],
                 ),
-
-                const SizedBox(height: 16),
-
-                CustomerPasswordBox(
-                  currentPasswordController: currentPasswordController,
-                  newPasswordController: newPasswordController,
-                  confirmPasswordController: confirmPasswordController,
-                  showCurrentPassword: showCurrentPassword,
-                  showNewPassword: showNewPassword,
-                  showConfirmPassword: showConfirmPassword,
-                  onToggleCurrent: () {
-                    setState(() {
-                      showCurrentPassword = !showCurrentPassword;
-                    });
-                  },
-                  onToggleNew: () {
-                    setState(() {
-                      showNewPassword = !showNewPassword;
-                    });
-                  },
-                  onToggleConfirm: () {
-                    setState(() {
-                      showConfirmPassword = !showConfirmPassword;
-                    });
-                  },
-                  currentPasswordError: currentPasswordError,
-                  newPasswordError: newPasswordError,
-                  confirmPasswordError: confirmPasswordError,
-                  currentPasswordShakeTrigger: currentPasswordShakeTrigger,
-                  newPasswordShakeTrigger: newPasswordShakeTrigger,
-                  confirmPasswordShakeTrigger: confirmPasswordShakeTrigger,
-                ),
-
-                const SizedBox(height: 18),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: CustomerProfilePrimarySaveButton(
-                    label: 'حفظ التغييرات',
-                    icon: Icons.save_rounded,
-                    onTap: _hasUnsavedChanges ? save : null,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

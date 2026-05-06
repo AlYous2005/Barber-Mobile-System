@@ -44,10 +44,7 @@ class _AuthTransitionScreenState extends State<AuthTransitionScreen>
     );
 
     _progressAnimation = Tween<double>(begin: 0.04, end: 0.92).animate(
-      CurvedAnimation(
-        parent: _progressController,
-        curve: Curves.easeOutCubic,
-      ),
+      CurvedAnimation(parent: _progressController, curve: Curves.easeOutCubic),
     );
 
     _progressController.forward();
@@ -68,16 +65,10 @@ class _AuthTransitionScreenState extends State<AuthTransitionScreen>
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 650),
           pageBuilder: (context, animation, secondaryAnimation) {
-            return HomeScreen(
-              userName: widget.userName,
-              role: widget.role,
-            );
+            return HomeScreen(userName: widget.userName, role: widget.role);
           },
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
+            return FadeTransition(opacity: animation, child: child);
           },
         ),
       );
@@ -192,7 +183,9 @@ class _AuthTransitionScreenState extends State<AuthTransitionScreen>
                             valueColor: const AlwaysStoppedAnimation<Color>(
                               Colors.orange,
                             ),
-                            backgroundColor: Colors.white.withValues(alpha: 0.08),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.08,
+                            ),
                           ),
                         ),
                         Container(

@@ -1,12 +1,11 @@
-import 'dart:async';
-
+// UI + popups
 import 'package:flutter/material.dart';
 
-import '../../widgets/customer/settings/customer_settings_intro_card.dart';
+import '../../controllers/customer/customer_settings_controller.dart';
 import '../../widgets/customer/settings/customer_appearance_settings_card.dart';
 import '../../widgets/customer/settings/customer_notifications_settings_card.dart';
+import '../../widgets/customer/settings/customer_settings_intro_card.dart';
 import '../../widgets/customer/shared/customer_feedback_popup.dart';
-import '../../main.dart';
 
 class CustomerSettingsScreen extends StatefulWidget {
   const CustomerSettingsScreen({super.key});
@@ -16,47 +15,49 @@ class CustomerSettingsScreen extends StatefulWidget {
 }
 
 class _CustomerSettingsScreenState extends State<CustomerSettingsScreen> {
-  bool notificationsEnabled = true;
-  bool isDarkMode = false;
+  late final CustomerSettingsController controller;
 
   @override
   void initState() {
     super.initState();
-    isDarkMode = appThemeMode.value == ThemeMode.dark;
+
+    controller = CustomerSettingsController();
+    controller.initialize();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   Future<void> _toggleNotifications(bool value) async {
-    setState(() {
-      notificationsEnabled = value;
-    });
+    controller.setNotificationsEnabled(value);
 
     await showCustomerFeedbackPopup(
       context: context,
-      title: notificationsEnabled ? 'تم تفعيل الإشعارات' : 'تم إيقاف الإشعارات',
-      message: notificationsEnabled
+      title: controller.notificationsEnabled
+          ? 'تم تفعيل الإشعارات'
+          : 'تم إيقاف الإشعارات',
+      message: controller.notificationsEnabled
           ? 'تم تفعيل الإشعارات للتطبيق'
           : 'تم إيقاف إشعارات التطبيق مؤقتًا',
-      icon: notificationsEnabled
+      icon: controller.notificationsEnabled
           ? Icons.notifications_active_rounded
           : Icons.notifications_off_rounded,
-      iconStartColor: notificationsEnabled
+      iconStartColor: controller.notificationsEnabled
           ? const Color(0xFF22C55E)
           : const Color(0xFFEF4444),
-      iconEndColor: notificationsEnabled
+      iconEndColor: controller.notificationsEnabled
           ? const Color(0xFF86EFAC)
           : const Color(0xFFFCA5A5),
     );
   }
 
   Future<void> _setThemeMode(bool dark) async {
-    setState(() {
-      isDarkMode = dark;
-    });
+    await controller.setThemeMode(dark);
 
-    appThemeMode.value = dark ? ThemeMode.dark : ThemeMode.light;
-    await saveAppThemeMode(appThemeMode.value);
-
-  if (!mounted) return;
+    if (!mounted) return;
 
     await showCustomerFeedbackPopup(
       context: context,
@@ -72,48 +73,53 @@ class _CustomerSettingsScreenState extends State<CustomerSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
-    final Color textColor =
-        Theme.of(context).appBarTheme.iconTheme?.color ??
-        Theme.of(context).colorScheme.onSurface;
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
+        final Color textColor =
+            Theme.of(context).appBarTheme.iconTheme?.color ??
+            Theme.of(context).colorScheme.onSurface;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: pageBackground,
-        appBar: AppBar(
-          title: Text(
-            '',
-            style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Scaffold(
+            backgroundColor: pageBackground,
+            appBar: AppBar(
+              title: Text(
+                '',
+                style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
+              ),
+              centerTitle: true,
+              backgroundColor: pageBackground,
+              surfaceTintColor: pageBackground,
+              elevation: 0,
+              iconTheme: IconThemeData(color: textColor),
+            ),
+            body: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              children: [
+                const CustomerSettingsIntroCard(),
+
+                const SizedBox(height: 16),
+
+                CustomerNotificationsSettingsCard(
+                  notificationsEnabled: controller.notificationsEnabled,
+                  onChanged: _toggleNotifications,
+                ),
+
+                const SizedBox(height: 14),
+
+                CustomerAppearanceSettingsCard(
+                  isDarkMode: controller.isDarkMode,
+                  onSelectLight: () => _setThemeMode(false),
+                  onSelectDark: () => _setThemeMode(true),
+                ),
+              ],
+            ),
           ),
-          centerTitle: true,
-          backgroundColor: pageBackground,
-          surfaceTintColor: pageBackground,
-          elevation: 0,
-          iconTheme: IconThemeData(color: textColor),
-        ),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          children: [
-            const CustomerSettingsIntroCard(),
-
-            const SizedBox(height: 16),
-
-            CustomerNotificationsSettingsCard(
-              notificationsEnabled: notificationsEnabled,
-              onChanged: _toggleNotifications,
-            ),
-
-            const SizedBox(height: 14),
-
-            CustomerAppearanceSettingsCard(
-              isDarkMode: isDarkMode,
-              onSelectLight: () => _setThemeMode(false),
-              onSelectDark: () => _setThemeMode(true),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

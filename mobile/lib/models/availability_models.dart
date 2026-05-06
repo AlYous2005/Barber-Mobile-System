@@ -9,9 +9,7 @@ class ClosureDay {
   final String dateLabel;
   final String reason;
 
-  ClosureDay copyWith({
-    String? reason,
-  }) {
+  ClosureDay copyWith({String? reason}) {
     return ClosureDay(
       id: id,
       dateLabel: dateLabel,

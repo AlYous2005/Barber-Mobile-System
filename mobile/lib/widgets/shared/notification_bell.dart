@@ -31,7 +31,10 @@ class NotificationBell extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.notifications_none_rounded, color: Color(0xFF374151)),
+            child: const Icon(
+              Icons.notifications_none_rounded,
+              color: Color(0xFF374151),
+            ),
           ),
           if (unreadCount > 0)
             Positioned(

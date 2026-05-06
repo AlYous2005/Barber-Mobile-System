@@ -1,13 +1,15 @@
+// UI + dialogs + popups
+
 import 'package:flutter/material.dart';
 
+import '../../controllers/barber/barber_appointments_controller.dart';
 import '../../models/mock_appointment.dart';
-
 import '../../widgets/barber/appointments/add_manual_appointment_button.dart';
-import '../../widgets/barber/appointments/appointments_intro_card.dart';
-import '../../widgets/barber/appointments/appointments_subnav.dart';
-import '../../widgets/barber/appointments/appointment_action_widgets.dart';
-import '../../widgets/barber/appointments/appointments_list_section.dart';
 import '../../widgets/barber/appointments/add_manual_appointment_sheet.dart';
+import '../../widgets/barber/appointments/appointment_action_widgets.dart';
+import '../../widgets/barber/appointments/appointments_intro_card.dart';
+import '../../widgets/barber/appointments/appointments_list_section.dart';
+import '../../widgets/barber/appointments/appointments_subnav.dart';
 import '../../widgets/barber/shared/barber_feedback_popup.dart';
 
 class BarberAppointmentsScreen extends StatefulWidget {
@@ -19,63 +21,39 @@ class BarberAppointmentsScreen extends StatefulWidget {
 }
 
 class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
-  late List<MockAppointment> appointments;
-
-  String selectedTab = 'today';
+  late final BarberAppointmentsController controller;
 
   @override
   void initState() {
     super.initState();
-    appointments = List<MockAppointment>.from(mockBarberAppointments);
+
+    controller = BarberAppointmentsController();
+    controller.loadBarberAppointments();
   }
 
-  List<MockAppointment> get todayAppointments {
-    return appointments.where((appointment) {
-      return appointment.dateLabel.contains('اليوم');
-    }).toList();
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
-  List<MockAppointment> get otherAppointments {
-    return appointments.where((appointment) {
-      return !appointment.dateLabel.contains('اليوم');
-    }).toList();
-  }
+  Future<void> _showSuccessPopup({
+    required String title,
+    required String message,
+    required IconData icon,
+    Color iconStartColor = const Color(0xFF16A34A),
+    Color iconEndColor = const Color(0xFF86EFAC),
+  }) async {
+    if (!mounted) return;
 
-  List<MockAppointment> get activeAppointments {
-    return selectedTab == 'today' ? todayAppointments : otherAppointments;
-  }
-
-  String get activeListTitle {
-    return selectedTab == 'today' ? 'مواعيد اليوم' : 'حجوزات أخرى';
-  }
-
-  String get activeEmptyText {
-    return selectedTab == 'today'
-        ? 'لا توجد مواعيد اليوم حاليًا'
-        : 'لا توجد حجوزات أخرى حاليًا';
-  }
-
-  void _updateStatus(String id, String status) {
-    setState(() {
-      appointments = appointments
-          .map(
-            (item) => item.id == id
-                ? MockAppointment(
-                    id: item.id,
-                    customerName: item.customerName,
-                    barberName: item.barberName,
-                    barberRating: item.barberRating,
-                    serviceName: item.serviceName,
-                    dateLabel: item.dateLabel,
-                    timeLabel: item.timeLabel,
-                    status: status,
-                    startDateTime: item.startDateTime,
-                    endDateTime: item.endDateTime,
-                  )
-                : item,
-          )
-          .toList();
-    });
+    await showBarberFeedbackPopup(
+      context: context,
+      title: title,
+      message: message,
+      icon: icon,
+      iconStartColor: iconStartColor,
+      iconEndColor: iconEndColor,
+    );
   }
 
   void _openAddManualAppointmentSheet() {
@@ -93,18 +71,14 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
           },
           onAddedSuccessfully: () async {
             if (!mounted) return;
-            await showBarberFeedbackPopup(
-              context: this.context,
+
+            await _showSuccessPopup(
               title: 'تمت إضافة الموعد',
               message: 'تمت إضافة الموعد الجديد بنجاح',
               icon: Icons.check_circle_rounded,
             );
           },
-          onAddAppointment: (appointment) {
-            setState(() {
-              appointments.insert(0, appointment);
-            });
-          },
+          onAddAppointment: controller.addManualAppointment,
         );
       },
     );
@@ -167,10 +141,12 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
                       color: color,
                       onTap: () async {
                         Navigator.of(context).pop();
-                        _updateStatus(appointment.id, newStatus);
+
+                        controller.updateStatus(appointment.id, newStatus);
+
                         if (!mounted) return;
-                        await showBarberFeedbackPopup(
-                          context: this.context,
+
+                        await _showSuccessPopup(
                           title: successTitle,
                           message: successMessage,
                           icon: successIcon,
@@ -203,7 +179,8 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
       appointment: appointment,
       newStatus: 'مؤكد',
       title: 'تأكيد الموعد',
-      message: 'هل تريد تأكيد موعد الزبون "${appointment.customerName}"؟',
+      message:
+          'هل تريد تأكيد موعد الزبون "${appointment.displayCustomerName}"؟',
       confirmText: 'تأكيد',
       color: const Color(0xFF3D7A5C),
       successTitle: 'تم تأكيد الموعد',
@@ -220,7 +197,7 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
       newStatus: 'مكتمل',
       title: 'تسجيل حضور الزبون',
       message:
-          'هل تريد تسجيل حضور "${appointment.customerName}" وإنهاء الموعد؟',
+          'هل تريد تسجيل حضور "${appointment.displayCustomerName}" وإنهاء الموعد؟',
       confirmText: 'تسجيل حضور',
       color: const Color(0xFF4A6FA8),
       successTitle: 'تم تسجيل الحضور',
@@ -236,7 +213,8 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
       appointment: appointment,
       newStatus: 'لم يحضر',
       title: 'تسجيل عدم حضور',
-      message: 'هل تريد تسجيل أن الزبون "${appointment.customerName}" لم يحضر؟',
+      message:
+          'هل تريد تسجيل أن الزبون "${appointment.displayCustomerName}" لم يحضر؟',
       confirmText: 'عدم حضور',
       color: const Color(0xFFC2783A),
       successTitle: 'تم تسجيل عدم الحضور',
@@ -252,7 +230,8 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
       appointment: appointment,
       newStatus: 'ملغي',
       title: 'إلغاء الموعد',
-      message: 'هل تريد إلغاء موعد الزبون "${appointment.customerName}"؟',
+      message:
+          'هل تريد إلغاء موعد الزبون "${appointment.displayCustomerName}"؟',
       confirmText: 'إلغاء الموعد',
       color: const Color(0xFFC9544A),
       successTitle: 'تم إلغاء الموعد',
@@ -263,74 +242,98 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
     );
   }
 
-  bool _isFinalStatus(String status) {
-    return status == 'مكتمل' ||
-        status == 'مكتملة' ||
-        status == 'ملغي' ||
-        status == 'ملغية' ||
-        status == 'لم يحضر';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
-    final Color appBarTextColor =
-        Theme.of(context).appBarTheme.iconTheme?.color ??
-        Theme.of(context).colorScheme.onSurface;
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
+        final Color appBarTextColor =
+            Theme.of(context).appBarTheme.iconTheme?.color ??
+            Theme.of(context).colorScheme.onSurface;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: pageBackground,
-        appBar: AppBar(
-          title: Text(
-            '',
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              color: appBarTextColor,
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Scaffold(
+            backgroundColor: pageBackground,
+            appBar: AppBar(
+              title: Text(
+                '',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  color: appBarTextColor,
+                ),
+              ),
+              centerTitle: true,
+              backgroundColor: pageBackground,
+              surfaceTintColor: pageBackground,
+              elevation: 0,
+              iconTheme: IconThemeData(color: appBarTextColor),
+            ),
+            body: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+              children: [
+                const AppointmentsSectionIntro(),
+
+                const SizedBox(height: 14),
+
+                AddManualAppointmentButton(
+                  onTap: _openAddManualAppointmentSheet,
+                ),
+
+                const SizedBox(height: 14),
+
+                AppointmentsSubnav(
+                  selectedTab: controller.selectedTab,
+                  onChanged: controller.changeTab,
+                ),
+
+                const SizedBox(height: 16),
+
+                if (controller.isLoadingAppointments)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (controller.appointmentsErrorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline_rounded, size: 42),
+                        const SizedBox(height: 12),
+                        Text(
+                          controller.appointmentsErrorMessage!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        ElevatedButton(
+                          onPressed: controller.loadBarberAppointments,
+                          child: const Text('إعادة المحاولة'),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  AppointmentsListSection(
+                    title: controller.activeListTitle,
+                    emptyText: controller.activeEmptyText,
+                    appointments: controller.activeAppointments,
+                    isFinalStatus: controller.isFinalStatus,
+                    onConfirm: _handleConfirmAppointment,
+                    onCheckIn: _handleCheckIn,
+                    onNoShow: _handleNoShow,
+                    onCancel: _handleCancel,
+                  ),
+              ],
             ),
           ),
-          centerTitle: true,
-          backgroundColor: pageBackground,
-          surfaceTintColor: pageBackground,
-          elevation: 0,
-          iconTheme: IconThemeData(color: appBarTextColor),
-        ),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-          children: [
-            const AppointmentsSectionIntro(),
-
-            const SizedBox(height: 14),
-
-            AddManualAppointmentButton(onTap: _openAddManualAppointmentSheet),
-
-            const SizedBox(height: 14),
-
-            AppointmentsSubnav(
-              selectedTab: selectedTab,
-              onChanged: (value) {
-                setState(() {
-                  selectedTab = value;
-                });
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            AppointmentsListSection(
-              title: activeListTitle,
-              emptyText: activeEmptyText,
-              appointments: activeAppointments,
-              isFinalStatus: _isFinalStatus,
-              onConfirm: _handleConfirmAppointment,
-              onCheckIn: _handleCheckIn,
-              onNoShow: _handleNoShow,
-              onCancel: _handleCancel,
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

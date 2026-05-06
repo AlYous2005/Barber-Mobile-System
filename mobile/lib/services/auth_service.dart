@@ -39,8 +39,9 @@ class AuthService {
 
       return AppUser(
         username: trimmedUsername,
-        displayName: trimmedUsername,
+        displayName: 'أحمد',
         role: 'barber',
+        barberId: 'b1',
       );
     }
 
@@ -56,12 +57,19 @@ class AuthService {
         signedUpCustomerDisplayName != null &&
             signedUpCustomerDisplayName.trim().isNotEmpty
         ? signedUpCustomerDisplayName.trim()
-        : trimmedUsername;
+        : '';
+
+    final nameParts = displayName
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
 
     return AppUser(
       username: trimmedUsername,
       displayName: displayName,
       role: 'customer',
+      firstName: nameParts.isNotEmpty ? nameParts.first : null,
+      lastName: nameParts.length > 1 ? nameParts.sublist(1).join(' ') : null,
     );
   }
 

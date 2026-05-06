@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class BarberLogoutItem extends StatelessWidget {
-  const BarberLogoutItem({
-    super.key,
-    required this.onTap,
-  });
+  const BarberLogoutItem({super.key, required this.onTap});
 
   final VoidCallback onTap;
 
@@ -28,11 +25,7 @@ class BarberLogoutItem extends StatelessWidget {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.logout_rounded,
-                color: Color(0xFFFCA5A5),
-                size: 18,
-              ),
+              Icon(Icons.logout_rounded, color: Color(0xFFFCA5A5), size: 18),
               SizedBox(width: 8),
               Text(
                 'تسجيل الخروج',

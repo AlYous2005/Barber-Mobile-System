@@ -17,10 +17,7 @@ class NotificationHeaderButton extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        HeaderIconButton(
-          icon: Icons.notifications_none_rounded,
-          onTap: onTap,
-        ),
+        HeaderIconButton(icon: Icons.notifications_none_rounded, onTap: onTap),
         if (unreadCount > 0)
           Positioned(
             top: -4,
@@ -32,10 +29,7 @@ class NotificationHeaderButton extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFEF4444),
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: Colors.white,
-                  width: 1.6,
-                ),
+                border: Border.all(color: Colors.white, width: 1.6),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x22EF4444),

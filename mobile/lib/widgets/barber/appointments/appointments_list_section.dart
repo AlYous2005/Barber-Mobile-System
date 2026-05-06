@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../models/mock_appointment.dart';
 import '../../../utils/app_theme_colors.dart';
+import '../../../utils/booking_formatters.dart';
+import '../../../utils/appointment_status_utils.dart';
 import 'appointment_action_widgets.dart';
 
 class AppointmentsListSection extends StatelessWidget {
@@ -280,7 +282,33 @@ class _AppointmentLuxuryCardState extends State<AppointmentLuxuryCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              StatusBadge(status: appointment.status),
+              Row(
+                textDirection: TextDirection.ltr,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: appointment.createdAt != null
+                          ? Text(
+                              formatAppointmentBookedAtLine(
+                                appointment.createdAt!,
+                              ),
+                              textDirection: TextDirection.rtl,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppThemeColors.textMuted(context),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ),
+                  StatusBadge(status: appointment.status),
+                ],
+              ),
 
               const SizedBox(height: 14),
 
@@ -303,7 +331,7 @@ class _AppointmentLuxuryCardState extends State<AppointmentLuxuryCard> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      appointment.customerName,
+                      appointment.displayCustomerName,
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w900,
@@ -325,7 +353,7 @@ class _AppointmentLuxuryCardState extends State<AppointmentLuxuryCard> {
 
               AppointmentDetailLine(
                 icon: Icons.access_time_rounded,
-                text: appointment.timeLabel,
+                text: appointment.displayTimeRange,
               ),
 
               const SizedBox(height: 10),
@@ -403,24 +431,7 @@ class StatusBadge extends StatelessWidget {
   final String status;
 
   String get label {
-    switch (status) {
-      case 'قادم':
-        return 'محجوز';
-      case 'مؤكد':
-        return 'مؤكد';
-      case 'مكتمل':
-      case 'مكتملة':
-        return 'منجز';
-      case 'ملغي':
-      case 'ملغية':
-        return 'ملغي';
-      case 'لم يحضر':
-        return 'لم يحضر';
-      case 'جاري':
-        return 'جاري';
-      default:
-        return status;
-    }
+    return AppointmentStatusUtils.displayLabel(status);
   }
 
   Color get textColor {
@@ -459,22 +470,19 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: gradientColors),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: textColor.withValues(alpha: 0.22)),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w900,
-            color: textColor,
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: gradientColors),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: textColor.withValues(alpha: 0.22)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+          color: textColor,
         ),
       ),
     );

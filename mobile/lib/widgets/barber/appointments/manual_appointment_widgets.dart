@@ -2,8 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../models/mock_service.dart';
+
 import '../../../utils/app_theme_colors.dart';
+import '../../../data/mocks/mock_services.dart';
 
 class ManualAppointmentTextField extends StatelessWidget {
   const ManualAppointmentTextField({

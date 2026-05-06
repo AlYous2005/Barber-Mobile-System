@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/mock_notification.dart';
+
+import '../../data/mocks/mock_notifications.dart';
 
 class CustomerNotificationsScreen extends StatelessWidget {
   const CustomerNotificationsScreen({super.key});

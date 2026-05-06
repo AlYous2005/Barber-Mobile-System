@@ -38,35 +38,24 @@ class AuthTextField extends StatelessWidget {
 
     final OutlineInputBorder baseBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(
-        color: Colors.white.withValues(alpha: 0.12),
-      ),
+      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
     );
 
     final OutlineInputBorder focusedOutline = OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(
-        color: Colors.orange,
-        width: 1.5,
-      ),
+      borderSide: const BorderSide(color: Colors.orange, width: 1.5),
     );
 
     final OutlineInputBorder errorOutline = OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(
-        color: Color(0xFFFF7043),
-        width: 1.5,
-      ),
+      borderSide: const BorderSide(color: Color(0xFFFF7043), width: 1.5),
     );
 
     return TextField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.w700,
-      ),
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
       cursorColor: Colors.orange,
       decoration: InputDecoration(
         filled: true,

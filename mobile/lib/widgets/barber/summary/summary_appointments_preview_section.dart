@@ -109,7 +109,7 @@ class PreviewAppointmentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  appointment.customerName,
+                  appointment.displayCustomerName,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
@@ -127,7 +127,7 @@ class PreviewAppointmentCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${appointment.dateLabel} • ${appointment.timeLabel}',
+                  '${appointment.dateLabel} • ${appointment.displayTimeRange}',
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,

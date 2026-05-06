@@ -16,8 +16,9 @@ class BarberMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color accentColor =
-        isSelected ? const Color(0xFFC47A3D) : const Color(0xFF8B6B55);
+    final Color accentColor = isSelected
+        ? const Color(0xFFC47A3D)
+        : const Color(0xFF8B6B55);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 9),

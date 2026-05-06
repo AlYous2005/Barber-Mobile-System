@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../models/mock_appointment.dart';
 import '../../../utils/app_theme_colors.dart';
+import '../../../utils/booking_formatters.dart';
 import 'timeline_marquee_text.dart';
 import 'timeline_radar_circle.dart';
 import 'timeline_status_badge.dart';
@@ -63,17 +64,6 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
   void dispose() {
     _timer?.cancel();
     super.dispose();
-  }
-
-  String _formatClock(DateTime dateTime) {
-    final int hour = dateTime.hour;
-    final int minute = dateTime.minute;
-
-    final String period = hour >= 12 ? 'مساءً' : 'صباحًا';
-    final int displayHour = hour % 12 == 0 ? 12 : hour % 12;
-    final String displayMinute = minute.toString().padLeft(2, '0');
-
-    return '$displayHour:$displayMinute $period';
   }
 
   String _formatCountdown(Duration duration) {
@@ -149,7 +139,7 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
     final String switchLabel = isCurrentMode ? 'القادم' : 'الحالي';
 
     final String titleText = hasAppointment
-        ? appointment.customerName
+        ? appointment.displayCustomerName
         : isCurrentMode
         ? 'لا يوجد موعد حالياً'
         : 'لا يوجد موعد قادم';
@@ -169,7 +159,10 @@ class _BarberTimelineCardState extends State<BarberTimelineCard> {
         : '—';
 
     final String timeRange = hasAppointment
-        ? '${_formatClock(appointment.startDateTime)} — ${_formatClock(appointment.endDateTime)}'
+        ? formatArabicAppointmentTimeRange(
+            appointment.startDateTime,
+            appointment.endDateTime,
+          )
         : '— — —';
 
     return Column(

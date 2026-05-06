@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../models/ui_service_model.dart';
 import '../../../utils/app_theme_colors.dart';
-import 'service_field_validation.dart';
+import '../../../utils/validators/service_field_validation.dart';
 import 'service_form_widgets.dart';
 
 class EditServiceSheet extends StatefulWidget {

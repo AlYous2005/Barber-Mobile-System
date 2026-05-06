@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AnimatedCrownName extends StatefulWidget {
-  const AnimatedCrownName({
-    super.key,
-    required this.displayName,
-  });
+  const AnimatedCrownName({super.key, required this.displayName});
 
   final String displayName;
 
@@ -31,32 +28,17 @@ class _AnimatedCrownNameState extends State<AnimatedCrownName>
     _scaleAnimation = Tween<double>(
       begin: 0.96,
       end: 1.06,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _glowAnimation = Tween<double>(
       begin: 0.18,
       end: 0.42,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _floatAnimation = Tween<double>(
       begin: 1.5,
       end: -1.5,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -87,9 +69,9 @@ class _AnimatedCrownNameState extends State<AnimatedCrownName>
                     color: const Color(0xFFFDF4D8),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFC47A3D).withValues(
-                          alpha: _glowAnimation.value,
-                        ),
+                        color: const Color(
+                          0xFFC47A3D,
+                        ).withValues(alpha: _glowAnimation.value),
                         blurRadius: 14,
                         spreadRadius: 1.5,
                       ),

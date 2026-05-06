@@ -1,11 +1,14 @@
+//
+
 import 'package:flutter/material.dart';
 
-import '../../utils/app_theme_colors.dart';
+import '../../controllers/barber/barber_working_hours_controller.dart';
 import '../../models/working_day_model.dart';
-import '../../widgets/barber/working_hours/working_hours_intro_card.dart';
+import '../../utils/app_theme_colors.dart';
+import '../../widgets/barber/shared/barber_feedback_popup.dart';
 import '../../widgets/barber/working_hours/working_day_card.dart';
 import '../../widgets/barber/working_hours/working_hours_edit_sheet.dart';
-import '../../widgets/barber/shared/barber_feedback_popup.dart';
+import '../../widgets/barber/working_hours/working_hours_intro_card.dart';
 
 class BarberWorkingHoursScreen extends StatefulWidget {
   const BarberWorkingHoursScreen({super.key});
@@ -16,63 +19,19 @@ class BarberWorkingHoursScreen extends StatefulWidget {
 }
 
 class _BarberWorkingHoursScreenState extends State<BarberWorkingHoursScreen> {
-  late List<WorkingDay> workingDays;
+  late final BarberWorkingHoursController controller;
 
   @override
   void initState() {
     super.initState();
 
-    workingDays = const [
-      WorkingDay(
-        dayKey: 'saturday',
-        dayName: 'السبت',
-        startTime: '09:00',
-        endTime: '21:00',
-        isActive: true,
-      ),
-      WorkingDay(
-        dayKey: 'sunday',
-        dayName: 'الأحد',
-        startTime: '09:00',
-        endTime: '21:00',
-        isActive: true,
-      ),
-      WorkingDay(
-        dayKey: 'monday',
-        dayName: 'الإثنين',
-        startTime: '09:00',
-        endTime: '21:00',
-        isActive: true,
-      ),
-      WorkingDay(
-        dayKey: 'tuesday',
-        dayName: 'الثلاثاء',
-        startTime: '09:00',
-        endTime: '21:00',
-        isActive: true,
-      ),
-      WorkingDay(
-        dayKey: 'wednesday',
-        dayName: 'الأربعاء',
-        startTime: '09:00',
-        endTime: '21:00',
-        isActive: true,
-      ),
-      WorkingDay(
-        dayKey: 'thursday',
-        dayName: 'الخميس',
-        startTime: '09:00',
-        endTime: '18:00',
-        isActive: true,
-      ),
-      WorkingDay(
-        dayKey: 'friday',
-        dayName: 'الجمعة',
-        startTime: '00:00',
-        endTime: '00:00',
-        isActive: false,
-      ),
-    ];
+    controller = BarberWorkingHoursController();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   void _openEditSheet(WorkingDay day) {
@@ -86,18 +45,15 @@ class _BarberWorkingHoursScreenState extends State<BarberWorkingHoursScreen> {
       },
     ).then((updatedDay) {
       if (!mounted || updatedDay == null) return;
-      setState(() {
-        workingDays = workingDays.map((item) {
-          if (item.dayKey != updatedDay.dayKey) return item;
-          return updatedDay;
-        }).toList();
-      });
+
+      controller.updateWorkingDay(updatedDay);
       _showWorkingHoursSavedPopup();
     });
   }
 
   Future<void> _showWorkingHoursSavedPopup() async {
     if (!mounted) return;
+
     await showBarberFeedbackPopup(
       context: context,
       title: 'تم تحديث ساعات العمل',
@@ -108,55 +64,47 @@ class _BarberWorkingHoursScreenState extends State<BarberWorkingHoursScreen> {
     );
   }
 
-  static String _formatTime(String value) {
-    final parts = value.split(':');
-    final hour = int.tryParse(parts.first) ?? 0;
-    final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
-
-    final time = TimeOfDay(hour: hour, minute: minute);
-    final displayHour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
-    final displayMinute = time.minute.toString().padLeft(2, '0');
-    final period = time.period == DayPeriod.am ? 'صباحًا' : 'مساءً';
-
-    return '$displayHour:$displayMinute $period';
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(
-          title: Text(
-            '',
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              color: AppThemeColors.textPrimary(context),
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            appBar: AppBar(
+              title: Text(
+                '',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  color: AppThemeColors.textPrimary(context),
+                ),
+              ),
+              centerTitle: true,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
+              elevation: 0,
+            ),
+            body: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              children: [
+                const WorkingHoursIntroCard(),
+
+                const SizedBox(height: 16),
+
+                ...controller.workingDays.map(
+                  (day) => WorkingDayCard(
+                    day: day,
+                    formatTime: controller.formatTime,
+                    onEdit: () => _openEditSheet(day),
+                  ),
+                ),
+              ],
             ),
           ),
-          centerTitle: true,
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
-          elevation: 0,
-        ),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          children: [
-            const WorkingHoursIntroCard(),
-
-            const SizedBox(height: 16),
-
-            ...workingDays.map(
-              (day) => WorkingDayCard(
-                day: day,
-                formatTime: _formatTime,
-                onEdit: () => _openEditSheet(day),
-              ),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

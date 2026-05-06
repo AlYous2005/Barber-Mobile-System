@@ -1,11 +1,12 @@
+// UI + popups
 import 'package:flutter/material.dart';
 
-import '../../widgets/barber/settings/settings_intro_card.dart';
-import '../../widgets/barber/settings/theme_settings_card.dart';
+import '../../controllers/barber/barber_settings_controller.dart';
 import '../../widgets/barber/settings/notifications_settings_card.dart';
 import '../../widgets/barber/settings/salon_image_settings_card.dart';
+import '../../widgets/barber/settings/settings_intro_card.dart';
+import '../../widgets/barber/settings/theme_settings_card.dart';
 import '../../widgets/barber/shared/barber_feedback_popup.dart';
-import '../../main.dart';
 
 class BarberSettingsScreen extends StatefulWidget {
   const BarberSettingsScreen({super.key, required this.onLogout});
@@ -17,9 +18,7 @@ class BarberSettingsScreen extends StatefulWidget {
 }
 
 class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
-  bool notificationsEnabled = true;
-  bool isDarkMode = false;
-  bool hasSalonImage = false;
+  late final BarberSettingsController controller;
 
   static const Color _accentGreenStart = Color(0xFF16A34A);
   static const Color _accentGreenEnd = Color(0xFF86EFAC);
@@ -31,17 +30,25 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    isDarkMode = appThemeMode.value == ThemeMode.dark;
+
+    controller = BarberSettingsController();
+    controller.initialize();
   }
 
-  void _toggleNotifications() {
-    setState(() {
-      notificationsEnabled = !notificationsEnabled;
-    });
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
-    final bool enabled = notificationsEnabled;
+  Future<void> _toggleNotifications() async {
+    controller.toggleNotifications();
+
+    final bool enabled = controller.notificationsEnabled;
+
     if (!mounted) return;
-    showBarberFeedbackPopup(
+
+    await showBarberFeedbackPopup(
       context: context,
       title: enabled ? 'تم تفعيل الإشعارات' : 'تم إيقاف الإشعارات',
       message: enabled
@@ -55,21 +62,13 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
     );
   }
 
-  void _toggleThemeMode(bool value) {
-    _applyThemeModeChange(value);
-  }
-
-  Future<void> _applyThemeModeChange(bool value) async {
-    setState(() {
-      isDarkMode = value;
-    });
-
-    appThemeMode.value = value ? ThemeMode.dark : ThemeMode.light;
-    await saveAppThemeMode(appThemeMode.value);
+  Future<void> _toggleThemeMode(bool value) async {
+    await controller.setThemeMode(value);
 
     if (!mounted) return;
 
-    final bool dark = isDarkMode;
+    final bool dark = controller.isDarkMode;
+
     await showBarberFeedbackPopup(
       context: context,
       title: dark ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع الصباحي',
@@ -82,17 +81,13 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
     );
   }
 
-  void _addOrChangeSalonImage() {
-    final bool alreadyHadImage = hasSalonImage;
-
-    setState(() {
-      hasSalonImage = true;
-    });
+  Future<void> _addOrChangeSalonImage() async {
+    final bool alreadyHadImage = controller.addOrChangeSalonImage();
 
     if (!mounted) return;
 
     if (!alreadyHadImage) {
-      showBarberFeedbackPopup(
+      await showBarberFeedbackPopup(
         context: context,
         title: 'تمت إضافة صورة الصالون',
         message: 'تمت إضافة صورة الصالون بنجاح',
@@ -100,25 +95,25 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
         iconStartColor: _accentGreenStart,
         iconEndColor: _accentGreenEnd,
       );
-    } else {
-      showBarberFeedbackPopup(
-        context: context,
-        title: 'تم تعديل صورة الصالون',
-        message: 'تم تعديل صورة الصالون بنجاح',
-        icon: Icons.image_rounded,
-        iconStartColor: const Color(0xFFC47A3D),
-        iconEndColor: const Color(0xFFEAB07A),
-      );
+      return;
     }
+
+    await showBarberFeedbackPopup(
+      context: context,
+      title: 'تم تعديل صورة الصالون',
+      message: 'تم تعديل صورة الصالون بنجاح',
+      icon: Icons.image_rounded,
+      iconStartColor: const Color(0xFFC47A3D),
+      iconEndColor: const Color(0xFFEAB07A),
+    );
   }
 
-  void _removeSalonImage() {
-    setState(() {
-      hasSalonImage = false;
-    });
+  Future<void> _removeSalonImage() async {
+    controller.removeSalonImage();
 
     if (!mounted) return;
-    showBarberFeedbackPopup(
+
+    await showBarberFeedbackPopup(
       context: context,
       title: 'تمت إزالة صورة الصالون',
       message: 'تمت إزالة صورة الصالون بنجاح',
@@ -130,55 +125,62 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
-    final Color textColor =
-        Theme.of(context).appBarTheme.iconTheme?.color ??
-        Theme.of(context).colorScheme.onSurface;
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final Color pageBackground = Theme.of(context).scaffoldBackgroundColor;
+        final Color textColor =
+            Theme.of(context).appBarTheme.iconTheme?.color ??
+            Theme.of(context).colorScheme.onSurface;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: pageBackground,
-        appBar: AppBar(
-          title: Text(
-            '',
-            style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Scaffold(
+            backgroundColor: pageBackground,
+            appBar: AppBar(
+              title: Text(
+                '',
+                style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
+              ),
+              centerTitle: true,
+              backgroundColor: pageBackground,
+              surfaceTintColor: pageBackground,
+              elevation: 0,
+              iconTheme: IconThemeData(color: textColor),
+            ),
+            body: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              children: [
+                const SettingsIntroCard(),
+
+                const SizedBox(height: 16),
+
+                SalonImageSettingsCard(
+                  hasSalonImage: controller.hasSalonImage,
+                  onAddOrChangeImage: _addOrChangeSalonImage,
+                  onRemoveImage: _removeSalonImage,
+                ),
+
+                const SizedBox(height: 16),
+
+                NotificationsSettingsCard(
+                  notificationsEnabled: controller.notificationsEnabled,
+                  onToggle: _toggleNotifications,
+                ),
+
+                const SizedBox(height: 14),
+
+                ThemeSettingsCard(
+                  isDarkMode: controller.isDarkMode,
+                  onChanged: _toggleThemeMode,
+                ),
+
+                const SizedBox(height: 14),
+              ],
+            ),
           ),
-          centerTitle: true,
-          backgroundColor: pageBackground,
-          surfaceTintColor: pageBackground,
-          elevation: 0,
-          iconTheme: IconThemeData(color: textColor),
-        ),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          children: [
-            const SettingsIntroCard(),
-            const SizedBox(height: 16),
-
-            SalonImageSettingsCard(
-              hasSalonImage: hasSalonImage,
-              onAddOrChangeImage: _addOrChangeSalonImage,
-              onRemoveImage: _removeSalonImage,
-            ),
-            const SizedBox(height: 16),
-
-            NotificationsSettingsCard(
-              notificationsEnabled: notificationsEnabled,
-              onToggle: _toggleNotifications,
-            ),
-
-            const SizedBox(height: 14),
-
-            ThemeSettingsCard(
-              isDarkMode: isDarkMode,
-              onChanged: _toggleThemeMode,
-            ),
-
-            const SizedBox(height: 14),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

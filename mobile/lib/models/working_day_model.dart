@@ -13,11 +13,7 @@ class WorkingDay {
   final String endTime;
   final bool isActive;
 
-  WorkingDay copyWith({
-    String? startTime,
-    String? endTime,
-    bool? isActive,
-  }) {
+  WorkingDay copyWith({String? startTime, String? endTime, bool? isActive}) {
     return WorkingDay(
       dayKey: dayKey,
       dayName: dayName,

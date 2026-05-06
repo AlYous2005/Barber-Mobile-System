@@ -26,10 +26,7 @@ class AuthLegalAgreementText extends StatelessWidget {
             height: 1.4,
           ),
         ),
-        _LegalLink(
-          text: "شروط الاستخدام",
-          onTap: onTermsTap,
-        ),
+        _LegalLink(text: "شروط الاستخدام", onTap: onTermsTap),
         const Text(
           " و ",
           style: TextStyle(
@@ -38,20 +35,14 @@ class AuthLegalAgreementText extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        _LegalLink(
-          text: "سياسة الخصوصية",
-          onTap: onPrivacyTap,
-        ),
+        _LegalLink(text: "سياسة الخصوصية", onTap: onPrivacyTap),
       ],
     );
   }
 }
 
 class _LegalLink extends StatelessWidget {
-  const _LegalLink({
-    required this.text,
-    required this.onTap,
-  });
+  const _LegalLink({required this.text, required this.onTap});
 
   final String text;
   final VoidCallback onTap;

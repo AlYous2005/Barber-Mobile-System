@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../utils/app_theme_colors.dart';
-
-enum BookingDateChoice { today, tomorrow, custom }
+import '../../../models/booking_date_choice.dart';
 
 class BookingDateSelector extends StatefulWidget {
   const BookingDateSelector({

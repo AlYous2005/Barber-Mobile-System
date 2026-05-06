@@ -45,12 +45,7 @@ class CustomerAppointmentsSection extends StatelessWidget {
           else
             ...upcomingAppointments.map(
               (item) => CustomerAppointmentCard(
-                barberName: item.barberName,
-                barberRating: item.barberRating,
-                serviceName: item.serviceName,
-                dateLabel: item.dateLabel,
-                timeLabel: item.timeLabel,
-                status: item.status,
+                appointment: item,
                 onRate: null,
                 onCancel: canCancelAppointment(item)
                     ? () => onCancelAppointment(item)
@@ -64,12 +59,7 @@ class CustomerAppointmentsSection extends StatelessWidget {
           else
             ...previousAppointments.map(
               (item) => CustomerAppointmentCard(
-                barberName: item.barberName,
-                barberRating: item.barberRating,
-                serviceName: item.serviceName,
-                dateLabel: item.dateLabel,
-                timeLabel: item.timeLabel,
-                status: item.status,
+                appointment: item,
                 onRate: item.isCompleted ? () => onRateAppointment(item) : null,
                 onCancel: null,
                 onRebook: () => onRebookAppointment(item),

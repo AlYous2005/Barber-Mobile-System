@@ -257,8 +257,8 @@ class AuthBirthDateSelector extends StatelessWidget {
                       color: showFieldError
                           ? const Color(0xFFFFCCBC)
                           : hasDate
-                              ? Colors.white
-                              : Colors.white54,
+                          ? Colors.white
+                          : Colors.white54,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),

@@ -191,7 +191,7 @@ class BarberDropdownMenu extends StatelessWidget {
 
                           const SizedBox(height: 8),
 
-                         BarberLogoutItem(onTap: onLogoutTap),
+                          BarberLogoutItem(onTap: onLogoutTap),
                         ],
                       ),
                     ),
@@ -205,6 +205,3 @@ class BarberDropdownMenu extends StatelessWidget {
     );
   }
 }
-
-
-

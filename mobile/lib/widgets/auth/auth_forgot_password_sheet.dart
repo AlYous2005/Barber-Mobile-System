@@ -188,13 +188,13 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
                     backgroundColor: Colors.orange,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: Text(loading ? "جاري التحقق..." : "إرسال",
-                  style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),),
-                  
-                  
+                  child: Text(
+                    loading ? "جاري التحقق..." : "إرسال",
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
 

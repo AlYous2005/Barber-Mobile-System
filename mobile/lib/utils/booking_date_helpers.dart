@@ -1,4 +1,4 @@
-import '../widgets/customer/booking/booking_date_selector.dart';
+import '../models/booking_date_choice.dart';
 
 DateTime startOfDay(DateTime date) {
   return DateTime(date.year, date.month, date.day);
@@ -17,7 +17,10 @@ DateTime resolveBookingDate(BookingDateChoice choice, DateTime? customDate) {
   }
 }
 
-String resolveDateDisplayLabel(BookingDateChoice choice, DateTime resolvedDate) {
+String resolveDateDisplayLabel(
+  BookingDateChoice choice,
+  DateTime resolvedDate,
+) {
   switch (choice) {
     case BookingDateChoice.today:
       return 'اليوم';
