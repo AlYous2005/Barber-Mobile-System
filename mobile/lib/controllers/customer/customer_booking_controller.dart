@@ -9,6 +9,8 @@ import '../../repositories/service_repository.dart';
 import '../../services/auth_session.dart';
 import '../../utils/booking_date_helpers.dart';
 import '../../models/booking_date_choice.dart';
+import '../../models/selected_booking_service.dart';
+import '../../models/service_target.dart';
 
 class CustomerBookingController extends ChangeNotifier {
   CustomerBookingController({
@@ -38,26 +40,28 @@ class CustomerBookingController extends ChangeNotifier {
   List<ServiceModel> availableServices = [];
 
   BarberModel? selectedBarber;
-  List<ServiceModel> selectedServices = [];
+  List<SelectedBookingService> selectedServices = [];
   BookingDateChoice dateChoice = BookingDateChoice.today;
   DateTime? customDate;
   String? selectedTime;
 
   int get selectedTotalPrice {
-    return selectedServices.fold(0, (sum, service) => sum + service.price);
+    return selectedServices.fold(0, (sum, selected) => sum + selected.price);
   }
 
   int get selectedTotalDuration {
     return selectedServices.fold(
       0,
-      (sum, service) => sum + service.durationMinutes,
+      (sum, selected) => sum + selected.durationMinutes,
     );
   }
 
   ServiceModel get combinedSelectedService {
     return ServiceModel(
-      id: selectedServices.map((service) => service.id).join('-'),
-      name: selectedServices.map((service) => service.name).join(' - '),
+      id: selectedServices.map((selected) => selected.uniqueKey).join('-'),
+      name: selectedServices
+          .map((selected) => selected.displayName)
+          .join(' - '),
       durationMinutes: selectedTotalDuration,
       price: selectedTotalPrice,
     );
@@ -108,34 +112,48 @@ class CustomerBookingController extends ChangeNotifier {
     try {
       final barbers = await _barberRepository.getAvailableBarbers();
 
-      final services = await _serviceRepository.getAvailableServices(
-        barberId: selectedBarber?.id ?? '',
-      );
-
       availableBarbers = barbers;
-      availableServices = services;
+
+      if (selectedBarber != null) {
+        final services = await _serviceRepository.getAvailableServices(
+          barberId: selectedBarber!.id,
+        );
+
+        availableServices = services;
+      } else {
+        availableServices = [];
+      }
+
       isLoadingData = false;
       notifyListeners();
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('CustomerBookingController load error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
       dataErrorMessage = 'تعذر تحميل بيانات الحجز، حاول مرة أخرى';
       isLoadingData = false;
       notifyListeners();
     }
   }
 
-  bool isServiceSelected(ServiceModel service) {
-    return selectedServices.any((item) => item.id == service.id);
+  bool isServiceSelected(ServiceModel service, ServiceTarget target) {
+    return selectedServices.any((item) {
+      return item.service.id == service.id && item.target == target;
+    });
   }
 
-  void toggleService(ServiceModel service) {
-    final bool alreadySelected = isServiceSelected(service);
+  void toggleService(ServiceModel service, ServiceTarget target) {
+    final bool alreadySelected = isServiceSelected(service, target);
 
     if (alreadySelected) {
-      selectedServices = selectedServices
-          .where((item) => item.id != service.id)
-          .toList();
+      selectedServices = selectedServices.where((item) {
+        return !(item.service.id == service.id && item.target == target);
+      }).toList();
     } else {
-      selectedServices = [...selectedServices, service];
+      selectedServices = [
+        ...selectedServices,
+        SelectedBookingService(service: service, target: target),
+      ];
     }
 
     selectedTime = null;
@@ -158,7 +176,10 @@ class CustomerBookingController extends ChangeNotifier {
       availableServices = services;
       isLoadingData = false;
       notifyListeners();
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('CustomerBookingController services load error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
       dataErrorMessage = 'تعذر تحميل خدمات الحلاق، حاول مرة أخرى';
       isLoadingData = false;
       notifyListeners();
@@ -250,6 +271,7 @@ class CustomerBookingController extends ChangeNotifier {
 
       final createdBooking = await _bookingRepository.createBooking(
         booking: booking,
+        selectedServices: selectedServices,
         customerId: currentUser?.username ?? 'guest_customer',
         customerName: resolvedCustomerName,
       );

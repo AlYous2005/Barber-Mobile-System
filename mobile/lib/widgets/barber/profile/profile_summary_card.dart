@@ -7,11 +7,15 @@ class ProfileSummaryCard extends StatelessWidget {
     super.key,
     required this.barberName,
     required this.hasSelectedImage,
+    required this.avatarUrl,
+    required this.isUploadingImage,
     required this.onImageTap,
   });
 
   final String barberName;
   final bool hasSelectedImage;
+  final String? avatarUrl;
+  final bool isUploadingImage;
   final VoidCallback onImageTap;
 
   @override
@@ -20,7 +24,7 @@ class ProfileSummaryCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         color: dark ? AppThemeColors.elevatedCard(context) : null,
@@ -43,7 +47,7 @@ class ProfileSummaryCard extends StatelessWidget {
       child: Column(
         children: [
           GestureDetector(
-            onTap: onImageTap,
+            onTap: isUploadingImage ? null : onImageTap,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
@@ -76,14 +80,11 @@ class ProfileSummaryCard extends StatelessWidget {
                             ),
                           ],
                   ),
-                  child: CircleAvatar(
-                    backgroundColor: AppThemeColors.softCard(context),
-                    child: Icon(
-                      hasSelectedImage
-                          ? Icons.image_rounded
-                          : Icons.content_cut_rounded,
-                      size: 38,
-                      color: const Color(0xFFC47A3D),
+                  child: ClipOval(
+                    child: _ProfileAvatarContent(
+                      avatarUrl: avatarUrl,
+                      hasSelectedImage: hasSelectedImage,
+                      isUploadingImage: isUploadingImage,
                     ),
                   ),
                 ),
@@ -101,8 +102,10 @@ class ProfileSummaryCard extends StatelessWidget {
                         width: 3,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.camera_alt_rounded,
+                    child: Icon(
+                      isUploadingImage
+                          ? Icons.hourglass_empty_rounded
+                          : Icons.camera_alt_rounded,
                       color: Colors.white,
                       size: 15,
                     ),
@@ -121,9 +124,9 @@ class ProfileSummaryCard extends StatelessWidget {
                 color: const Color(0xFFC47A3D).withValues(alpha: 0.20),
               ),
             ),
-            child: Text(
+            child: const Text(
               'الملف الشخصي المهني',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w900,
                 color: Color(0xFF8A4E2E),
@@ -142,7 +145,9 @@ class ProfileSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'اضغط على الصورة لتغيير صورة الحلاق',
+            isUploadingImage
+                ? 'جاري تحديث صورة الحلاق...'
+                : 'اضغط على الصورة لتغيير صورة الحلاق',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12.5,
@@ -152,6 +157,63 @@ class ProfileSummaryCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfileAvatarContent extends StatelessWidget {
+  const _ProfileAvatarContent({
+    required this.avatarUrl,
+    required this.hasSelectedImage,
+    required this.isUploadingImage,
+  });
+
+  final String? avatarUrl;
+  final bool hasSelectedImage;
+  final bool isUploadingImage;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = avatarUrl?.trim();
+
+    if (isUploadingImage) {
+      return Container(
+        color: AppThemeColors.softCard(context),
+        child: const Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
+      );
+    }
+
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      return Image.network(
+        imageUrl,
+        width: 90,
+        height: 90,
+        fit: BoxFit.cover,
+        filterQuality: FilterQuality.high,
+        errorBuilder: (context, error, stackTrace) {
+          return _AvatarFallback(hasSelectedImage: hasSelectedImage);
+        },
+      );
+    }
+
+    return _AvatarFallback(hasSelectedImage: hasSelectedImage);
+  }
+}
+
+class _AvatarFallback extends StatelessWidget {
+  const _AvatarFallback({required this.hasSelectedImage});
+
+  final bool hasSelectedImage;
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      backgroundColor: AppThemeColors.softCard(context),
+      child: Icon(
+        hasSelectedImage ? Icons.image_rounded : Icons.content_cut_rounded,
+        size: 38,
+        color: const Color(0xFFC47A3D),
       ),
     );
   }

@@ -1,11 +1,11 @@
 // fields + loading + signup logic + AuthSession + state
+// fields + loading + signup logic + state
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../models/app_user.dart';
+import '../../models/pending_phone_signup.dart';
 import '../../services/auth_service.dart';
-import '../../services/auth_session.dart';
 
 class SignUpController extends ChangeNotifier {
   SignUpController({AuthService authService = const AuthService()})
@@ -122,26 +122,44 @@ class SignUpController extends ChangeNotifier {
     });
   }
 
-  Future<AppUser> signUp() async {
+  String get selectedCountryCode {
+    return selectedCountry == 'فلسطين' ? '+970' : '+972';
+  }
+
+  String get internationalPhoneNumber {
+    final rawPhone = phoneController.text.trim();
+
+    // نحذف أي مسافات أو شرطات كتبها المستخدم
+    final digitsOnly = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // إذا الرقم يبدأ بصفر، نحذفه بعد رمز الدولة
+    // مثال: 0599350166 -> +970599350166
+    final normalizedLocalNumber = digitsOnly.startsWith('0')
+        ? digitsOnly.substring(1)
+        : digitsOnly;
+
+    return '$selectedCountryCode$normalizedLocalNumber';
+  }
+
+  Future<PendingPhoneSignUp> signUp() async {
     loading = true;
     notifyListeners();
 
     try {
-      final AppUser user = await _authService.signUpCustomer(
-        firstName: firstNameController.text,
-        lastName: lastNameController.text,
-        phoneNumber: phoneController.text,
-        password: passwordController.text,
-        confirmPassword: confirmPasswordController.text,
-        birthDate: selectedBirthDate,
-      );
-
-      AuthSession.start(user);
+      final PendingPhoneSignUp pendingSignUp = await _authService
+          .signUpCustomer(
+            firstName: firstNameController.text,
+            lastName: lastNameController.text,
+            phoneNumber: internationalPhoneNumber,
+            password: passwordController.text,
+            confirmPassword: confirmPasswordController.text,
+            birthDate: selectedBirthDate,
+          );
 
       loading = false;
       notifyListeners();
 
-      return user;
+      return pendingSignUp;
     } on AuthException catch (error) {
       loading = false;
       notifyListeners();

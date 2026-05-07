@@ -142,7 +142,10 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
                       onTap: () async {
                         Navigator.of(context).pop();
 
-                        controller.updateStatus(appointment.id, newStatus);
+                        await controller.updateStatus(
+                          appointment.id,
+                          newStatus,
+                        );
 
                         if (!mounted) return;
 

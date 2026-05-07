@@ -39,6 +39,7 @@ class LoginController extends ChangeNotifier {
   bool showPassword = false;
   bool loading = false;
   String selectedRole = 'customer';
+  String selectedCountry = 'فلسطين';
 
   /// Full display name from customer signup.
   String? signedUpCustomerDisplayName;
@@ -48,6 +49,27 @@ class LoginController extends ChangeNotifier {
 
   String? usernameFieldError;
   String? passwordFieldError;
+
+  String get selectedCountryCode {
+    return selectedCountry == 'فلسطين' ? '+970' : '+972';
+  }
+
+  String get internationalPhoneNumber {
+    final rawPhone = usernameController.text.trim();
+
+    final digitsOnly = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+
+    final normalizedLocalNumber = digitsOnly.startsWith('0')
+        ? digitsOnly.substring(1)
+        : digitsOnly;
+
+    return '$selectedCountryCode$normalizedLocalNumber';
+  }
+
+  void changeCountry(String value) {
+    selectedCountry = value;
+    notifyListeners();
+  }
 
   void togglePasswordVisibility() {
     showPassword = !showPassword;
@@ -87,7 +109,7 @@ class LoginController extends ChangeNotifier {
 
     try {
       final AppUser user = await _authService.login(
-        username: usernameController.text,
+        username: internationalPhoneNumber,
         password: passwordController.text,
         role: selectedRole,
         signedUpCustomerDisplayName: signedUpCustomerDisplayName,

@@ -2,21 +2,32 @@ import 'package:flutter/material.dart';
 
 import '../../../models/mock_appointment.dart';
 import '../../../utils/app_theme_colors.dart';
-import '../../../utils/booking_formatters.dart';
 import '../../../utils/appointment_status_utils.dart';
-
+import '../../../utils/booking_formatters.dart';
 
 class HomeAppointmentCard extends StatelessWidget {
   const HomeAppointmentCard({
     super.key,
     required this.appointment,
+    required this.onConfirm,
     required this.onMarkCompleted,
+    required this.onNoShow,
     required this.onCancel,
   });
 
   final MockAppointment appointment;
+  final VoidCallback onConfirm;
   final VoidCallback onMarkCompleted;
+  final VoidCallback onNoShow;
   final VoidCallback onCancel;
+
+  bool get _isPending {
+    return AppointmentStatusUtils.isPending(appointment.status);
+  }
+
+  bool get _isConfirmed {
+    return AppointmentStatusUtils.isConfirmed(appointment.status);
+  }
 
   bool get _isFinal {
     return AppointmentStatusUtils.isFinal(appointment.status);
@@ -121,33 +132,83 @@ class HomeAppointmentCard extends StatelessWidget {
             text: appointment.dateLabel,
           ),
 
-          if (!_isFinal) ...[
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Expanded(
-                  child: HomeAppointmentActionButton(
-                    label: 'مكتمل',
-                    icon: Icons.done_all_rounded,
-                    color: const Color(0xFF4A6FA8),
-                    onTap: onMarkCompleted,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: HomeAppointmentActionButton(
-                    label: 'إلغاء',
-                    icon: Icons.close_rounded,
-                    color: const Color(0xFFC9544A),
-                    onTap: onCancel,
-                  ),
-                ),
-              ],
-            ),
-          ],
+          if (!_isFinal) ...[const SizedBox(height: 16), _buildActions()],
         ],
       ),
+    );
+  }
+
+  Widget _buildActions() {
+    if (_isPending) {
+      return Row(
+        children: [
+          Expanded(
+            child: HomeAppointmentActionButton(
+              label: 'تأكيد',
+              icon: Icons.check_rounded,
+              color: const Color(0xFF3D7A5C),
+              onTap: onConfirm,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: HomeAppointmentActionButton(
+              label: 'إلغاء',
+              icon: Icons.close_rounded,
+              color: const Color(0xFFC9544A),
+              onTap: onCancel,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (_isConfirmed) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: HomeAppointmentActionButton(
+                  label: 'مكتمل',
+                  icon: Icons.done_all_rounded,
+                  color: const Color(0xFF4A6FA8),
+                  onTap: onMarkCompleted,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: HomeAppointmentActionButton(
+                  label: 'عدم حضور',
+                  icon: Icons.person_off_rounded,
+                  color: const Color(0xFFC2783A),
+                  onTap: onNoShow,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          HomeAppointmentActionButton(
+            label: 'إلغاء',
+            icon: Icons.close_rounded,
+            color: const Color(0xFFC9544A),
+            onTap: onCancel,
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          child: HomeAppointmentActionButton(
+            label: 'إلغاء',
+            icon: Icons.close_rounded,
+            color: const Color(0xFFC9544A),
+            onTap: onCancel,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,121 +1,158 @@
-import '../models/mock_service.dart';
 import '../models/service_model.dart';
 import '../models/ui_service_model.dart';
-import '../data/mocks/mock_services.dart';
+import '../services/supabase_config.dart';
 import 'contracts/service_repository_contract.dart';
 
 class ServiceRepository implements ServiceRepositoryContract {
   const ServiceRepository();
 
-  static final Map<String, List<UiService>> _servicesByBarberId = {
-    // b1 = أحمد = حساب admin المؤقت.
-    'b1': mockBarberServices.map(_uiServiceFromMockService).toList(),
-
-    // b2 = محمد = خدمات افتراضية مؤقتًا.
-    'b2': mockServices.map(_uiServiceFromServiceModel).toList(),
-  };
-
-  static UiService _uiServiceFromMockService(MockService service) {
-    return UiService(
-      id: service.id,
-      name: service.name,
-      durationMinutes: service.durationMinutes,
-      price: service.price.toDouble(),
-      isActive: true,
-    );
-  }
-
-  static UiService _uiServiceFromServiceModel(ServiceModel service) {
-    return UiService(
-      id: service.id,
-      name: service.name,
-      durationMinutes: service.durationMinutes,
-      price: service.price.toDouble(),
-      isActive: true,
-    );
-  }
-
-  List<UiService> _servicesForBarber(String barberId) {
-    if (_servicesByBarberId.containsKey(barberId)) {
-      return _servicesByBarberId[barberId]!;
-    }
-
-    _servicesByBarberId[barberId] = mockServices
-        .map(_uiServiceFromServiceModel)
-        .toList();
-
-    return _servicesByBarberId[barberId]!;
-  }
-  @override
-  Future<List<UiService>> getBarberServices({required String barberId}) async {
-    await Future.delayed(const Duration(milliseconds: 250));
-
-    return List<UiService>.from(_servicesForBarber(barberId));
-  }
   @override
   Future<List<ServiceModel>> getAvailableServices({
     required String barberId,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 250));
+    final rows = await SupabaseConfig.client
+        .from('barber_services')
+        .select('id, name, duration_minutes, price')
+        .eq('barber_id', barberId)
+        .eq('is_active', true)
+        .filter('archived_at', 'is', null)
+        .order('name');
 
-    return _servicesForBarber(barberId)
-        .where((service) => service.isActive)
-        .map(
-          (service) => ServiceModel(
-            id: service.id,
-            name: service.name,
-            durationMinutes: service.durationMinutes,
-            price: service.price.round(),
-          ),
-        )
-        .toList();
+    return rows.map<ServiceModel>((row) {
+      return ServiceModel(
+        id: row['id'].toString(),
+        name: (row['name'] ?? '').toString(),
+        durationMinutes: _parseInt(row['duration_minutes']),
+        price: _parseInt(row['price']),
+      );
+    }).toList();
   }
+
+  @override
+  Future<List<UiService>> getBarberServices({required String barberId}) async {
+    final rows = await SupabaseConfig.client
+        .from('barber_services')
+        .select('id, name, duration_minutes, price, is_active')
+        .eq('barber_id', barberId)
+        .filter('archived_at', 'is', null)
+        .order('name');
+
+    return rows.map<UiService>((row) {
+      return UiService(
+        id: row['id'].toString(),
+        name: (row['name'] ?? '').toString(),
+        price: _parseDouble(row['price']),
+        durationMinutes: _parseInt(row['duration_minutes']),
+        isActive: row['is_active'] == true,
+      );
+    }).toList();
+  }
+
   @override
   Future<UiService> addBarberService({
     required String barberId,
     required UiService service,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 350));
+    final row = await SupabaseConfig.client
+        .from('barber_services')
+        .insert({
+          'barber_id': barberId,
+          'name': service.name.trim(),
+          'duration_minutes': service.durationMinutes,
+          'price': service.price,
+          'is_active': service.isActive,
+        })
+        .select('id, name, duration_minutes, price, is_active')
+        .single();
 
-    final services = _servicesForBarber(barberId);
-    services.insert(0, service);
-
-    return service;
+    return UiService(
+      id: row['id'].toString(),
+      name: (row['name'] ?? '').toString(),
+      price: _parseDouble(row['price']),
+      durationMinutes: _parseInt(row['duration_minutes']),
+      isActive: row['is_active'] == true,
+    );
   }
+
   @override
   Future<UiService> updateBarberService({
     required String barberId,
     required UiService service,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 350));
+    final row = await SupabaseConfig.client
+        .from('barber_services')
+        .update({
+          'name': service.name.trim(),
+          'duration_minutes': service.durationMinutes,
+          'price': service.price,
+          'is_active': service.isActive,
+        })
+        .eq('id', service.id)
+        .eq('barber_id', barberId)
+        .select('id, name, duration_minutes, price, is_active')
+        .single();
 
-    final services = _servicesForBarber(barberId);
-    final int index = services.indexWhere((item) => item.id == service.id);
-
-    if (index != -1) {
-      services[index] = service;
-    }
-
-    return service;
+    return UiService(
+      id: row['id'].toString(),
+      name: (row['name'] ?? '').toString(),
+      price: _parseDouble(row['price']),
+      durationMinutes: _parseInt(row['duration_minutes']),
+      isActive: row['is_active'] == true,
+    );
   }
+
   @override
   Future<UiService> setServiceActive({
     required String barberId,
     required String serviceId,
     required bool isActive,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 250));
+    final row = await SupabaseConfig.client
+        .from('barber_services')
+        .update({'is_active': isActive})
+        .eq('id', serviceId)
+        .eq('barber_id', barberId)
+        .select('id, name, duration_minutes, price, is_active')
+        .single();
 
-    final services = _servicesForBarber(barberId);
-    final int index = services.indexWhere((item) => item.id == serviceId);
+    return UiService(
+      id: row['id'].toString(),
+      name: (row['name'] ?? '').toString(),
+      price: _parseDouble(row['price']),
+      durationMinutes: _parseInt(row['duration_minutes']),
+      isActive: row['is_active'] == true,
+    );
+  }
 
-    if (index == -1) {
-      throw Exception('Service not found');
+  int _parseInt(dynamic value) {
+    if (value == null) {
+      return 0;
     }
 
-    final updatedService = services[index].copyWith(isActive: isActive);
-    services[index] = updatedService;
+    if (value is int) {
+      return value;
+    }
 
-    return updatedService;
+    if (value is num) {
+      return value.toInt();
+    }
+
+    return int.tryParse(value.toString()) ?? 0;
   }
+}
+
+double _parseDouble(dynamic value) {
+  if (value == null) {
+    return 0;
+  }
+
+  if (value is double) {
+    return value;
+  }
+
+  if (value is num) {
+    return value.toDouble();
+  }
+
+  return double.tryParse(value.toString()) ?? 0;
 }

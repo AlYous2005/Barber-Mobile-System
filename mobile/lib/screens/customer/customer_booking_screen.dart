@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../controllers/customer/customer_booking_controller.dart';
 import '../../models/barber_model.dart';
-import '../../utils/app_theme_colors.dart';
 import '../../utils/booking_date_helpers.dart';
 import '../../utils/booking_formatters.dart';
 import '../../widgets/customer/booking/available_times_step.dart';
@@ -13,6 +12,7 @@ import '../../widgets/customer/booking/booking_step_header.dart';
 import '../../widgets/customer/booking/booking_summary_card.dart';
 import '../../widgets/customer/booking/choose_barber_step.dart';
 import '../../widgets/customer/booking/choose_services_step.dart';
+import '../../widgets/customer/booking/selected_barber_hero_banner.dart';
 import '../../widgets/customer/booking/services_live_counter.dart';
 import 'booking_success_screen.dart';
 
@@ -80,41 +80,55 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
       animation: controller,
       builder: (context, _) {
         final Color pageBg = Theme.of(context).scaffoldBackgroundColor;
-        final Color titleColor = AppThemeColors.textPrimary(context);
+
+        final Size screenSize = MediaQuery.of(context).size;
+        final bool compactLayout =
+            screenSize.width < 380 || screenSize.height < 740;
+
+        final double horizontalPadding = compactLayout ? 16 : 20;
+        final double topHeaderPadding = compactLayout ? 4 : 6;
+        final double bottomHeaderPadding = compactLayout ? 8 : 10;
+        final double sectionBottomPadding = compactLayout ? 8 : 10;
+        final double scrollBottomPadding = compactLayout ? 12 : 16;
+        final double bottomButtonTopPadding = compactLayout ? 6 : 8;
+        final double bottomButtonBottomPadding = compactLayout ? 12 : 16;
 
         return Directionality(
           textDirection: TextDirection.rtl,
           child: Scaffold(
             backgroundColor: pageBg,
-            appBar: AppBar(
-              title: Text(
-                'حجز موعد',
-                style: TextStyle(
-                  color: titleColor,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              centerTitle: true,
-              backgroundColor: pageBg,
-              surfaceTintColor: pageBg,
-              leading: IconButton(
-                onPressed: _back,
-                icon: Icon(Icons.arrow_back_ios_new_rounded, color: titleColor),
-              ),
-            ),
+
             body: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 6, 20, 10),
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    topHeaderPadding,
+                    horizontalPadding,
+                    bottomHeaderPadding,
+                  ),
                   child: BookingStepHeader(
                     step: controller.step,
                     title: controller.stepTitle,
+                    onBack: _back,
                   ),
                 ),
 
+                if (controller.step > 0 && controller.selectedBarber != null)
+                  SelectedBarberHeroBanner(
+                    barber: controller.selectedBarber!,
+                    onBarberSelected: controller.selectBarber,
+                  ),
+
                 if (controller.step == 1)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      compactLayout ? 18 : 24,
+
+                      horizontalPadding,
+                      bottomHeaderPadding,
+                    ),
                     child: ServicesLiveCounter(
                       totalPrice: controller.selectedTotalPrice,
                       totalDuration: controller.selectedTotalDuration,
@@ -123,9 +137,14 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
                   ),
 
                 if (controller.step == 4)
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
-                    child: BookingConfirmWarningCard(),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      0,
+                      horizontalPadding,
+                      sectionBottomPadding,
+                    ),
+                    child: const BookingConfirmWarningCard(),
                   ),
 
                 Expanded(
@@ -138,14 +157,24 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
                       }
                     },
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        compactLayout ? 2 : 4,
+                        horizontalPadding,
+                        scrollBottomPadding,
+                      ),
                       child: _buildStepBody(),
                     ),
                   ),
                 ),
 
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    bottomButtonTopPadding,
+                    horizontalPadding,
+                    bottomButtonBottomPadding,
+                  ),
                   child: BookingBottomActionButton(
                     isConfirmStep: controller.step == 4,
                     canContinue:
@@ -248,7 +277,9 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
         return BookingSummaryCard(
           barberName: barber.name,
           barberLocation: 'زيتا، زيتا',
-          selectedServices: controller.selectedServices,
+          selectedServices: controller.selectedServices
+              .map((selected) => selected.service)
+              .toList(),
           dateLabel: dateWithDayLabel(resolvedDate),
           timeLabel: controller.selectedTime!,
           totalPrice: controller.selectedTotalPrice,

@@ -11,6 +11,7 @@ import '../../widgets/auth/auth_forgot_password_sheet.dart';
 import '../../widgets/auth/auth_role_selector.dart';
 import '../../widgets/auth/auth_text_field.dart';
 import 'login_transition_screen.dart';
+import '../../widgets/auth/auth_country_code_selector.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -203,9 +204,14 @@ class _LoginScreenState extends State<LoginScreen>
                                   controller.usernameFieldError != null,
                               child: AuthTextField(
                                 controller: controller.usernameController,
-                                hintText: 'اسم المستخدم',
-                                icon: Icons.person,
+                                hintText: 'رقم الهاتف',
+                                icon: Icons.phone,
+                                keyboardType: TextInputType.phone,
                                 errorText: controller.usernameFieldError,
+                                prefixIconWidget: AuthCountryCodeSelector(
+                                  selectedCountry: controller.selectedCountry,
+                                  onCountryChanged: controller.changeCountry,
+                                ),
                               ),
                             ),
 

@@ -7,10 +7,18 @@ class HomeStatsSection extends StatelessWidget {
   const HomeStatsSection({
     super.key,
     required this.selectedAppointmentFilter,
+    required this.pendingAppointmentsCount,
+    required this.confirmedAppointmentsCount,
+    required this.completedAppointmentsCount,
+    required this.cancelledAppointmentsCount,
     required this.onFilterChanged,
   });
 
   final String selectedAppointmentFilter;
+  final int pendingAppointmentsCount;
+  final int confirmedAppointmentsCount;
+  final int completedAppointmentsCount;
+  final int cancelledAppointmentsCount;
   final ValueChanged<String> onFilterChanged;
 
   @override
@@ -67,28 +75,28 @@ class HomeStatsSection extends StatelessWidget {
               children: [
                 StatCard(
                   title: 'مواعيد معلقة',
-                  value: '3',
+                  value: pendingAppointmentsCount.toString(),
                   color: const Color(0xFFF59E0B),
                   isSelected: selectedAppointmentFilter == 'معلقة',
                   onTap: () => onFilterChanged('معلقة'),
                 ),
                 StatCard(
                   title: 'مواعيد مؤكدة',
-                  value: '9',
+                  value: confirmedAppointmentsCount.toString(),
                   color: const Color(0xFF60A5FA),
                   isSelected: selectedAppointmentFilter == 'مؤكدة',
                   onTap: () => onFilterChanged('مؤكدة'),
                 ),
                 StatCard(
                   title: 'مواعيد مكتملة',
-                  value: '7',
+                  value: completedAppointmentsCount.toString(),
                   color: const Color(0xFF34D399),
                   isSelected: selectedAppointmentFilter == 'مكتملة',
                   onTap: () => onFilterChanged('مكتملة'),
                 ),
                 StatCard(
                   title: 'مواعيد ملغية',
-                  value: '2',
+                  value: cancelledAppointmentsCount.toString(),
                   color: const Color(0xFFF87171),
                   isSelected: selectedAppointmentFilter == 'ملغية',
                   onTap: () => onFilterChanged('ملغية'),

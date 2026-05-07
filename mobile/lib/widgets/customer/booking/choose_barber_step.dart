@@ -77,26 +77,9 @@ class _WarmBarberChoiceCard extends StatelessWidget {
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Container(
-                      width: 62,
-                      height: 62,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF6E3F2F), Color(0xFFC47A3D)],
-                        ),
-                        border: Border.all(
-                          color: const Color(0xFFE7B679),
-                          width: 2.4,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.person_rounded,
-                        color: Colors.white,
-                        size: 31,
-                      ),
+                    _BarberChoiceAvatar(
+                      avatarUrl: barber.barberAvatarUrl,
+                      barberName: barber.name,
                     ),
                     if (selected)
                       Positioned(
@@ -238,6 +221,84 @@ class _FiveStarsMiniRating extends StatelessWidget {
 
         return Icon(icon, size: 15, color: const Color(0xFFF59E0B));
       }),
+    );
+  }
+}
+
+class _BarberChoiceAvatar extends StatelessWidget {
+  const _BarberChoiceAvatar({
+    required this.avatarUrl,
+    required this.barberName,
+  });
+
+  final String? avatarUrl;
+  final String barberName;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = avatarUrl?.trim();
+
+    return Container(
+      width: 62,
+      height: 62,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF6E3F2F), Color(0xFFC47A3D)],
+        ),
+        border: Border.all(color: const Color(0xFFE7B679), width: 2.4),
+      ),
+      child: ClipOval(
+        child: imageUrl == null || imageUrl.isEmpty
+            ? _BarberChoiceAvatarFallback(barberName: barberName)
+            : Image.network(
+                imageUrl,
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.high,
+                errorBuilder: (context, error, stackTrace) {
+                  return _BarberChoiceAvatarFallback(barberName: barberName);
+                },
+              ),
+      ),
+    );
+  }
+}
+
+class _BarberChoiceAvatarFallback extends StatelessWidget {
+  const _BarberChoiceAvatarFallback({required this.barberName});
+
+  final String barberName;
+
+  @override
+  Widget build(BuildContext context) {
+    final String firstLetter = barberName.trim().isEmpty
+        ? 'ح'
+        : barberName.trim().characters.first;
+
+    return Container(
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: [Color(0xFF6E3F2F), Color(0xFFC47A3D)],
+        ),
+      ),
+      child: Center(
+        child: Text(
+          firstLetter,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 23,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
     );
   }
 }

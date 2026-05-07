@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'services/supabase_config.dart';
 
 import 'screens/auth/login_screen.dart';
 
@@ -18,6 +19,7 @@ Future<void> saveAppThemeMode(ThemeMode mode) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseConfig.initialize();
 
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String? savedTheme = prefs.getString('app_theme_mode');

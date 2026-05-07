@@ -13,6 +13,8 @@ import '../../widgets/auth/auth_country_code_selector.dart';
 import '../../widgets/auth/auth_error_message.dart';
 import '../../widgets/auth/auth_legal_agreement_text.dart';
 import '../../widgets/auth/auth_text_field.dart';
+import '../../models/pending_phone_signup.dart';
+import 'phone_otp_verification_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -69,11 +71,26 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   Future<void> signUp() async {
     try {
-      final AppUser user = await controller.signUp();
+      final PendingPhoneSignUp pendingSignUp = await controller.signUp();
 
       if (!mounted) return;
 
-      Navigator.pop(context, user.displayName);
+      final AppUser? verifiedUser = await Navigator.push<AppUser>(
+        context,
+        MaterialPageRoute(
+          builder: (_) {
+            return PhoneOtpVerificationScreen(pendingSignUp: pendingSignUp);
+          },
+        ),
+      );
+
+      if (verifiedUser == null) {
+        return;
+      }
+
+      if (!mounted) return;
+
+      Navigator.pop(context, verifiedUser.displayName);
     } catch (_) {
       _shakeController.forward(from: 0);
     }

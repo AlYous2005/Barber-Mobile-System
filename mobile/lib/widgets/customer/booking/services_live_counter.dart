@@ -13,158 +13,71 @@ class ServicesLiveCounter extends StatelessWidget {
 
   final int totalPrice;
   final int totalDuration;
+
+  /// نتركه موجود حتى لا نكسر الاستدعاءات الحالية من الشاشة،
+  /// لكن لن نعرضه داخل الكرت الآن.
   final int selectedCount;
 
   @override
   Widget build(BuildContext context) {
-    final bool hasSelection = selectedCount > 0;
+    final Size screenSize = MediaQuery.of(context).size;
+    final bool compact = screenSize.width < 380 || screenSize.height < 740;
     final bool dark = AppThemeColors.isDark(context);
-    final List<Color> gradientColors = dark
-        ? (hasSelection
-              ? [
-                  AppThemeColors.elevatedCard(context),
-                  AppThemeColors.card(context),
-                  AppThemeColors.softCard(context),
-                ]
-              : [
-                  AppThemeColors.card(context),
-                  AppThemeColors.elevatedCard(context),
-                ])
-        : (hasSelection
-              ? const [Color(0xFFFFFFFF), Color(0xFFFFFBF7), Color(0xFFFFEDD5)]
-              : const [Color(0xFFFFFFFF), Color(0xFFFFFBF7)]);
+
+    final Color cardColor = dark
+        ? const Color(0xFF241711)
+        : const Color(0xFFFFFCF8);
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 260),
+      duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 10 : 12,
+        vertical: compact ? 8 : 10,
+      ),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: gradientColors,
-        ),
-        borderRadius: BorderRadius.circular(26),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(compact ? 18 : 20),
         border: Border.all(
-          color: hasSelection
-              ? const Color(0xFFC47A3D)
-              : AppThemeColors.border(context),
-          width: hasSelection ? 1.6 : 1,
+          color: const Color(0xFFC47A3D).withValues(alpha: 0.42),
+          width: 1.1,
         ),
         boxShadow: [
           BoxShadow(
-            color: hasSelection
-                ? const Color(0x24C47A3D)
-                : const Color(0x10000000),
-            blurRadius: hasSelection ? 22 : 14,
-            offset: const Offset(0, 8),
+            color: const Color(0xFFC47A3D).withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 7),
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 260),
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6E3F2F), Color(0xFFC47A3D)],
-                  ),
-                  borderRadius: BorderRadius.circular(17),
-                  boxShadow: hasSelection
-                      ? const [
-                          BoxShadow(
-                            color: Color(0x33C47A3D),
-                            blurRadius: 16,
-                            offset: Offset(0, 7),
-                          ),
-                        ]
-                      : [],
-                ),
-                child: const Icon(
-                  Icons.receipt_long_rounded,
-                  color: Colors.white,
-                  size: 23,
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      transitionBuilder: (child, animation) {
-                        return FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0, 0.25),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: Text(
-                        hasSelection
-                            ? 'تم اختيار $selectedCount خدمات'
-                            : 'اختر خدماتك وسيظهر الحساب هنا',
-                        key: ValueKey('selected-count-$selectedCount'),
-                        style: TextStyle(
-                          color: AppThemeColors.textPrimary(context),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      'يتم تحديث السعر والمدة تلقائيًا',
-                      style: TextStyle(
-                        color: AppThemeColors.textSecondary(context),
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          Expanded(
+            child: _CompactMetricItem(
+              icon: Icons.payments_rounded,
+              label: 'حسابك الكلي',
+              value: '$totalPrice شيكل',
+              color: const Color(0xFF16A34A),
+              compact: compact,
+            ),
           ),
 
-          const SizedBox(height: 15),
+          Container(
+            width: 1,
+            height: compact ? 34 : 40,
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            color: const Color(0xFFC47A3D).withValues(alpha: 0.24),
+          ),
 
-          Row(
-            children: [
-              Expanded(
-                child: _AnimatedSummaryBox(
-                  label: 'حسابك بالشيكل',
-                  value: '$totalPrice ₪',
-                  icon: Icons.payments_rounded,
-                  color: const Color(0xFF16A34A),
-                  valueKeyText: 'price-$totalPrice',
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              Expanded(
-                child: _AnimatedSummaryBox(
-                  label: 'المدة',
-                  value: formatBookingDuration(totalDuration),
-                  icon: Icons.access_time_rounded,
-                  color: const Color(0xFF2563EB),
-                  valueKeyText: 'duration-$totalDuration',
-                ),
-              ),
-            ],
+          Expanded(
+            child: _CompactMetricItem(
+              icon: Icons.access_time_rounded,
+              label: 'المدة',
+              value: formatBookingDuration(totalDuration),
+              color: const Color(0xFFC47A3D),
+              compact: compact,
+            ),
           ),
         ],
       ),
@@ -172,92 +85,73 @@ class ServicesLiveCounter extends StatelessWidget {
   }
 }
 
-class _AnimatedSummaryBox extends StatelessWidget {
-  const _AnimatedSummaryBox({
+class _CompactMetricItem extends StatelessWidget {
+  const _CompactMetricItem({
+    required this.icon,
     required this.label,
     required this.value,
-    required this.icon,
     required this.color,
-    required this.valueKeyText,
+    required this.compact,
   });
 
+  final IconData icon;
   final String label;
   final String value;
-  final IconData icon;
   final Color color;
-  final String valueKeyText;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOutCubic,
-      padding: const EdgeInsets.all(13),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.16)),
-      ),
-      child: Column(
-        children: [
-          Row(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: compact ? 30 : 34,
+          height: compact ? 30 : 34,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: color, size: compact ? 16 : 18),
+        ),
+
+        const SizedBox(width: 8),
+
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 31,
-                height: 31,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.13),
-                  borderRadius: BorderRadius.circular(11),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AppThemeColors.textSecondary(context),
+                  fontSize: compact ? 10.5 : 11.5,
+                  fontWeight: FontWeight.w800,
                 ),
-                child: Icon(icon, color: color, size: 17),
               ),
-              const SizedBox(width: 7),
-              Expanded(
+
+              const SizedBox(height: 2),
+
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
                 child: Text(
-                  '$label:',
+                  value,
+                  key: ValueKey('$label-$value'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: AppThemeColors.textSecondary(context),
-                    fontSize: 12,
+                    color: color,
+                    fontSize: compact ? 12.5 : 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: 10),
-
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 320),
-            transitionBuilder: (child, animation) {
-              final curvedAnimation = CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutBack,
-              );
-
-              return FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(scale: curvedAnimation, child: child),
-              );
-            },
-            child: Text(
-              value,
-              key: ValueKey(valueKeyText),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: color,
-                fontSize: 18,
-                height: 1.15,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

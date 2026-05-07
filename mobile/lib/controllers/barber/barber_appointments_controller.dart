@@ -22,7 +22,7 @@ class BarberAppointmentsController extends ChangeNotifier {
   String selectedTab = 'today';
 
   String get _currentBarberId {
-    return AuthSession.currentUser?.barberId ?? 'b1';
+    return AuthSession.currentUser?.barberId ?? '';
   }
 
   Future<void> loadBarberAppointments() async {
@@ -31,6 +31,10 @@ class BarberAppointmentsController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      if (_currentBarberId.isEmpty) {
+        throw Exception('Missing current barber id');
+      }
+
       final loadedAppointments = await _bookingRepository.getBarberAppointments(
         barberId: _currentBarberId,
       );
@@ -38,7 +42,10 @@ class BarberAppointmentsController extends ChangeNotifier {
       appointments = loadedAppointments;
       isLoadingAppointments = false;
       notifyListeners();
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('BarberAppointmentsController load error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
       appointmentsErrorMessage = 'تعذر تحميل مواعيد الحلاق، حاول مرة أخرى';
       isLoadingAppointments = false;
       notifyListeners();
@@ -90,7 +97,12 @@ class BarberAppointmentsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateStatus(String id, String status) {
+  Future<void> updateStatus(String id, String status) async {
+    await _bookingRepository.updateAppointmentStatus(
+      appointmentId: id,
+      status: status,
+    );
+
     appointments = appointments
         .map((item) => item.id == id ? item.copyWith(status: status) : item)
         .toList();

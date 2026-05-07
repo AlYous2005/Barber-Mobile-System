@@ -8,13 +8,17 @@ import 'profile_data_section.dart';
 import 'profile_image_options_sheet.dart';
 import 'profile_sheet_header.dart';
 import 'profile_summary_card.dart';
+import 'package:image_picker/image_picker.dart';
 
-void showBarberProfileSheet({
+import '../../../repositories/barber_avatar_repository.dart';
+import '../../../services/auth_session.dart';
+
+Future<void> showBarberProfileSheet({
   required BuildContext context,
   required String barberName,
   ValueChanged<String>? onNameSaved,
 }) {
-  showModalBottomSheet(
+  return showModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
@@ -47,8 +51,6 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
   static const Color _accentGreenEnd = Color(0xFF86EFAC);
   static const Color _accentRedStart = Color(0xFFDC2626);
   static const Color _accentRedEnd = Color(0xFFF87171);
-  static const Color _accentBrandStart = Color(0xFFC47A3D);
-  static const Color _accentBrandEnd = Color(0xFFEAB07A);
 
   late String _initialName;
   late String _initialPhone;
@@ -62,6 +64,13 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
   late final TextEditingController _whatsappController;
   late final TextEditingController _addressController;
   late final TextEditingController _bioController;
+
+  final ImagePicker _imagePicker = ImagePicker();
+  final BarberAvatarRepository _barberAvatarRepository =
+      const BarberAvatarRepository();
+
+  String? _barberAvatarUrl;
+  bool _isUploadingImage = false;
 
   bool _isEditing = false;
   bool _hasSelectedImage = false;
@@ -95,6 +104,7 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
     _whatsappController.addListener(_refresh);
     _addressController.addListener(_refresh);
     _bioController.addListener(_refresh);
+    _loadBarberAvatar();
   }
 
   @override
@@ -187,59 +197,180 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
     );
   }
 
+  String get _currentUserId {
+    return AuthSession.currentUser?.username ?? '';
+  }
+
+  Future<void> _loadBarberAvatar() async {
+    final userId = _currentUserId;
+
+    if (userId.isEmpty) {
+      return;
+    }
+
+    try {
+      final avatarUrl = await _barberAvatarRepository.getBarberAvatarUrl(
+        userId: userId,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _barberAvatarUrl = avatarUrl;
+        _hasSelectedImage = avatarUrl != null && avatarUrl.trim().isNotEmpty;
+      });
+    } catch (error) {
+      debugPrint('Load barber avatar error: $error');
+    }
+  }
+
+  Future<void> _pickBarberAvatarImage() async {
+    Navigator.of(context).pop();
+
+    final userId = _currentUserId;
+
+    if (userId.isEmpty) {
+      if (!mounted) return;
+
+      showBarberFeedbackPopup(
+        context: context,
+        title: 'تعذر تحديث الصورة',
+        message: 'لا يوجد مستخدم مسجل حاليًا',
+        icon: Icons.error_outline_rounded,
+        iconStartColor: _accentRedStart,
+        iconEndColor: _accentRedEnd,
+      );
+      return;
+    }
+
+    try {
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+
+      final selectedImage = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 95,
+      );
+
+      if (selectedImage == null) {
+        return;
+      }
+
+      final imageBytes = await selectedImage.readAsBytes();
+
+      if (!mounted) return;
+
+      setState(() {
+        _isUploadingImage = true;
+      });
+
+      final avatarUrl = await _barberAvatarRepository.uploadBarberAvatar(
+        userId: userId,
+        imageBytes: imageBytes,
+        originalFileName: selectedImage.name,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _barberAvatarUrl = avatarUrl;
+        _hasSelectedImage = true;
+        _isUploadingImage = false;
+      });
+
+      showBarberFeedbackPopup(
+        context: context,
+        title: 'تم تحديث الصورة',
+        message: 'تم تحديث صورة الحلاق الشخصية بنجاح',
+        icon: Icons.add_a_photo_rounded,
+        iconStartColor: _accentGreenStart,
+        iconEndColor: _accentGreenEnd,
+      );
+    } catch (error) {
+      debugPrint('Pick/upload barber avatar error: $error');
+
+      if (!mounted) return;
+
+      setState(() {
+        _isUploadingImage = false;
+      });
+
+      showBarberFeedbackPopup(
+        context: context,
+        title: 'فشل تحديث الصورة',
+        message: 'حاول مرة أخرى، أو تأكد من اتصال الإنترنت',
+        icon: Icons.error_outline_rounded,
+        iconStartColor: _accentRedStart,
+        iconEndColor: _accentRedEnd,
+      );
+    }
+  }
+
+  Future<void> _removeBarberAvatarImage() async {
+    Navigator.of(context).pop();
+
+    final userId = _currentUserId;
+    final bool hadImage =
+        _barberAvatarUrl != null && _barberAvatarUrl!.trim().isNotEmpty;
+
+    if (userId.isEmpty || !hadImage) {
+      return;
+    }
+
+    try {
+      setState(() {
+        _isUploadingImage = true;
+      });
+
+      await _barberAvatarRepository.removeBarberAvatar(userId: userId);
+
+      if (!mounted) return;
+
+      setState(() {
+        _barberAvatarUrl = null;
+        _hasSelectedImage = false;
+        _isUploadingImage = false;
+      });
+
+      showBarberFeedbackPopup(
+        context: context,
+        title: 'تمت إزالة الصورة',
+        message: 'تمت إزالة الصورة الشخصية بنجاح',
+        icon: Icons.delete_outline_rounded,
+        iconStartColor: _accentRedStart,
+        iconEndColor: _accentRedEnd,
+      );
+    } catch (error) {
+      debugPrint('Remove barber avatar error: $error');
+
+      if (!mounted) return;
+
+      setState(() {
+        _isUploadingImage = false;
+      });
+
+      showBarberFeedbackPopup(
+        context: context,
+        title: 'فشل حذف الصورة',
+        message: 'حاول مرة أخرى، أو تأكد من اتصال الإنترنت',
+        icon: Icons.error_outline_rounded,
+        iconStartColor: _accentRedStart,
+        iconEndColor: _accentRedEnd,
+      );
+    }
+  }
+
   void _showImageUploadOptions() {
+    if (_isUploadingImage) {
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) {
         return ProfileImageOptionsSheet(
-          onPickImage: () {
-            final bool alreadyHadImage = _hasSelectedImage;
-            Navigator.of(context).pop();
-
-            setState(() {
-              _hasSelectedImage = true;
-            });
-
-            if (!mounted) return;
-            if (!alreadyHadImage) {
-              showBarberFeedbackPopup(
-                context: context,
-                title: 'تمت إضافة الصورة',
-                message: 'تمت إضافة الصورة الشخصية بنجاح',
-                icon: Icons.add_a_photo_rounded,
-                iconStartColor: _accentGreenStart,
-                iconEndColor: _accentGreenEnd,
-              );
-            } else {
-              showBarberFeedbackPopup(
-                context: context,
-                title: 'تم تعديل الصورة',
-                message: 'تم تعديل الصورة الشخصية بنجاح',
-                icon: Icons.image_rounded,
-                iconStartColor: _accentBrandStart,
-                iconEndColor: _accentBrandEnd,
-              );
-            }
-          },
-          onRemoveImage: () {
-            final bool hadImage = _hasSelectedImage;
-            Navigator.of(context).pop();
-
-            setState(() {
-              _hasSelectedImage = false;
-            });
-
-            if (!mounted || !hadImage) return;
-            showBarberFeedbackPopup(
-              context: context,
-              title: 'تمت إزالة الصورة',
-              message: 'تمت إزالة الصورة الشخصية بنجاح',
-              icon: Icons.delete_outline_rounded,
-              iconStartColor: _accentRedStart,
-              iconEndColor: _accentRedEnd,
-            );
-          },
+          onPickImage: _pickBarberAvatarImage,
+          onRemoveImage: _removeBarberAvatarImage,
         );
       },
     );
@@ -278,6 +409,8 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
                             ? 'اسم الحلاق'
                             : _nameController.text.trim(),
                         hasSelectedImage: _hasSelectedImage,
+                        avatarUrl: _barberAvatarUrl,
+                        isUploadingImage: _isUploadingImage,
                         onImageTap: _showImageUploadOptions,
                       ),
 

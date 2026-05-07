@@ -4,12 +4,15 @@ import '../../../utils/app_theme_colors.dart';
 import '../../shared/star_rating_display.dart';
 
 class BarberProfilePreview extends StatelessWidget {
-  const BarberProfilePreview({super.key, required this.onTap});
+  const BarberProfilePreview({super.key, required this.onTap, this.avatarUrl});
 
   final VoidCallback onTap;
+  final String? avatarUrl;
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = avatarUrl?.trim();
+
     return Center(
       child: Column(
         children: [
@@ -35,13 +38,20 @@ class BarberProfilePreview extends StatelessWidget {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      CircleAvatar(
-                        radius: 43,
-                        backgroundColor: AppThemeColors.softCard(context),
-                        child: const Icon(
-                          Icons.content_cut_rounded,
-                          size: 38,
-                          color: Color(0xFFC47A3D),
+                      ClipOval(
+                        child: SizedBox(
+                          width: 86,
+                          height: 86,
+                          child: imageUrl == null || imageUrl.isEmpty
+                              ? _ProfileFallbackAvatar()
+                              : Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  filterQuality: FilterQuality.high,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return _ProfileFallbackAvatar();
+                                  },
+                                ),
                         ),
                       ),
                       Positioned(
@@ -96,6 +106,21 @@ class BarberProfilePreview extends StatelessWidget {
             enableDetailsPopup: true,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfileFallbackAvatar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: 43,
+      backgroundColor: AppThemeColors.softCard(context),
+      child: const Icon(
+        Icons.content_cut_rounded,
+        size: 38,
+        color: Color(0xFFC47A3D),
       ),
     );
   }
