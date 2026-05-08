@@ -50,10 +50,10 @@ class _AvailableTimesStepState extends State<AvailableTimesStep> {
 
   String get currentTitle {
     if (selectedPeriod == 'morning') {
-      return 'الأوقات الصباحية';
+      return 'الأوقات الصباحية المتاحة';
     }
 
-    return 'الأوقات المسائية';
+    return 'الأوقات المسائية المتاحة';
   }
 
   String get currentSubtitle {
@@ -76,14 +76,6 @@ class _AvailableTimesStepState extends State<AvailableTimesStep> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AvailableTimesInfoCard(
-          selectedDateLabel: widget.selectedDateLabel,
-          requiredDurationLabel: widget.requiredDurationLabel,
-          selectedTime: widget.selectedTime,
-        ),
-
-        const SizedBox(height: 16),
-
         _TimePeriodTabs(
           selectedPeriod: selectedPeriod,
           onChanged: (period) {
@@ -104,10 +96,6 @@ class _AvailableTimesStepState extends State<AvailableTimesStep> {
           selectedTime: widget.selectedTime,
           onSelectTime: widget.onSelectTime,
         ),
-
-        const SizedBox(height: 8),
-
-        const _TimeSelectionHint(),
       ],
     );
   }
@@ -219,219 +207,6 @@ class _TimePeriodTabButton extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class AvailableTimesInfoCard extends StatelessWidget {
-  const AvailableTimesInfoCard({
-    super.key,
-    required this.selectedDateLabel,
-    required this.requiredDurationLabel,
-    required this.selectedTime,
-  });
-
-  final String selectedDateLabel;
-  final String requiredDurationLabel;
-  final String? selectedTime;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool hasSelectedTime = selectedTime != null;
-    final bool dark = AppThemeColors.isDark(context);
-    final List<Color> gradientColors = dark
-        ? [
-            AppThemeColors.elevatedCard(context),
-            AppThemeColors.card(context),
-            AppThemeColors.softCard(context),
-          ]
-        : const [Color(0xFFFFFFFF), Color(0xFFFFFBF7), Color(0xFFFFEDD5)];
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOutCubic,
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: gradientColors,
-        ),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: hasSelectedTime
-              ? const Color(0xFFC47A3D)
-              : AppThemeColors.border(context),
-          width: hasSelectedTime ? 1.6 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: hasSelectedTime
-                ? const Color(0x24C47A3D)
-                : const Color(0x10000000),
-            blurRadius: hasSelectedTime ? 22 : 14,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6E3F2F), Color(0xFFC47A3D)],
-                  ),
-                  borderRadius: BorderRadius.circular(17),
-                ),
-                child: const Icon(
-                  Icons.schedule_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'الأوقات المتاحة لهذا اليوم',
-                      style: TextStyle(
-                        color: AppThemeColors.textPrimary(context),
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      selectedDateLabel,
-                      style: TextStyle(
-                        color: AppThemeColors.textSecondary(context),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          Row(
-            children: [
-              Expanded(
-                child: _TimeInfoMiniBox(
-                  label: 'مدة الحجز',
-                  value: requiredDurationLabel,
-                  icon: Icons.timelapse_rounded,
-                  color: const Color(0xFF2563EB),
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              Expanded(
-                child: _TimeInfoMiniBox(
-                  label: 'الوقت المختار',
-                  value: selectedTime ?? 'لم يتم الاختيار',
-                  icon: Icons.check_circle_rounded,
-                  color: hasSelectedTime
-                      ? const Color(0xFF16A34A)
-                      : const Color(0xFF6B7280),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TimeInfoMiniBox extends StatelessWidget {
-  const _TimeInfoMiniBox({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(13),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.16)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 18),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppThemeColors.textSecondary(context),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 280),
-            transitionBuilder: (child, animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(
-                  scale: CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutBack,
-                  ),
-                  child: child,
-                ),
-              );
-            },
-            child: Text(
-              value,
-              key: ValueKey(value),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: color,
-                fontSize: 15.5,
-                height: 1.2,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -630,40 +405,6 @@ class _AvailableTimeCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _TimeSelectionHint extends StatelessWidget {
-  const _TimeSelectionHint();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(13),
-      decoration: BoxDecoration(
-        color: AppThemeColors.elevatedCard(context),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppThemeColors.border(context)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.info_rounded, color: Color(0xFFC47A3D), size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'الأوقات المحجوزة أو غير المتاحة تظهر باللون الرمادي. لاحقًا سيتم حسابها تلقائيًا حسب جدول الحلاق.',
-              style: TextStyle(
-                color: AppThemeColors.textSecondary(context),
-                fontSize: 12.5,
-                height: 1.5,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

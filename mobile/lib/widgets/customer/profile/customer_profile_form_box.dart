@@ -15,9 +15,14 @@ class CustomerProfileFormBox extends StatelessWidget {
     required this.onCountryChanged,
     required this.onAddOrChangeImage,
     required this.onRemoveImage,
+    required this.avatarUrl,
+    required this.isUploadingImage,
   });
 
   final bool hasProfileImage;
+  final String? avatarUrl;
+  final bool isUploadingImage;
+
   final TextEditingController nameController;
   final TextEditingController phoneController;
   final String selectedCountry;
@@ -69,11 +74,34 @@ class CustomerProfileFormBox extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(
-                  hasProfileImage ? Icons.image_rounded : Icons.person_rounded,
-                  size: 46,
-                  color: Colors.white,
-                ),
+                clipBehavior: Clip.antiAlias,
+                child: isUploadingImage
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: Colors.white,
+                        ),
+                      )
+                    : hasProfileImage &&
+                          avatarUrl != null &&
+                          avatarUrl!.trim().isNotEmpty
+                    ? Image.network(
+                        avatarUrl!,
+                        fit: BoxFit.cover,
+                        filterQuality: FilterQuality.high,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.person_rounded,
+                            size: 46,
+                            color: Colors.white,
+                          );
+                        },
+                      )
+                    : const Icon(
+                        Icons.person_rounded,
+                        size: 46,
+                        color: Colors.white,
+                      ),
               ),
               Positioned(
                 left: 4,
@@ -103,7 +131,7 @@ class CustomerProfileFormBox extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             hasProfileImage
-                ? 'تمت إضافة صورة بروفايل مؤقتة'
+                ? 'تمت إضافة صورة بروفايل'
                 : 'لم تتم إضافة صورة بروفايل بعد',
             textAlign: TextAlign.center,
             style: TextStyle(

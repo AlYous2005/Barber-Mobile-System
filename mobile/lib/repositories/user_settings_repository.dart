@@ -42,8 +42,11 @@ class UserSettingsRepository {
   }) async {
     final row = await SupabaseConfig.client
         .from('user_settings')
-        .update({'notifications_enabled': notificationsEnabled})
-        .eq('user_id', userId)
+        .upsert({
+          'user_id': userId,
+          'notifications_enabled': notificationsEnabled,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        }, onConflict: 'user_id')
         .select('user_id, notifications_enabled, theme_mode')
         .single();
 
@@ -56,8 +59,11 @@ class UserSettingsRepository {
   }) async {
     final row = await SupabaseConfig.client
         .from('user_settings')
-        .update({'theme_mode': _themeModeToDatabase(themeMode)})
-        .eq('user_id', userId)
+        .upsert({
+          'user_id': userId,
+          'theme_mode': _themeModeToDatabase(themeMode),
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        }, onConflict: 'user_id')
         .select('user_id, notifications_enabled, theme_mode')
         .single();
 

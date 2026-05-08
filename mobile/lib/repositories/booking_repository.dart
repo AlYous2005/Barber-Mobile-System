@@ -167,7 +167,7 @@ class BookingRepository implements BookingRepositoryContract {
 
     final customerRow = await SupabaseConfig.client
         .from('profiles')
-        .select('first_name, last_name')
+        .select('first_name, last_name, phone_number, avatar_url')
         .eq('id', customerId)
         .maybeSingle();
 
@@ -209,6 +209,12 @@ class BookingRepository implements BookingRepositoryContract {
       customerId: customerId,
       barberId: barberId,
       customerName: customerName,
+      customerAvatarUrl: _cleanNullableText(
+        customerRow?['avatar_url']?.toString(),
+      ),
+      customerPhoneNumber: _cleanNullableText(
+        customerRow?['phone_number']?.toString(),
+      ),
       barberName: barberName,
       barberRating: barberRating,
       serviceName: serviceName.isEmpty ? 'خدمة غير محددة' : serviceName,
@@ -322,6 +328,16 @@ class BookingRepository implements BookingRepositoryContract {
       default:
         return status;
     }
+  }
+
+  String? _cleanNullableText(String? value) {
+    final cleaned = value?.trim();
+
+    if (cleaned == null || cleaned.isEmpty) {
+      return null;
+    }
+
+    return cleaned;
   }
 
   double _parseDouble(dynamic value) {

@@ -4,6 +4,7 @@ import '../../../models/mock_appointment.dart';
 import '../../../utils/app_theme_colors.dart';
 import '../../../utils/appointment_status_utils.dart';
 import '../../../utils/booking_formatters.dart';
+import '../shared/user_avatar_box.dart';
 
 class HomeAppointmentCard extends StatelessWidget {
   const HomeAppointmentCard({
@@ -83,19 +84,9 @@ class HomeAppointmentCard extends StatelessWidget {
 
           Row(
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFAECE0),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0x33C8A078)),
-                ),
-                child: const Icon(
-                  Icons.person_rounded,
-                  color: Color(0xFF5C4030),
-                  size: 21,
-                ),
+              UserAvatarBox(
+                displayName: appointment.displayCustomerName,
+                imageUrl: appointment.customerAvatarUrl,
               ),
               const SizedBox(width: 10),
               Expanded(

@@ -15,6 +15,8 @@ class MockAppointment {
     required this.endDateTime,
     this.customerId,
     this.barberId,
+    this.customerAvatarUrl,
+    this.customerPhoneNumber,
     this.createdAt,
   });
 
@@ -30,14 +32,15 @@ class MockAppointment {
   final DateTime endDateTime;
   final String? customerId;
   final String? barberId;
+  final String? customerAvatarUrl;
+  final String? customerPhoneNumber;
 
   /// When the customer confirmed the booking (not the appointment slot time).
   final DateTime? createdAt;
 
-
-bool get isCompleted => AppointmentStatusUtils.isCompleted(status);
-bool get isCurrent => AppointmentStatusUtils.isCurrent(status);
-bool get isUpcoming => AppointmentStatusUtils.isUpcoming(status);
+  bool get isCompleted => AppointmentStatusUtils.isCompleted(status);
+  bool get isCurrent => AppointmentStatusUtils.isCurrent(status);
+  bool get isUpcoming => AppointmentStatusUtils.isUpcoming(status);
 
   String get displayTimeRange =>
       formatArabicAppointmentTimeRange(startDateTime, endDateTime);
@@ -62,6 +65,8 @@ bool get isUpcoming => AppointmentStatusUtils.isUpcoming(status);
     String? customerId,
     String? barberId,
     DateTime? createdAt,
+    String? customerAvatarUrl,
+    String? customerPhoneNumber,
   }) {
     return MockAppointment(
       id: id ?? this.id,
@@ -77,9 +82,8 @@ bool get isUpcoming => AppointmentStatusUtils.isUpcoming(status);
       customerId: customerId ?? this.customerId,
       barberId: barberId ?? this.barberId,
       createdAt: createdAt ?? this.createdAt,
+      customerAvatarUrl: customerAvatarUrl ?? this.customerAvatarUrl,
+      customerPhoneNumber: customerPhoneNumber ?? this.customerPhoneNumber,
     );
   }
 }
-
-
-

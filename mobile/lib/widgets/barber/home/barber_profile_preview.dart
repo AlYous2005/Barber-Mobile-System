@@ -4,9 +4,15 @@ import '../../../utils/app_theme_colors.dart';
 import '../../shared/star_rating_display.dart';
 
 class BarberProfilePreview extends StatelessWidget {
-  const BarberProfilePreview({super.key, required this.onTap, this.avatarUrl});
+  const BarberProfilePreview({
+    super.key,
+    required this.onTap,
+    required this.rating,
+    this.avatarUrl,
+  });
 
   final VoidCallback onTap;
+  final double rating;
   final String? avatarUrl;
 
   @override
@@ -98,10 +104,10 @@ class BarberProfilePreview extends StatelessWidget {
 
           const SizedBox(height: 9),
 
-          const StarRatingDisplay(
-            rating: 4.8,
-            ratingCount: 27,
-            satisfactionRate: 96,
+          StarRatingDisplay(
+            rating: rating,
+            ratingCount: 0,
+            satisfactionRate: rating <= 0 ? 0 : ((rating / 5) * 100).round(),
             starSize: 18,
             enableDetailsPopup: true,
           ),

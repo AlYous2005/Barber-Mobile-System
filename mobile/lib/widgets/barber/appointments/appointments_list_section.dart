@@ -5,6 +5,7 @@ import '../../../utils/app_theme_colors.dart';
 import '../../../utils/booking_formatters.dart';
 import '../../../utils/appointment_status_utils.dart';
 import 'appointment_action_widgets.dart';
+import '../shared/user_avatar_box.dart';
 
 class AppointmentsListSection extends StatelessWidget {
   const AppointmentsListSection({
@@ -314,19 +315,9 @@ class _AppointmentLuxuryCardState extends State<AppointmentLuxuryCard> {
 
               Row(
                 children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: AppThemeColors.softCard(context),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppThemeColors.border(context)),
-                    ),
-                    child: Icon(
-                      Icons.person_rounded,
-                      color: AppThemeColors.textSecondary(context),
-                      size: 21,
-                    ),
+                  UserAvatarBox(
+                    displayName: appointment.displayCustomerName,
+                    imageUrl: appointment.customerAvatarUrl,
                   ),
                   const SizedBox(width: 10),
                   Expanded(

@@ -1,72 +1,84 @@
-//
-
 import 'package:flutter/material.dart';
 
 import '../../models/working_day_model.dart';
+import '../../repositories/barber_working_hours_repository.dart';
+import '../../services/auth_session.dart';
 
 class BarberWorkingHoursController extends ChangeNotifier {
-  List<WorkingDay> workingDays = const [
-    WorkingDay(
-      dayKey: 'saturday',
-      dayName: 'السبت',
-      startTime: '09:00',
-      endTime: '21:00',
-      isActive: true,
-    ),
-    WorkingDay(
-      dayKey: 'sunday',
-      dayName: 'الأحد',
-      startTime: '09:00',
-      endTime: '21:00',
-      isActive: true,
-    ),
-    WorkingDay(
-      dayKey: 'monday',
-      dayName: 'الإثنين',
-      startTime: '09:00',
-      endTime: '21:00',
-      isActive: true,
-    ),
-    WorkingDay(
-      dayKey: 'tuesday',
-      dayName: 'الثلاثاء',
-      startTime: '09:00',
-      endTime: '21:00',
-      isActive: true,
-    ),
-    WorkingDay(
-      dayKey: 'wednesday',
-      dayName: 'الأربعاء',
-      startTime: '09:00',
-      endTime: '21:00',
-      isActive: true,
-    ),
-    WorkingDay(
-      dayKey: 'thursday',
-      dayName: 'الخميس',
-      startTime: '09:00',
-      endTime: '18:00',
-      isActive: true,
-    ),
-    WorkingDay(
-      dayKey: 'friday',
-      dayName: 'الجمعة',
-      startTime: '00:00',
-      endTime: '00:00',
-      isActive: false,
-    ),
-  ];
+  BarberWorkingHoursController({
+    BarberWorkingHoursRepository workingHoursRepository =
+        const BarberWorkingHoursRepository(),
+  }) : _workingHoursRepository = workingHoursRepository;
 
-  void updateWorkingDay(WorkingDay updatedDay) {
-    workingDays = workingDays.map((item) {
-      if (item.dayKey != updatedDay.dayKey) {
-        return item;
+  final BarberWorkingHoursRepository _workingHoursRepository;
+
+  List<WorkingDay> workingDays =
+      BarberWorkingHoursRepository.defaultWorkingDays;
+
+  bool isLoading = false;
+  bool isSaving = false;
+  String? errorMessage;
+
+  String get _currentBarberId {
+    return AuthSession.currentUser?.barberId ?? '';
+  }
+
+  Future<void> loadWorkingDays() async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      if (_currentBarberId.isEmpty) {
+        throw Exception('Missing current barber id');
       }
 
-      return updatedDay;
-    }).toList();
+      workingDays = await _workingHoursRepository.getWorkingDays(
+        barberId: _currentBarberId,
+      );
+    } catch (error, stackTrace) {
+      debugPrint('BarberWorkingHoursController load error: $error');
+      debugPrintStack(stackTrace: stackTrace);
 
+      errorMessage = 'تعذر تحميل ساعات العمل، حاول مرة أخرى';
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateWorkingDay(WorkingDay updatedDay) async {
+    if (_currentBarberId.isEmpty) {
+      throw Exception('Missing current barber id');
+    }
+
+    isSaving = true;
+    errorMessage = null;
     notifyListeners();
+
+    try {
+      final savedDay = await _workingHoursRepository.updateWorkingDay(
+        barberId: _currentBarberId,
+        day: updatedDay,
+      );
+
+      workingDays = workingDays.map((item) {
+        if (item.dayOfWeek != savedDay.dayOfWeek) {
+          return item;
+        }
+
+        return savedDay;
+      }).toList();
+    } catch (error, stackTrace) {
+      debugPrint('BarberWorkingHoursController save error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      errorMessage = 'تعذر حفظ ساعات العمل، حاول مرة أخرى';
+      rethrow;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
   }
 
   String formatTime(String value) {

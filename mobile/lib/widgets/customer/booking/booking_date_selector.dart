@@ -121,14 +121,6 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _DateChoiceHeader(
-          title: 'اختر تاريخ الموعد',
-          subtitle:
-              'حدد اليوم المناسب لك، ويمكنك اختيار تاريخ محدد من التقويم.',
-        ),
-
-        const SizedBox(height: 14),
-
         Row(
           children: [
             Expanded(
@@ -200,78 +192,6 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
           ),
         ],
       ],
-    );
-  }
-}
-
-class _DateChoiceHeader extends StatelessWidget {
-  const _DateChoiceHeader({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppThemeColors.card(context),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppThemeColors.border(context)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x10000000),
-            blurRadius: 16,
-            offset: Offset(0, 7),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6E3F2F), Color(0xFFC47A3D)],
-              ),
-              borderRadius: BorderRadius.circular(17),
-            ),
-            child: const Icon(
-              Icons.calendar_month_rounded,
-              color: Colors.white,
-              size: 23,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: AppThemeColors.textPrimary(context),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: AppThemeColors.textSecondary(context),
-                    fontSize: 12.8,
-                    height: 1.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

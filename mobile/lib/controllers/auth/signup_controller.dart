@@ -141,7 +141,53 @@ class SignUpController extends ChangeNotifier {
     return '$selectedCountryCode$normalizedLocalNumber';
   }
 
+  String? _validatePhoneInput() {
+    final String rawPhone = phoneController.text.trim();
+    final String digitsOnly = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+
+    if (rawPhone.isEmpty) {
+      return 'الرجاء إدخال رقم الهاتف';
+    }
+
+    if (RegExp(r'[A-Za-z\u0621-\u064A]').hasMatch(rawPhone)) {
+      return 'يجب أن يتكون الرقم من أرقام وليس أحرف';
+    }
+
+    if (digitsOnly.length < 9 || digitsOnly.length > 10) {
+      return 'يجب أن يتكون الرقم من 10 أو 9 أرقام فقط';
+    }
+
+    return null;
+  }
+
+  String _friendlySignUpError(String message) {
+    final String raw = message.toLowerCase();
+
+    if (raw.contains('already registered') ||
+        raw.contains('user already registered') ||
+        raw.contains('duplicate key') ||
+        raw.contains('phone_number_key') ||
+        raw.contains('already exists') ||
+        raw.contains('exists')) {
+      return 'لا يمكنك انشاء حساب باستخدام هذا الرقم';
+    }
+
+    if (raw.contains('phone')) {
+      return 'رقم الهاتف غير صحيح، يرجى إدخال رقم صالح';
+    }
+
+    return message;
+  }
+
   Future<PendingPhoneSignUp> signUp() async {
+    final String? phoneValidationError = _validatePhoneInput();
+    if (phoneValidationError != null) {
+      phoneFieldError = phoneValidationError;
+      errorMessage = phoneValidationError;
+      notifyListeners();
+      throw SignUpControllerException(phoneValidationError);
+    }
+
     loading = true;
     notifyListeners();
 
@@ -164,7 +210,7 @@ class SignUpController extends ChangeNotifier {
       loading = false;
       notifyListeners();
 
-      showError(error.message);
+      showError(_friendlySignUpError(error.message));
       rethrow;
     } catch (_) {
       loading = false;

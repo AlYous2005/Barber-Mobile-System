@@ -26,6 +26,7 @@ class _BarberWorkingHoursScreenState extends State<BarberWorkingHoursScreen> {
     super.initState();
 
     controller = BarberWorkingHoursController();
+    controller.loadWorkingDays();
   }
 
   @override
@@ -34,8 +35,8 @@ class _BarberWorkingHoursScreenState extends State<BarberWorkingHoursScreen> {
     super.dispose();
   }
 
-  void _openEditSheet(WorkingDay day) {
-    showModalBottomSheet<WorkingDay?>(
+  Future<void> _openEditSheet(WorkingDay day) async {
+    final updatedDay = await showModalBottomSheet<WorkingDay?>(
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
@@ -43,12 +44,23 @@ class _BarberWorkingHoursScreenState extends State<BarberWorkingHoursScreen> {
       builder: (context) {
         return WorkingHoursEditSheet(day: day);
       },
-    ).then((updatedDay) {
-      if (!mounted || updatedDay == null) return;
+    );
 
-      controller.updateWorkingDay(updatedDay);
-      _showWorkingHoursSavedPopup();
-    });
+    if (!mounted || updatedDay == null) return;
+
+    try {
+      await controller.updateWorkingDay(updatedDay);
+
+      if (!mounted) return;
+
+      await _showWorkingHoursSavedPopup();
+    } catch (error) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر حفظ ساعات العمل، حاول مرة أخرى')),
+      );
+    }
   }
 
   Future<void> _showWorkingHoursSavedPopup() async {
@@ -93,13 +105,74 @@ class _BarberWorkingHoursScreenState extends State<BarberWorkingHoursScreen> {
 
                 const SizedBox(height: 16),
 
-                ...controller.workingDays.map(
-                  (day) => WorkingDayCard(
-                    day: day,
-                    formatTime: controller.formatTime,
-                    onEdit: () => _openEditSheet(day),
+                if (controller.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (controller.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline_rounded, size: 42),
+                        const SizedBox(height: 12),
+                        Text(
+                          controller.errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: AppThemeColors.textPrimary(context),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        ElevatedButton(
+                          onPressed: controller.loadWorkingDays,
+                          child: const Text('إعادة المحاولة'),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (controller.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (controller.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline_rounded, size: 42),
+                        const SizedBox(height: 12),
+                        Text(
+                          controller.errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: AppThemeColors.textPrimary(context),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        ElevatedButton(
+                          onPressed: controller.loadWorkingDays,
+                          child: const Text('إعادة المحاولة'),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ...controller.workingDays.map(
+                    (day) => WorkingDayCard(
+                      day: day,
+                      formatTime: controller.formatTime,
+                      onEdit: controller.isSaving
+                          ? () {}
+                          : () => _openEditSheet(day),
+                    ),
                   ),
-                ),
               ],
             ),
           ),

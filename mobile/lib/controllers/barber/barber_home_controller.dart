@@ -2,23 +2,28 @@
 
 import 'package:flutter/material.dart';
 
-import '../../data/mocks/mock_notifications.dart';
+import '../../repositories/notification_repository.dart';
 import '../../models/mock_appointment.dart';
 import '../../repositories/booking_repository.dart';
 import '../../services/auth_session.dart';
 import '../../utils/appointment_status_utils.dart';
 import '../../repositories/barber_avatar_repository.dart';
+import '../../services/supabase_config.dart';
 
 class BarberHomeController extends ChangeNotifier {
   BarberHomeController({
     BookingRepository bookingRepository = const BookingRepository(),
     BarberAvatarRepository barberAvatarRepository =
         const BarberAvatarRepository(),
+    NotificationRepository notificationRepository =
+        const NotificationRepository(),
   }) : _bookingRepository = bookingRepository,
-       _barberAvatarRepository = barberAvatarRepository;
+       _barberAvatarRepository = barberAvatarRepository,
+       _notificationRepository = notificationRepository;
 
   final BookingRepository _bookingRepository;
   final BarberAvatarRepository _barberAvatarRepository;
+  final NotificationRepository _notificationRepository;
 
   bool isLoadingAppointments = true;
   String? appointmentsErrorMessage;
@@ -26,13 +31,12 @@ class BarberHomeController extends ChangeNotifier {
 
   bool showCurrent = true;
   bool isMenuOpen = false;
-  String barberDisplayName = 'يوسف';
+  String barberDisplayName = 'الحلاق';
+  double barberRating = 0;
   String? barberAvatarUrl;
   String selectedAppointmentFilter = 'معلقة';
 
-  int get unreadNotifications {
-    return mockBarberNotifications.where((item) => !item.isRead).length;
-  }
+  int unreadNotifications = 0;
 
   String get _currentBarberId {
     return AuthSession.currentUser?.barberId ?? '';
@@ -40,6 +44,77 @@ class BarberHomeController extends ChangeNotifier {
 
   String get _currentUserId {
     return AuthSession.currentUser?.username ?? '';
+  }
+
+  Future<void> loadUnreadNotificationsCount() async {
+    final userId = _currentUserId;
+
+    if (userId.isEmpty) {
+      return;
+    }
+
+    try {
+      unreadNotifications = await _notificationRepository.getUnreadCount(
+        userId: userId,
+      );
+
+      notifyListeners();
+    } catch (error, stackTrace) {
+      debugPrint('BarberHomeController notifications count error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> loadBarberProfileSummary() async {
+    final userId = _currentUserId;
+    final barberId = _currentBarberId;
+
+    if (userId.isEmpty) {
+      return;
+    }
+
+    try {
+      final profileRow = await SupabaseConfig.client
+          .from('profiles')
+          .select('first_name, last_name, avatar_url')
+          .eq('id', userId)
+          .maybeSingle();
+
+      Map<String, dynamic>? barberRow;
+
+      if (barberId.isNotEmpty) {
+        barberRow = await SupabaseConfig.client
+            .from('barbers')
+            .select('name, rating')
+            .eq('id', barberId)
+            .maybeSingle();
+      }
+
+      final firstName = (profileRow?['first_name'] ?? '').toString().trim();
+      final lastName = (profileRow?['last_name'] ?? '').toString().trim();
+      final profileFullName = '$firstName $lastName'.trim();
+
+      final barberName = (barberRow?['name'] ?? '').toString().trim();
+
+      barberDisplayName = barberName.isNotEmpty
+          ? barberName
+          : profileFullName.isNotEmpty
+          ? profileFullName
+          : AuthSession.currentUser?.displayName.trim().isNotEmpty == true
+          ? AuthSession.currentUser!.displayName
+          : 'الحلاق';
+
+      barberRating = _parseRating(barberRow?['rating']);
+
+      barberAvatarUrl = _cleanNullableText(
+        profileRow?['avatar_url']?.toString(),
+      );
+
+      notifyListeners();
+    } catch (error, stackTrace) {
+      debugPrint('BarberHomeController profile summary load error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 
   Future<void> loadBarberAvatar() async {
@@ -235,6 +310,26 @@ class BarberHomeController extends ChangeNotifier {
   void closeMenu() {
     isMenuOpen = false;
     notifyListeners();
+  }
+
+  String? _cleanNullableText(String? value) {
+    final cleaned = value?.trim();
+
+    if (cleaned == null || cleaned.isEmpty) {
+      return null;
+    }
+
+    return cleaned;
+  }
+
+  double _parseRating(dynamic value) {
+    if (value == null) return 0;
+
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    return double.tryParse(value.toString()) ?? 0;
   }
 
   void updateBarberDisplayName(String newName) {

@@ -7,6 +7,7 @@ class AppUser {
     this.lastName,
     this.phoneNumber,
     this.birthDate,
+    this.avatarUrl,
     this.barberId,
   });
 
@@ -18,10 +19,9 @@ class AppUser {
   final String? lastName;
   final String? phoneNumber;
   final DateTime? birthDate;
+  final String? avatarUrl;
 
   /// يكون له قيمة فقط إذا المستخدم حلاق.
-  /// مثال مؤقت:
-  /// admin / 1234 => barberId = b1
   final String? barberId;
 
   bool get isCustomer => role == 'customer';
@@ -35,6 +35,7 @@ class AppUser {
     String? lastName,
     String? phoneNumber,
     DateTime? birthDate,
+    String? avatarUrl,
     String? barberId,
   }) {
     return AppUser(
@@ -45,6 +46,7 @@ class AppUser {
       lastName: lastName ?? this.lastName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       birthDate: birthDate ?? this.birthDate,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       barberId: barberId ?? this.barberId,
     );
   }

@@ -36,7 +36,9 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
   @override
   void initState() {
     super.initState();
+
     controller = BarberNotificationsController();
+    controller.loadNotifications();
   }
 
   @override
@@ -45,8 +47,10 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
     super.dispose();
   }
 
-  void _openNotification(UiNotification notification) {
-    controller.markAsRead(notification.id);
+  Future<void> _openNotification(UiNotification notification) async {
+    await controller.markAsRead(notification.id);
+
+    if (!mounted) return;
 
     switch (notification.type) {
       case NotificationType.appointment:
@@ -94,7 +98,7 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
   }
 
   Future<void> _markAllAsRead() async {
-    final bool hadUnread = controller.markAllAsRead();
+    final bool hadUnread = await controller.markAllAsRead();
 
     if (!mounted) return;
 
@@ -109,6 +113,8 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
       );
       return;
     }
+
+    if (!mounted) return;
 
     await showBarberFeedbackPopup(
       context: context,
@@ -152,29 +158,60 @@ class _BarberNotificationsScreenState extends State<BarberNotificationsScreen> {
 
                 const SizedBox(height: 14),
 
-                NotificationsActionsBar(
-                  unreadCount: controller.unreadCount,
-                  onMarkAllAsRead: _markAllAsRead,
-                ),
-
-                const SizedBox(height: 14),
-
-                NotificationsFilterBar(
-                  selectedFilter: controller.selectedFilter,
-                  onChanged: controller.changeFilter,
-                ),
-
-                const SizedBox(height: 16),
-
-                if (visibleNotifications.isEmpty)
-                  const EmptyNotificationsState()
-                else
-                  ...visibleNotifications.map(
-                    (notification) => NotificationLuxuryCard(
-                      notification: notification,
-                      onTap: () => _openNotification(notification),
+                if (controller.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (controller.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 28),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline_rounded, size: 42),
+                        const SizedBox(height: 12),
+                        Text(
+                          controller.errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: AppThemeColors.textPrimary(context),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        ElevatedButton(
+                          onPressed: controller.loadNotifications,
+                          child: const Text('إعادة المحاولة'),
+                        ),
+                      ],
                     ),
+                  )
+                else ...[
+                  NotificationsActionsBar(
+                    unreadCount: controller.unreadCount,
+                    onMarkAllAsRead: _markAllAsRead,
                   ),
+
+                  const SizedBox(height: 14),
+
+                  NotificationsFilterBar(
+                    selectedFilter: controller.selectedFilter,
+                    onChanged: controller.changeFilter,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  if (visibleNotifications.isEmpty)
+                    const EmptyNotificationsState()
+                  else
+                    ...visibleNotifications.map(
+                      (notification) => NotificationLuxuryCard(
+                        notification: notification,
+                        onTap: () => _openNotification(notification),
+                      ),
+                    ),
+                ],
               ],
             ),
           ),

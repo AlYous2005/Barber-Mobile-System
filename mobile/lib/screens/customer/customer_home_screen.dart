@@ -49,6 +49,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
     controller = CustomerHomeController(initialUserName: widget.userName);
     controller.loadCustomerAppointments();
+    controller.loadCustomerProfile();
+    controller.loadCustomerNotifications();
 
     _greetingAnimController = AnimationController(
       vsync: this,
@@ -84,6 +86,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
           initialDisplayName: controller.displayName,
           initialCountryCode: controller.countryCode,
           initialPhoneNumber: controller.phoneNumber,
+          initialAvatarUrl: controller.avatarUrl,
         ),
       ),
     );
@@ -217,6 +220,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                       children: [
                         CustomerHomeTopBar(
                           displayName: controller.displayName,
+                          avatarUrl: controller.avatarUrl,
                           unreadCount: controller.unreadNotifications,
                           onProfileTap: _openProfile,
                           onNotificationsTap:

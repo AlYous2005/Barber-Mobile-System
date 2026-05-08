@@ -15,6 +15,7 @@ import '../../widgets/auth/auth_legal_agreement_text.dart';
 import '../../widgets/auth/auth_text_field.dart';
 import '../../models/pending_phone_signup.dart';
 import 'phone_otp_verification_screen.dart';
+import '../../widgets/auth/password_strength_indicator.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -314,6 +315,10 @@ class _SignUpScreenState extends State<SignUpScreen>
                                           controller.togglePasswordVisibility,
                                     ),
                                   ),
+                                ),
+
+                                PasswordStrengthIndicator(
+                                  controller: controller.passwordController,
                                 ),
 
                                 const SizedBox(height: 12),

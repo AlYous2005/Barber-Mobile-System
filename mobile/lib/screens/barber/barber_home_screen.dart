@@ -44,7 +44,8 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
 
     controller = BarberHomeController();
     controller.loadBarberAppointments();
-    controller.loadBarberAvatar();
+    controller.loadBarberProfileSummary();
+    controller.loadUnreadNotificationsCount();
   }
 
   @override
@@ -53,12 +54,16 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
     super.dispose();
   }
 
-  void _openNotifications() {
-    Navigator.of(context).push(
+  Future<void> _openNotifications() async {
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const BarberNotificationsScreen(),
       ),
     );
+
+    if (!mounted) return;
+
+    await controller.loadUnreadNotificationsCount();
   }
 
   void _openSettings() {
@@ -112,7 +117,7 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
 
     if (!mounted) return;
 
-    await controller.loadBarberAvatar();
+    await controller.loadBarberProfileSummary();
   }
 
   void _closeMenuThen(VoidCallback action) {
@@ -307,7 +312,7 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
                       children: [
                         BarberHeader(
                           userName: controller.barberDisplayName,
-                          rating: 4.8,
+                          rating: controller.barberRating,
                           unreadNotifications: controller.unreadNotifications,
                           onNotificationsTap: _openNotifications,
                           onMenuTap: controller.openMenu,
@@ -317,6 +322,7 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
 
                         BarberProfilePreview(
                           avatarUrl: controller.barberAvatarUrl,
+                          rating: controller.barberRating,
                           onTap: _openBarberProfile,
                         ),
 

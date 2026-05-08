@@ -1,5 +1,3 @@
-// TextEditingControllers + form state + validation + result building
-
 import 'package:flutter/material.dart';
 
 import '../../models/customer_profile_result.dart';
@@ -9,7 +7,7 @@ class CustomerProfileController extends ChangeNotifier {
     required this.initialDisplayName,
     required this.initialCountryCode,
     required this.initialPhoneNumber,
-    required this.initialHasProfileImage,
+    required this.initialAvatarUrl,
   }) {
     nameController = TextEditingController(text: initialDisplayName);
     phoneController = TextEditingController(text: initialPhoneNumber);
@@ -18,7 +16,7 @@ class CustomerProfileController extends ChangeNotifier {
     confirmPasswordController = TextEditingController();
 
     selectedCountry = initialCountryCode == '+972' ? 'إسرائيل' : 'فلسطين';
-    hasProfileImage = initialHasProfileImage;
+    avatarUrl = initialAvatarUrl;
 
     nameController.addListener(_refreshState);
     phoneController.addListener(_refreshState);
@@ -43,13 +41,10 @@ class CustomerProfileController extends ChangeNotifier {
     confirmPasswordController.addListener(_onConfirmPasswordEdited);
   }
 
-  /// TEMPORARY: replace with real auth / API check when backend is integrated.
-  static const String _mockCurrentPassword = '123456';
-
   final String initialDisplayName;
   final String initialCountryCode;
   final String initialPhoneNumber;
-  final bool initialHasProfileImage;
+  final String? initialAvatarUrl;
 
   late final TextEditingController nameController;
   late final TextEditingController phoneController;
@@ -62,11 +57,12 @@ class CustomerProfileController extends ChangeNotifier {
   late final VoidCallback _onConfirmPasswordEdited;
 
   String selectedCountry = 'فلسطين';
-  bool hasProfileImage = false;
+  String? avatarUrl;
 
   bool showCurrentPassword = false;
   bool showNewPassword = false;
   bool showConfirmPassword = false;
+  bool isUploadingImage = false;
 
   String? currentPasswordError;
   String? newPasswordError;
@@ -80,17 +76,44 @@ class CustomerProfileController extends ChangeNotifier {
     return selectedCountry == 'فلسطين' ? '+970' : '+972';
   }
 
-  bool get hasUnsavedChanges {
-    final String currentName = nameController.text.trim();
-    final String initialName = initialDisplayName.trim();
+  bool get hasProfileImage {
+    return avatarUrl != null && avatarUrl!.trim().isNotEmpty;
+  }
 
-    final String currentPhone = phoneController.text.trim();
-    final String initialPhone = initialPhoneNumber.trim();
+  String get internationalPhoneNumber {
+    final rawPhone = phoneController.text.trim();
+
+    if (rawPhone.startsWith('+')) {
+      return rawPhone.replaceAll(RegExp(r'\s+'), '');
+    }
+
+    final digitsOnly = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+
+    if (digitsOnly.startsWith('970') || digitsOnly.startsWith('972')) {
+      return '+$digitsOnly';
+    }
+
+    final normalizedLocalNumber = digitsOnly.startsWith('0')
+        ? digitsOnly.substring(1)
+        : digitsOnly;
+
+    return '$phoneCode$normalizedLocalNumber';
+  }
+
+  bool get hasUnsavedChanges {
+    final currentName = nameController.text.trim();
+    final initialName = initialDisplayName.trim();
+
+    final currentPhone = phoneController.text.trim();
+    final initialPhone = initialPhoneNumber.trim();
+
+    final currentInitialAvatar = initialAvatarUrl?.trim() ?? '';
+    final currentAvatar = avatarUrl?.trim() ?? '';
 
     return currentName != initialName ||
         currentPhone != initialPhone ||
         phoneCode != initialCountryCode ||
-        hasProfileImage != initialHasProfileImage ||
+        currentAvatar != currentInitialAvatar ||
         passwordSectionHasInput;
   }
 
@@ -111,8 +134,13 @@ class CustomerProfileController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setHasProfileImage(bool value) {
-    hasProfileImage = value;
+  void setAvatarUrl(String? value) {
+    avatarUrl = value;
+    notifyListeners();
+  }
+
+  void setUploadingImage(bool value) {
+    isUploadingImage = value;
     notifyListeners();
   }
 
@@ -140,9 +168,9 @@ class CustomerProfileController extends ChangeNotifier {
       return true;
     }
 
-    final String currentPassword = currentPasswordController.text.trim();
-    final String newPassword = newPasswordController.text.trim();
-    final String confirmPassword = confirmPasswordController.text.trim();
+    final currentPassword = currentPasswordController.text.trim();
+    final newPassword = newPasswordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
 
     String? currentError;
     String? newError;
@@ -150,25 +178,27 @@ class CustomerProfileController extends ChangeNotifier {
 
     if (currentPassword.isEmpty) {
       currentError = 'أدخل كلمة المرور الحالية';
-    } else if (currentPassword != _mockCurrentPassword) {
-      currentError = 'كلمة المرور الحالية غير صحيحة';
     }
 
     if (newPassword.isEmpty) {
       newError = 'أدخل كلمة المرور الجديدة';
-    } else if (newPassword.length < 6) {
-      newError = 'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل';
+    } else if (newPassword.length < 8) {
+      newError = 'كلمة المرور الجديدة يجب أن تكون 8 خانات على الأقل';
+    } else if (!RegExp(r'[0-9]').hasMatch(newPassword)) {
+      newError = 'كلمة المرور الجديدة يجب أن تحتوي على رقم';
+    } else if (!RegExp(
+      r'[!@#\$%^&*(),.?":{}|<>_\-+=/\\[\];]',
+    ).hasMatch(newPassword)) {
+      newError = 'كلمة المرور الجديدة يجب أن تحتوي على رمز';
     }
 
     if (confirmPassword.isEmpty) {
       confirmError = 'أكد كلمة المرور الجديدة';
-    } else if (newPassword.isNotEmpty &&
-        newPassword.length >= 6 &&
-        newPassword != confirmPassword) {
-      confirmError = 'كلمة السر غير متطابقة';
+    } else if (newPassword.isNotEmpty && newPassword != confirmPassword) {
+      confirmError = 'كلمة المرور غير متطابقة';
     }
 
-    final bool isValid =
+    final isValid =
         currentError == null && newError == null && confirmError == null;
 
     currentPasswordError = currentError;
@@ -186,12 +216,24 @@ class CustomerProfileController extends ChangeNotifier {
     return isValid;
   }
 
+  void setPasswordError(String message) {
+    currentPasswordError = message;
+    currentPasswordShakeTrigger++;
+    notifyListeners();
+  }
+
+  void clearPasswordFields() {
+    currentPasswordController.clear();
+    newPasswordController.clear();
+    confirmPasswordController.clear();
+  }
+
   CustomerProfileResult buildResult() {
     return CustomerProfileResult(
       displayName: nameController.text.trim(),
       countryCode: phoneCode,
       phoneNumber: phoneController.text.trim(),
-      hasProfileImage: hasProfileImage,
+      avatarUrl: avatarUrl,
     );
   }
 

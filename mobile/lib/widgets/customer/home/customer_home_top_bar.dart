@@ -11,6 +11,7 @@ class CustomerHomeTopBar extends StatelessWidget {
     required this.onNotificationsTap,
     required this.onSettingsTap,
     required this.onLogoutTap,
+    required this.avatarUrl,
   });
 
   final String displayName;
@@ -19,6 +20,7 @@ class CustomerHomeTopBar extends StatelessWidget {
   final VoidCallback onNotificationsTap;
   final VoidCallback onSettingsTap;
   final VoidCallback onLogoutTap;
+  final String? avatarUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,10 @@ class CustomerHomeTopBar extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const _CustomerProfileAvatar(),
+                  _CustomerProfileAvatar(
+                    displayName: displayName,
+                    avatarUrl: avatarUrl,
+                  ),
                   const SizedBox(width: 10),
                   SizedBox(
                     width: 112,
@@ -93,10 +98,21 @@ class CustomerHomeTopBar extends StatelessWidget {
 }
 
 class _CustomerProfileAvatar extends StatelessWidget {
-  const _CustomerProfileAvatar();
+  const _CustomerProfileAvatar({required this.displayName, this.avatarUrl});
+
+  final String displayName;
+  final String? avatarUrl;
+
+  String get _fallbackLetter {
+    final cleaned = displayName.trim();
+    if (cleaned.isEmpty) return '؟';
+    return cleaned.characters.first;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final cleanedAvatarUrl = avatarUrl?.trim();
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -119,11 +135,35 @@ class _CustomerProfileAvatar extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.person_rounded,
-            size: 30,
-            color: Colors.white,
-          ),
+          clipBehavior: Clip.antiAlias,
+          child: cleanedAvatarUrl == null || cleanedAvatarUrl.isEmpty
+              ? Center(
+                  child: Text(
+                    _fallbackLetter,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                )
+              : Image.network(
+                  cleanedAvatarUrl,
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.high,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(
+                      child: Text(
+                        _fallbackLetter,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
         Positioned(
           left: 1,

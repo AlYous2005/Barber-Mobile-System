@@ -27,6 +27,7 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
   void initState() {
     super.initState();
     controller = BarberAvailabilityController();
+    controller.loadAvailability();
   }
 
   @override
@@ -119,12 +120,12 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
     return '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
   }
 
-  void _addClosure() {
-    final bool added = controller.addClosure();
+  Future<void> _addClosure() async {
+    final bool added = await controller.addClosure();
 
-    if (!added) return;
+    if (!mounted || !added) return;
 
-    _showSuccessPopup(
+    await _showSuccessPopup(
       title: 'تمت إضافة يوم الإغلاق',
       message: 'تمت إضافة يوم الإغلاق بنجاح',
       icon: Icons.event_busy_rounded,
@@ -133,12 +134,12 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
     );
   }
 
-  void _addTimeBlock() {
-    final bool added = controller.addTimeBlock();
+  Future<void> _addTimeBlock() async {
+    final bool added = await controller.addTimeBlock();
 
-    if (!added) return;
+    if (!mounted || !added) return;
 
-    _showSuccessPopup(
+    await _showSuccessPopup(
       title: 'تمت إضافة فترة عدم التوفر',
       message: 'تمت إضافة فترة عدم التوفر بنجاح',
       icon: Icons.block_rounded,
@@ -153,10 +154,12 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
       message: 'هل تريد حذف يوم الإغلاق بتاريخ ${closure.dateLabel}؟',
       confirmText: 'حذف',
       color: const Color(0xFFEF4444),
-      onConfirm: () {
-        controller.deleteClosure(closure);
+      onConfirm: () async {
+        await controller.deleteClosure(closure);
 
-        _showSuccessPopup(
+        if (!mounted) return;
+
+        await _showSuccessPopup(
           title: 'تم حذف يوم الإغلاق',
           message: 'تم حذف يوم الإغلاق بنجاح',
           icon: Icons.delete_outline_rounded,
@@ -174,10 +177,12 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
           'هل تريد حذف الفترة من ${controller.formatTime(block.startTime)} إلى ${controller.formatTime(block.endTime)}؟',
       confirmText: 'حذف',
       color: const Color(0xFFEF4444),
-      onConfirm: () {
-        controller.deleteTimeBlock(block);
+      onConfirm: () async {
+        await controller.deleteTimeBlock(block);
 
-        _showSuccessPopup(
+        if (!mounted) return;
+
+        await _showSuccessPopup(
           title: 'تم حذف فترة عدم التوفر',
           message: 'تم حذف فترة عدم التوفر بنجاح',
           icon: Icons.delete_outline_rounded,
@@ -197,10 +202,12 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
       builder: (context) {
         return EditClosureSheet(
           closure: closure,
-          onSave: (updatedClosure) {
-            controller.updateClosure(updatedClosure);
+          onSave: (updatedClosure) async {
+            await controller.updateClosure(updatedClosure);
 
-            _showSuccessPopup(
+            if (!mounted) return;
+
+            await _showSuccessPopup(
               title: 'تم تعديل يوم الإغلاق',
               message: 'تم حفظ تغييرات يوم الإغلاق بنجاح',
               icon: Icons.edit_calendar_rounded,
@@ -222,10 +229,12 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
       builder: (context) {
         return EditTimeBlockSheet(
           block: block,
-          onSave: (updatedBlock) {
-            controller.updateTimeBlock(updatedBlock);
+          onSave: (updatedBlock) async {
+            await controller.updateTimeBlock(updatedBlock);
 
-            _showSuccessPopup(
+            if (!mounted) return;
+
+            await _showSuccessPopup(
               title: 'تم تعديل فترة عدم التوفر',
               message: 'تم تعديل فترة عدم التوفر بنجاح',
               icon: Icons.edit_note_rounded,
@@ -320,7 +329,35 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
 
                 const SizedBox(height: 16),
 
-                if (controller.isClosuresTab) ...[
+                if (controller.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (controller.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline_rounded, size: 42),
+                        const SizedBox(height: 12),
+                        Text(
+                          controller.errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        ElevatedButton(
+                          onPressed: controller.loadAvailability,
+                          child: const Text('إعادة المحاولة'),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (controller.isClosuresTab) ...[
                   ClosureAddCard(
                     selectedDateLabel: controller.dateLabel(
                       controller.selectedClosureDate,

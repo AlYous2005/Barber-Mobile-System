@@ -1,35 +1,16 @@
-// state + validation + add/edit/delete + format helpers
-
 import 'package:flutter/material.dart';
 
 import '../../models/availability_models.dart';
+import '../../repositories/barber_availability_repository.dart';
+import '../../services/auth_session.dart';
 
 class BarberAvailabilityController extends ChangeNotifier {
-  BarberAvailabilityController() {
-    closures = [
-      ClosureDay(id: 'c1', dateLabel: '15/5/2026', reason: 'إجازة خاصة'),
-      ClosureDay(id: 'c2', dateLabel: '22/5/2026', reason: 'ظرف طارئ'),
-    ];
+  BarberAvailabilityController({
+    BarberAvailabilityRepository availabilityRepository =
+        const BarberAvailabilityRepository(),
+  }) : _availabilityRepository = availabilityRepository;
 
-    timeBlocks = [
-      TimeBlock(
-        id: 't1',
-        type: 'recurring',
-        dateLabel: null,
-        startTime: '13:00',
-        endTime: '14:00',
-        reason: 'استراحة غداء',
-      ),
-      TimeBlock(
-        id: 't2',
-        type: 'specific',
-        dateLabel: '18/5/2026',
-        startTime: '17:00',
-        endTime: '18:30',
-        reason: 'مشوار خاص',
-      ),
-    ];
-  }
+  final BarberAvailabilityRepository _availabilityRepository;
 
   final TextEditingController closureReasonController = TextEditingController();
   final TextEditingController timeBlockReasonController =
@@ -54,10 +35,49 @@ class BarberAvailabilityController extends ChangeNotifier {
   int timeBlockStartShakeTrigger = 0;
   int timeBlockEndShakeTrigger = 0;
 
-  late List<ClosureDay> closures;
-  late List<TimeBlock> timeBlocks;
+  List<ClosureDay> closures = [];
+  List<TimeBlock> timeBlocks = [];
+
+  bool isLoading = false;
+  bool isSaving = false;
+  String? errorMessage;
 
   bool get isClosuresTab => selectedTab == 'closures';
+
+  String get _currentBarberId {
+    return AuthSession.currentUser?.barberId ?? '';
+  }
+
+  Future<void> loadAvailability() async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      if (_currentBarberId.isEmpty) {
+        throw Exception('Missing current barber id');
+      }
+
+      final loadedClosures = await _availabilityRepository.getClosures(
+        barberId: _currentBarberId,
+      );
+
+      final loadedTimeBlocks = await _availabilityRepository.getTimeBlocks(
+        barberId: _currentBarberId,
+      );
+
+      closures = loadedClosures;
+      timeBlocks = loadedTimeBlocks;
+    } catch (error, stackTrace) {
+      debugPrint('BarberAvailabilityController load error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      errorMessage = 'تعذر تحميل بيانات التوفر، حاول مرة أخرى';
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 
   void changeTab(String value) {
     selectedTab = value;
@@ -113,7 +133,7 @@ class BarberAvailabilityController extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool addClosure() {
+  Future<bool> addClosure() async {
     closureDateError = null;
 
     if (selectedClosureDate == null) {
@@ -123,26 +143,45 @@ class BarberAvailabilityController extends ChangeNotifier {
       return false;
     }
 
-    final String reason = closureReasonController.text.trim();
+    if (_currentBarberId.isEmpty) {
+      errorMessage = 'تعذر معرفة حساب الحلاق الحالي';
+      notifyListeners();
+      return false;
+    }
 
-    closures = [
-      ClosureDay(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        dateLabel: dateLabel(selectedClosureDate),
-        reason: reason.isEmpty ? 'بدون سبب مذكور' : reason,
-      ),
-      ...closures,
-    ];
-
-    selectedClosureDate = null;
-    closureReasonController.clear();
-    closureDateError = null;
-
+    isSaving = true;
     notifyListeners();
-    return true;
+
+    try {
+      final savedClosure = await _availabilityRepository.addClosure(
+        barberId: _currentBarberId,
+        closureDate: selectedClosureDate!,
+        reason: closureReasonController.text,
+      );
+
+      closures = [
+        savedClosure,
+        ...closures.where((item) => item.id != savedClosure.id),
+      ];
+
+      selectedClosureDate = null;
+      closureReasonController.clear();
+      closureDateError = null;
+
+      return true;
+    } catch (error, stackTrace) {
+      debugPrint('BarberAvailabilityController add closure error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      errorMessage = 'تعذر إضافة يوم الإغلاق، حاول مرة أخرى';
+      return false;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
   }
 
-  bool addTimeBlock() {
+  Future<bool> addTimeBlock() async {
     timeBlockDateError = null;
     timeBlockStartError = null;
     timeBlockEndError = null;
@@ -176,49 +215,76 @@ class BarberAvailabilityController extends ChangeNotifier {
       return false;
     }
 
-    final String reason = timeBlockReasonController.text.trim();
+    if (_currentBarberId.isEmpty) {
+      errorMessage = 'تعذر معرفة حساب الحلاق الحالي';
+      notifyListeners();
+      return false;
+    }
 
-    timeBlocks = [
-      TimeBlock(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        type: timeBlockMode,
-        dateLabel: timeBlockMode == 'specific'
-            ? dateLabel(selectedTimeBlockDate)
-            : null,
+    isSaving = true;
+    notifyListeners();
+
+    try {
+      final savedBlock = await _availabilityRepository.addTimeBlock(
+        barberId: _currentBarberId,
+        blockType: timeBlockMode,
+        blockDate: selectedTimeBlockDate,
         startTime: selectedStartTime,
         endTime: selectedEndTime,
-        reason: reason.isEmpty ? 'بدون سبب مذكور' : reason,
-      ),
-      ...timeBlocks,
-    ];
+        reason: timeBlockReasonController.text,
+      );
 
-    resetTimeBlockForm();
-    return true;
+      timeBlocks = [savedBlock, ...timeBlocks];
+
+      resetTimeBlockForm();
+      return true;
+    } catch (error, stackTrace) {
+      debugPrint('BarberAvailabilityController add time block error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      errorMessage = 'تعذر إضافة فترة عدم التوفر، حاول مرة أخرى';
+      return false;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
   }
 
-  void deleteClosure(ClosureDay closure) {
+  Future<void> deleteClosure(ClosureDay closure) async {
+    await _availabilityRepository.deleteClosure(closureId: closure.id);
+
     closures = closures.where((item) => item.id != closure.id).toList();
     notifyListeners();
   }
 
-  void deleteTimeBlock(TimeBlock block) {
+  Future<void> deleteTimeBlock(TimeBlock block) async {
+    await _availabilityRepository.deleteTimeBlock(blockId: block.id);
+
     timeBlocks = timeBlocks.where((item) => item.id != block.id).toList();
     notifyListeners();
   }
 
-  void updateClosure(ClosureDay updatedClosure) {
+  Future<void> updateClosure(ClosureDay updatedClosure) async {
+    final savedClosure = await _availabilityRepository.updateClosure(
+      closure: updatedClosure,
+    );
+
     closures = closures.map((item) {
-      if (item.id != updatedClosure.id) return item;
-      return updatedClosure;
+      if (item.id != savedClosure.id) return item;
+      return savedClosure;
     }).toList();
 
     notifyListeners();
   }
 
-  void updateTimeBlock(TimeBlock updatedBlock) {
+  Future<void> updateTimeBlock(TimeBlock updatedBlock) async {
+    final savedBlock = await _availabilityRepository.updateTimeBlock(
+      block: updatedBlock,
+    );
+
     timeBlocks = timeBlocks.map((item) {
-      if (item.id != updatedBlock.id) return item;
-      return updatedBlock;
+      if (item.id != savedBlock.id) return item;
+      return savedBlock;
     }).toList();
 
     notifyListeners();

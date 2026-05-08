@@ -44,7 +44,9 @@ class AuthService {
 
       final profileRow = await SupabaseConfig.client
           .from('profiles')
-          .select('first_name, last_name, phone_number, role, birth_date')
+          .select(
+            'first_name, last_name, phone_number, role, birth_date, avatar_url',
+          )
           .eq('id', supabaseUser.id)
           .maybeSingle();
 
@@ -67,6 +69,7 @@ class AuthService {
       final firstName = (profileRow['first_name'] ?? '').toString().trim();
       final lastName = (profileRow['last_name'] ?? '').toString().trim();
       final phoneNumber = (profileRow['phone_number'] ?? '').toString().trim();
+      final avatarUrl = (profileRow['avatar_url'] ?? '').toString().trim();
       final birthDate = _parseDate(profileRow['birth_date']);
 
       String? barberId;
@@ -97,11 +100,12 @@ class AuthService {
         phoneNumber: phoneNumber.isNotEmpty ? phoneNumber : null,
         birthDate: birthDate,
         barberId: barberId,
+        avatarUrl: avatarUrl.isNotEmpty ? avatarUrl : null,
       );
     } on AuthException {
       rethrow;
     } catch (_) {
-      throw const AuthException('بيانات الدخول غير صحيحة أو حدث خطأ بالاتصال');
+      throw const AuthException('بيانات الدخول غير صحيحة ');
     }
   }
 
@@ -167,6 +171,16 @@ class AuthService {
 
     try {
       final normalizedPhoneNumber = _normalizePhoneForAuth(trimmedPhoneNumber);
+
+      final existingProfile = await SupabaseConfig.client
+          .from('profiles')
+          .select('id')
+          .eq('phone_number', normalizedPhoneNumber)
+          .maybeSingle();
+
+      if (existingProfile != null) {
+        throw const AuthException('لا يمكنك انشاء حساب باستخدام هذا الرقم');
+      }
 
       await SupabaseConfig.client.auth.signUp(
         phone: normalizedPhoneNumber,
@@ -280,6 +294,191 @@ class AuthService {
       rethrow;
     } catch (error) {
       throw AuthException('رمز التحقق غير صحيح أو انتهت صلاحيته: $error');
+    }
+  }
+
+  Future<void> sendPasswordResetOtp({required String phoneNumber}) async {
+    final normalizedPhone = _normalizePhoneForAuth(phoneNumber);
+
+    try {
+      await SupabaseConfig.client.auth.signInWithOtp(
+        phone: normalizedPhone,
+        shouldCreateUser: false,
+        channel: OtpChannel.sms,
+      );
+    } catch (error) {
+      throw AuthException('تعذر إرسال رمز التحقق: $error');
+    }
+  }
+
+  Future<void> verifyPasswordResetOtp({
+    required String phoneNumber,
+    required String otpCode,
+  }) async {
+    final normalizedPhone = _normalizePhoneForAuth(phoneNumber);
+    final trimmedOtpCode = otpCode.trim();
+
+    if (trimmedOtpCode.isEmpty) {
+      throw const AuthException('الرجاء إدخال رمز التحقق');
+    }
+
+    try {
+      await SupabaseConfig.client.auth.verifyOTP(
+        phone: normalizedPhone,
+        token: trimmedOtpCode,
+        type: OtpType.sms,
+      );
+    } catch (error) {
+      throw AuthException('رمز التحقق غير صحيح أو انتهت صلاحيته: $error');
+    }
+  }
+
+  Future<void> updateForgottenPassword({
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    final trimmedPassword = newPassword.trim();
+    final trimmedConfirmPassword = confirmPassword.trim();
+
+    if (trimmedPassword.isEmpty) {
+      throw const AuthException('الرجاء إدخال كلمة المرور الجديدة');
+    }
+
+    if (trimmedPassword.length < 8) {
+      throw const AuthException('كلمة المرور يجب أن تكون 8 خانات على الأقل');
+    }
+
+    if (!RegExp(r'[0-9]').hasMatch(trimmedPassword)) {
+      throw const AuthException(
+        'كلمة المرور يجب أن تحتوي على رقم واحد على الأقل',
+      );
+    }
+
+    if (!RegExp(
+      r'[!@#\$%^&*(),.?":{}|<>_\-+=/\\[\];]',
+    ).hasMatch(trimmedPassword)) {
+      throw const AuthException(
+        'كلمة المرور يجب أن تحتوي على رمز واحد على الأقل',
+      );
+    }
+
+    if (trimmedConfirmPassword.isEmpty) {
+      throw const AuthException('الرجاء تأكيد كلمة المرور الجديدة');
+    }
+
+    if (trimmedPassword != trimmedConfirmPassword) {
+      throw const AuthException('كلمتا المرور غير متطابقتين');
+    }
+
+    try {
+      await SupabaseConfig.client.auth.updateUser(
+        UserAttributes(password: trimmedPassword),
+      );
+
+      await SupabaseConfig.client.auth.signOut();
+    } catch (error) {
+      final errorText = error.toString();
+
+      if (errorText.contains('same_password') ||
+          errorText.contains('New password should be different')) {
+        throw const AuthException(
+          'كلمة المرور الجديدة يجب أن تكون مختلفة عن كلمة المرور الحالية',
+        );
+      }
+
+      throw const AuthException(
+        'تعذر تحديث كلمة المرور، تأكد من الرمز وحاول مرة أخرى',
+      );
+    }
+  }
+
+  Future<void> updateCurrentUserPassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    final trimmedCurrentPassword = currentPassword.trim();
+    final trimmedNewPassword = newPassword.trim();
+    final trimmedConfirmPassword = confirmPassword.trim();
+
+    if (trimmedCurrentPassword.isEmpty) {
+      throw const AuthException('الرجاء إدخال كلمة المرور الحالية');
+    }
+
+    if (trimmedNewPassword.isEmpty) {
+      throw const AuthException('الرجاء إدخال كلمة المرور الجديدة');
+    }
+
+    if (trimmedNewPassword.length < 8) {
+      throw const AuthException(
+        'كلمة المرور الجديدة يجب أن تكون 8 خانات على الأقل',
+      );
+    }
+
+    if (!RegExp(r'[0-9]').hasMatch(trimmedNewPassword)) {
+      throw const AuthException(
+        'كلمة المرور الجديدة يجب أن تحتوي على رقم واحد على الأقل',
+      );
+    }
+
+    if (!RegExp(
+      r'[!@#\$%^&*(),.?":{}|<>_\-+=/\\[\];]',
+    ).hasMatch(trimmedNewPassword)) {
+      throw const AuthException(
+        'كلمة المرور الجديدة يجب أن تحتوي على رمز واحد على الأقل',
+      );
+    }
+
+    if (trimmedConfirmPassword.isEmpty) {
+      throw const AuthException('الرجاء تأكيد كلمة المرور الجديدة');
+    }
+
+    if (trimmedNewPassword != trimmedConfirmPassword) {
+      throw const AuthException('كلمتا المرور غير متطابقتين');
+    }
+
+    if (trimmedCurrentPassword == trimmedNewPassword) {
+      throw const AuthException(
+        'كلمة المرور الجديدة يجب أن تكون مختلفة عن الحالية',
+      );
+    }
+
+    final currentAuthUser = SupabaseConfig.client.auth.currentUser;
+
+    if (currentAuthUser == null) {
+      throw const AuthException('لا يوجد مستخدم مسجل حاليًا');
+    }
+
+    final phone = currentAuthUser.phone;
+
+    if (phone == null || phone.trim().isEmpty) {
+      throw const AuthException('لا يوجد رقم هاتف مرتبط بهذا الحساب');
+    }
+
+    try {
+      await SupabaseConfig.client.auth.signInWithPassword(
+        phone: _normalizePhoneForAuth(phone),
+        password: trimmedCurrentPassword,
+      );
+
+      await SupabaseConfig.client.auth.updateUser(
+        UserAttributes(password: trimmedNewPassword),
+      );
+    } catch (error) {
+      final errorText = error.toString().toLowerCase();
+
+      if (errorText.contains('invalid login credentials')) {
+        throw const AuthException('كلمة المرور الحالية غير صحيحة');
+      }
+
+      if (errorText.contains('same_password') ||
+          errorText.contains('new password should be different')) {
+        throw const AuthException(
+          'كلمة المرور الجديدة يجب أن تكون مختلفة عن كلمة المرور الحالية',
+        );
+      }
+
+      throw const AuthException('تعذر تغيير كلمة المرور، حاول مرة أخرى');
     }
   }
 

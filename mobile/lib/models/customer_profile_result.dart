@@ -3,11 +3,15 @@ class CustomerProfileResult {
     required this.displayName,
     required this.countryCode,
     required this.phoneNumber,
-    this.hasProfileImage = false,
+    this.avatarUrl,
   });
 
   final String displayName;
   final String countryCode;
   final String phoneNumber;
-  final bool hasProfileImage;
+  final String? avatarUrl;
+
+  bool get hasProfileImage {
+    return avatarUrl != null && avatarUrl!.trim().isNotEmpty;
+  }
 }

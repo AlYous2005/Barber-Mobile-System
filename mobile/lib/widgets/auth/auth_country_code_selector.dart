@@ -10,10 +10,6 @@ class AuthCountryCodeSelector extends StatelessWidget {
   final String selectedCountry;
   final ValueChanged<String> onCountryChanged;
 
-  String get _flag {
-    return selectedCountry == "فلسطين" ? "🇵🇸" : "🇮🇱";
-  }
-
   String get _code {
     return selectedCountry == "فلسطين" ? "+970" : "+972";
   }
@@ -81,7 +77,7 @@ class AuthCountryCodeSelector extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white60,
-                      fontSize: 13,
+                      fontSize: 12.5,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -89,7 +85,6 @@ class AuthCountryCodeSelector extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   _CountryOptionTile(
-                    flag: "🇵🇸",
                     country: "فلسطين",
                     code: "+970",
                     isSelected: selectedCountry == "فلسطين",
@@ -102,7 +97,6 @@ class AuthCountryCodeSelector extends StatelessWidget {
                   const SizedBox(height: 10),
 
                   _CountryOptionTile(
-                    flag: "🇮🇱",
                     country: "إسرائيل",
                     code: "+972",
                     isSelected: selectedCountry == "إسرائيل",
@@ -129,16 +123,21 @@ class AuthCountryCodeSelector extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: 132,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.phone, color: Colors.orange, size: 20),
+            const Icon(Icons.phone, color: Colors.orange, size: 18),
 
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
+
+            _CountryFlag(country: selectedCountry, width: 24, height: 16),
+
+            const SizedBox(width: 4),
 
             Text(
-              "$_flag $_code",
+              _code,
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
@@ -151,7 +150,7 @@ class AuthCountryCodeSelector extends StatelessWidget {
             const Icon(
               Icons.keyboard_arrow_down_rounded,
               color: Colors.orange,
-              size: 20,
+              size: 18,
             ),
           ],
         ),
@@ -162,14 +161,12 @@ class AuthCountryCodeSelector extends StatelessWidget {
 
 class _CountryOptionTile extends StatelessWidget {
   const _CountryOptionTile({
-    required this.flag,
     required this.country,
     required this.code,
     required this.isSelected,
     required this.onTap,
   });
 
-  final String flag;
   final String country;
   final String code;
   final bool isSelected;
@@ -194,7 +191,7 @@ class _CountryOptionTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           child: Row(
             children: [
-              Text(flag, style: const TextStyle(fontSize: 24)),
+              _CountryFlag(country: country, width: 38, height: 24),
 
               const SizedBox(width: 12),
 
@@ -232,6 +229,59 @@ class _CountryOptionTile extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CountryFlag extends StatelessWidget {
+  const _CountryFlag({
+    required this.country,
+    this.width = 24,
+    this.height = 16,
+  });
+
+  final String country;
+  final double width;
+  final double height;
+
+  String get _assetPath {
+    return country == 'فلسطين'
+        ? 'assets/flags/palestine.png'
+        : 'assets/flags/israel.png';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.18),
+          width: 0.7,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Image.asset(
+        _assetPath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.white.withValues(alpha: 0.08),
+            child: Center(
+              child: Text(
+                country == 'فلسطين' ? 'PS' : 'IL',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

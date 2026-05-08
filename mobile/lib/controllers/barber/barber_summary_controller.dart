@@ -1,14 +1,29 @@
-// filters + selected date + snapshots + preview appointments
-
 import 'package:flutter/material.dart';
 
 import '../../models/mock_appointment.dart';
 import '../../models/summary_models.dart';
-import '../../data/mocks/mock_appointments.dart';
+import '../../repositories/barber_summary_repository.dart';
+import '../../repositories/booking_repository.dart';
+import '../../services/auth_session.dart';
 
 class BarberSummaryController extends ChangeNotifier {
+  BarberSummaryController({
+    BarberSummaryRepository summaryRepository = const BarberSummaryRepository(),
+    BookingRepository bookingRepository = const BookingRepository(),
+  }) : _summaryRepository = summaryRepository,
+       _bookingRepository = bookingRepository;
+
+  final BarberSummaryRepository _summaryRepository;
+  final BookingRepository _bookingRepository;
+
   int selectedFilter = 0;
   DateTime? selectedSpecificDate;
+
+  bool isLoading = false;
+  String? errorMessage;
+
+  SummarySnapshot? _currentSnapshot;
+  List<MockAppointment> previewAppointments = [];
 
   final List<String> filters = const [
     'اليوم',
@@ -17,104 +32,167 @@ class BarberSummaryController extends ChangeNotifier {
     'تاريخ محدد',
   ];
 
-  late final List<SummarySnapshot> snapshots = [
-    SummarySnapshot(
-      filterLabel: 'اليوم',
-      totalAppointments: 12,
-      completedAppointments: 8,
-      cancelledAppointments: 2,
-      pendingAppointments: 2,
-      revenue: 420,
-      completionRate: '67%',
-      bestService: 'حلاقة شعر',
-      averageTicket: '35 ₪',
-      activeCustomers: 9,
-      topHour: '6:00 مساءً',
-      distribution: const [
-        DistributionItem(label: 'مكتملة', value: 8, color: Color(0xFF2E8B57)),
-        DistributionItem(label: 'ملغية', value: 2, color: Color(0xFFD9534F)),
-        DistributionItem(label: 'معلقة', value: 2, color: Color(0xFFC68A2D)),
-      ],
-    ),
-    SummarySnapshot(
-      filterLabel: 'الأسبوع',
-      totalAppointments: 47,
-      completedAppointments: 34,
-      cancelledAppointments: 6,
-      pendingAppointments: 7,
-      revenue: 1680,
-      completionRate: '72%',
-      bestService: 'حلاقة شعر + لحية',
-      averageTicket: '41 ₪',
-      activeCustomers: 28,
-      topHour: '5:30 مساءً',
-      distribution: const [
-        DistributionItem(label: 'مكتملة', value: 34, color: Color(0xFF2E8B57)),
-        DistributionItem(label: 'ملغية', value: 6, color: Color(0xFFD9534F)),
-        DistributionItem(label: 'معلقة', value: 7, color: Color(0xFFC68A2D)),
-      ],
-    ),
-    SummarySnapshot(
-      filterLabel: 'الشهر',
-      totalAppointments: 186,
-      completedAppointments: 141,
-      cancelledAppointments: 18,
-      pendingAppointments: 27,
-      revenue: 6840,
-      completionRate: '76%',
-      bestService: 'حلاقة شعر + لحية',
-      averageTicket: '43 ₪',
-      activeCustomers: 92,
-      topHour: '7:00 مساءً',
-      distribution: const [
-        DistributionItem(label: 'مكتملة', value: 141, color: Color(0xFF2E8B57)),
-        DistributionItem(label: 'ملغية', value: 18, color: Color(0xFFD9534F)),
-        DistributionItem(label: 'معلقة', value: 27, color: Color(0xFFC68A2D)),
-      ],
-    ),
-  ];
-
   SummarySnapshot get currentSnapshot {
-    if (selectedFilter == 3) {
-      final String dateLabel = selectedSpecificDate == null
-          ? 'تاريخ محدد'
-          : '${selectedSpecificDate!.day}/${selectedSpecificDate!.month}/${selectedSpecificDate!.year}';
+    return _currentSnapshot ?? _emptySnapshot('اليوم');
+  }
 
-      return SummarySnapshot(
-        filterLabel: dateLabel,
-        totalAppointments: 6,
-        completedAppointments: 4,
-        cancelledAppointments: 1,
-        pendingAppointments: 1,
-        revenue: 210,
-        completionRate: '67%',
-        bestService: 'حلاقة شعر',
-        averageTicket: '35 ₪',
-        activeCustomers: 5,
-        topHour: '6:30 مساءً',
-        distribution: const [
-          DistributionItem(label: 'مكتملة', value: 4, color: Color(0xFF2E8B57)),
-          DistributionItem(label: 'ملغية', value: 1, color: Color(0xFFD9534F)),
-          DistributionItem(label: 'معلقة', value: 1, color: Color(0xFFC68A2D)),
-        ],
-      );
+  String get _currentBarberId {
+    return AuthSession.currentUser?.barberId ?? '';
+  }
+
+  Future<void> loadSummary() async {
+    if (_currentBarberId.isEmpty) {
+      errorMessage = 'تعذر معرفة حساب الحلاق الحالي';
+      notifyListeners();
+      return;
     }
 
-    return snapshots[selectedFilter];
-  }
-
-  List<MockAppointment> get previewAppointments {
-    return mockBarberAppointments.take(3).toList();
-  }
-
-  void selectFilter(int index) {
-    selectedFilter = index;
+    isLoading = true;
+    errorMessage = null;
     notifyListeners();
+
+    try {
+      final range = _currentDateRange();
+      final filterLabel = _currentFilterLabel();
+
+      _currentSnapshot = await _summaryRepository.getSummarySnapshot(
+        barberId: _currentBarberId,
+        filterLabel: filterLabel,
+        startDate: range.start,
+        endDate: range.end,
+      );
+
+      await _loadPreviewAppointments(range: range);
+    } catch (error, stackTrace) {
+      debugPrint('BarberSummaryController load error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      errorMessage = 'تعذر تحميل الملخصات، حاول مرة أخرى';
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
-  void selectSpecificDate(DateTime date) {
+  Future<void> _loadPreviewAppointments({required _DateRange range}) async {
+    final loadedAppointments = await _bookingRepository.getBarberAppointments(
+      barberId: _currentBarberId,
+    );
+
+    final filteredAppointments =
+        loadedAppointments.where((appointment) {
+          final date = appointment.startDateTime;
+
+          final normalizedDate = DateTime(date.year, date.month, date.day);
+          final normalizedStart = DateTime(
+            range.start.year,
+            range.start.month,
+            range.start.day,
+          );
+          final normalizedEnd = DateTime(
+            range.end.year,
+            range.end.month,
+            range.end.day,
+          );
+
+          return !normalizedDate.isBefore(normalizedStart) &&
+              !normalizedDate.isAfter(normalizedEnd);
+        }).toList()..sort((first, second) {
+          return second.startDateTime.compareTo(first.startDateTime);
+        });
+
+    previewAppointments = filteredAppointments.take(3).toList();
+  }
+
+  Future<void> selectFilter(int index) async {
+    selectedFilter = index;
+
+    if (index != 3) {
+      selectedSpecificDate = null;
+    }
+
+    await loadSummary();
+  }
+
+  Future<void> selectSpecificDate(DateTime date) async {
     selectedSpecificDate = date;
     selectedFilter = 3;
-    notifyListeners();
+
+    await loadSummary();
   }
+
+  _DateRange _currentDateRange() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    switch (selectedFilter) {
+      case 1:
+        final weekStart = today.subtract(Duration(days: today.weekday % 7));
+        final weekEnd = weekStart.add(const Duration(days: 6));
+
+        return _DateRange(start: weekStart, end: weekEnd);
+
+      case 2:
+        final monthStart = DateTime(today.year, today.month, 1);
+        final monthEnd = DateTime(today.year, today.month + 1, 0);
+
+        return _DateRange(start: monthStart, end: monthEnd);
+
+      case 3:
+        final selectedDate = selectedSpecificDate ?? today;
+        final normalized = DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+        );
+
+        return _DateRange(start: normalized, end: normalized);
+
+      case 0:
+      default:
+        return _DateRange(start: today, end: today);
+    }
+  }
+
+  String _currentFilterLabel() {
+    if (selectedFilter == 3) {
+      final date = selectedSpecificDate;
+
+      if (date == null) {
+        return 'تاريخ محدد';
+      }
+
+      return '${date.day}/${date.month}/${date.year}';
+    }
+
+    return filters[selectedFilter];
+  }
+
+  SummarySnapshot _emptySnapshot(String label) {
+    return SummarySnapshot(
+      filterLabel: label,
+      totalAppointments: 0,
+      completedAppointments: 0,
+      cancelledAppointments: 0,
+      pendingAppointments: 0,
+      revenue: 0,
+      completionRate: '0%',
+      bestService: 'لا يوجد',
+      averageTicket: '0 ₪',
+      activeCustomers: 0,
+      topHour: 'لا يوجد',
+      distribution: const [
+        DistributionItem(label: 'مكتملة', value: 0, color: Color(0xFF2E8B57)),
+        DistributionItem(label: 'ملغية', value: 0, color: Color(0xFFD9534F)),
+        DistributionItem(label: 'معلقة', value: 0, color: Color(0xFFC68A2D)),
+      ],
+    );
+  }
+}
+
+class _DateRange {
+  const _DateRange({required this.start, required this.end});
+
+  final DateTime start;
+  final DateTime end;
 }

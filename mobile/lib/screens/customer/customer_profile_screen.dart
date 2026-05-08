@@ -8,6 +8,11 @@ import '../../widgets/customer/profile/customer_profile_form_box.dart';
 import '../../widgets/customer/profile/customer_profile_intro_card.dart';
 import '../../widgets/customer/profile/customer_profile_shared_widgets.dart';
 import '../../widgets/customer/shared/customer_feedback_popup.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../../repositories/customer_profile_repository.dart';
+import '../../services/auth_service.dart';
+import '../../services/auth_session.dart';
 
 class CustomerProfileScreen extends StatefulWidget {
   const CustomerProfileScreen({
@@ -15,20 +20,25 @@ class CustomerProfileScreen extends StatefulWidget {
     required this.initialDisplayName,
     required this.initialCountryCode,
     required this.initialPhoneNumber,
-    this.initialHasProfileImage = false,
+    this.initialAvatarUrl,
   });
 
   final String initialDisplayName;
   final String initialCountryCode;
   final String initialPhoneNumber;
-  final bool initialHasProfileImage;
-
+  final String? initialAvatarUrl;
   @override
   State<CustomerProfileScreen> createState() => _CustomerProfileScreenState();
 }
 
 class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
   late final CustomerProfileController controller;
+  final ImagePicker _imagePicker = ImagePicker();
+  final CustomerProfileRepository _profileRepository =
+      const CustomerProfileRepository();
+  final AuthService _authService = const AuthService();
+
+  bool isSaving = false;
 
   @override
   void initState() {
@@ -38,7 +48,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
       initialDisplayName: widget.initialDisplayName,
       initialCountryCode: widget.initialCountryCode,
       initialPhoneNumber: widget.initialPhoneNumber,
-      initialHasProfileImage: widget.initialHasProfileImage,
+      initialAvatarUrl: widget.initialAvatarUrl,
     );
   }
 
@@ -49,34 +59,107 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
   }
 
   Future<void> _addOrChangeImage() async {
-    final bool alreadyHadImage = controller.hasProfileImage;
+    final currentUser = AuthSession.currentUser;
 
-    controller.setHasProfileImage(true);
+    if (currentUser == null) {
+      return;
+    }
 
-    await showCustomerFeedbackPopup(
-      context: context,
-      title: alreadyHadImage ? 'تم تحديث الصورة' : 'تم إضافة الصورة',
-      message: alreadyHadImage
-          ? 'تم تحديث الصورة بنجاح'
-          : 'تم إضافة الصورة بنجاح',
-      icon: alreadyHadImage ? Icons.image_rounded : Icons.add_a_photo_rounded,
-    );
+    try {
+      final selectedImage = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 92,
+      );
+
+      if (selectedImage == null) {
+        return;
+      }
+
+      controller.setUploadingImage(true);
+
+      final imageBytes = await selectedImage.readAsBytes();
+
+      final avatarUrl = await _profileRepository.uploadCustomerAvatar(
+        userId: currentUser.username,
+        imageBytes: imageBytes,
+        originalFileName: selectedImage.name,
+      );
+
+      controller.setAvatarUrl(avatarUrl);
+
+      AuthSession.updateCurrentUser(currentUser.copyWith(avatarUrl: avatarUrl));
+
+      if (!mounted) return;
+
+      await showCustomerFeedbackPopup(
+        context: context,
+        title: 'تم تحديث الصورة',
+        message: 'تم رفع صورة البروفايل وحفظها بنجاح',
+        icon: Icons.image_rounded,
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      await showCustomerFeedbackPopup(
+        context: context,
+        title: 'فشل رفع الصورة',
+        message: 'تأكد من اتصال الإنترنت وحاول مرة أخرى',
+        icon: Icons.error_outline_rounded,
+        iconStartColor: const Color(0xFFEF4444),
+        iconEndColor: const Color(0xFFFCA5A5),
+      );
+    } finally {
+      controller.setUploadingImage(false);
+    }
   }
 
   Future<void> _removeImage() async {
-    controller.setHasProfileImage(false);
+    final currentUser = AuthSession.currentUser;
 
-    await showCustomerFeedbackPopup(
-      context: context,
-      title: 'تم إزالة الصورة',
-      message: 'تم إزالة الصورة بنجاح',
-      icon: Icons.delete_outline_rounded,
-      iconStartColor: const Color(0xFFEF4444),
-      iconEndColor: const Color(0xFFFCA5A5),
-    );
+    if (currentUser == null) {
+      return;
+    }
+
+    try {
+      await _profileRepository.removeCustomerAvatar(
+        userId: currentUser.username,
+      );
+
+      controller.setAvatarUrl(null);
+
+      AuthSession.updateCurrentUser(currentUser.copyWith(avatarUrl: null));
+
+      if (!mounted) return;
+
+      await showCustomerFeedbackPopup(
+        context: context,
+        title: 'تم إزالة الصورة',
+        message: 'تم إزالة الصورة بنجاح',
+        icon: Icons.delete_outline_rounded,
+        iconStartColor: const Color(0xFFEF4444),
+        iconEndColor: const Color(0xFFFCA5A5),
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      await showCustomerFeedbackPopup(
+        context: context,
+        title: 'فشل حذف الصورة',
+        message: 'حاول مرة أخرى',
+        icon: Icons.error_outline_rounded,
+        iconStartColor: const Color(0xFFEF4444),
+        iconEndColor: const Color(0xFFFCA5A5),
+      );
+    }
   }
 
   Future<void> save() async {
+    final currentUser = AuthSession.currentUser;
+
+    if (currentUser == null) {
+      return;
+    }
+
     final name = controller.nameController.text.trim();
     final phone = controller.phoneController.text.trim();
 
@@ -98,28 +181,93 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
       return;
     }
 
-    final bool passwordChanged = controller.passwordSectionHasInput;
+    setState(() {
+      isSaving = true;
+    });
 
-    await showCustomerFeedbackPopup(
-      context: context,
-      title: passwordChanged ? 'تم تغيير كلمة المرور' : 'تم تحديث البيانات',
-      message: passwordChanged
-          ? 'تم تغيير كلمة المرور'
-          : 'تم تحديث البيانات الشخصية',
-      icon: passwordChanged
-          ? Icons.lock_reset_rounded
-          : Icons.verified_user_rounded,
-      iconStartColor: passwordChanged
-          ? const Color(0xFFC47A3D)
-          : const Color(0xFF22C55E),
-      iconEndColor: passwordChanged
-          ? const Color(0xFFF6D38B)
-          : const Color(0xFF86EFAC),
-    );
+    try {
+      await _profileRepository.updateCustomerProfile(
+        userId: currentUser.username,
+        displayName: name,
+        phoneNumber: controller.internationalPhoneNumber,
+      );
 
-    if (!mounted) return;
+      final bool passwordChanged = controller.passwordSectionHasInput;
 
-    Navigator.of(context).pop(controller.buildResult());
+      if (passwordChanged) {
+        await _authService.updateCurrentUserPassword(
+          currentPassword: controller.currentPasswordController.text,
+          newPassword: controller.newPasswordController.text,
+          confirmPassword: controller.confirmPasswordController.text,
+        );
+
+        controller.clearPasswordFields();
+      }
+
+      final result = controller.buildResult();
+
+      final nameParts = result.displayName
+          .trim()
+          .split(RegExp(r'\s+'))
+          .where((part) => part.isNotEmpty)
+          .toList();
+
+      AuthSession.updateCurrentUser(
+        currentUser.copyWith(
+          displayName: result.displayName,
+          firstName: nameParts.isNotEmpty
+              ? nameParts.first
+              : currentUser.firstName,
+          lastName: nameParts.length > 1
+              ? nameParts.sublist(1).join(' ')
+              : currentUser.lastName,
+          phoneNumber: controller.internationalPhoneNumber,
+          avatarUrl: result.avatarUrl,
+        ),
+      );
+
+      if (!mounted) return;
+
+      await showCustomerFeedbackPopup(
+        context: context,
+        title: passwordChanged ? 'تم تغيير كلمة المرور' : 'تم تحديث البيانات',
+        message: passwordChanged
+            ? 'تم تغيير كلمة المرور بنجاح'
+            : 'تم تحديث البيانات الشخصية',
+        icon: passwordChanged
+            ? Icons.lock_reset_rounded
+            : Icons.verified_user_rounded,
+        iconStartColor: passwordChanged
+            ? const Color(0xFFC47A3D)
+            : const Color(0xFF22C55E),
+        iconEndColor: passwordChanged
+            ? const Color(0xFFF6D38B)
+            : const Color(0xFF86EFAC),
+      );
+
+      if (!mounted) return;
+
+      Navigator.of(context).pop(result);
+    } catch (error) {
+      final message = error.toString();
+
+      if (message.contains('كلمة المرور الحالية')) {
+        controller.setPasswordError('كلمة المرور الحالية غير صحيحة');
+        return;
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    } finally {
+      if (mounted) {
+        setState(() {
+          isSaving = false;
+        });
+      }
+    }
   }
 
   @override
@@ -153,6 +301,8 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
 
                     CustomerProfileFormBox(
                       hasProfileImage: controller.hasProfileImage,
+                      avatarUrl: controller.avatarUrl,
+                      isUploadingImage: controller.isUploadingImage,
                       nameController: controller.nameController,
                       phoneController: controller.phoneController,
                       selectedCountry: controller.selectedCountry,
@@ -194,9 +344,11 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: CustomerProfilePrimarySaveButton(
-                        label: 'حفظ التغييرات',
+                        label: isSaving ? 'جاري الحفظ...' : 'حفظ التغييرات',
                         icon: Icons.save_rounded,
-                        onTap: controller.hasUnsavedChanges ? save : null,
+                        onTap: controller.hasUnsavedChanges && !isSaving
+                            ? save
+                            : null,
                       ),
                     ),
                   ],

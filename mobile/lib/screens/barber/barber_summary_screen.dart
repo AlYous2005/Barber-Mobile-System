@@ -27,6 +27,7 @@ class _BarberSummaryScreenState extends State<BarberSummaryScreen> {
   void initState() {
     super.initState();
     controller = BarberSummaryController();
+    controller.loadSummary();
   }
 
   @override
@@ -54,16 +55,16 @@ class _BarberSummaryScreenState extends State<BarberSummaryScreen> {
 
     if (pickedDate == null) return;
 
-    controller.selectSpecificDate(pickedDate);
+    await controller.selectSpecificDate(pickedDate);
   }
 
-  void _handleFilterSelect(int index) {
+  Future<void> _handleFilterSelect(int index) async {
     if (index == 3) {
-      _pickSpecificDate();
+      await _pickSpecificDate();
       return;
     }
 
-    controller.selectFilter(index);
+    await controller.selectFilter(index);
   }
 
   @override
@@ -97,35 +98,66 @@ class _BarberSummaryScreenState extends State<BarberSummaryScreen> {
 
                 const SizedBox(height: 14),
 
-                SummaryFiltersCard(
-                  filters: controller.filters,
-                  selectedFilter: controller.selectedFilter,
-                  selectedSpecificDate: controller.selectedSpecificDate,
-                  onSelect: _handleFilterSelect,
-                ),
+                if (controller.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (controller.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 28),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline_rounded, size: 42),
+                        const SizedBox(height: 12),
+                        Text(
+                          controller.errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: AppThemeColors.textPrimary(context),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        ElevatedButton(
+                          onPressed: controller.loadSummary,
+                          child: const Text('إعادة المحاولة'),
+                        ),
+                      ],
+                    ),
+                  )
+                else ...[
+                  SummaryFiltersCard(
+                    filters: controller.filters,
+                    selectedFilter: controller.selectedFilter,
+                    selectedSpecificDate: controller.selectedSpecificDate,
+                    onSelect: _handleFilterSelect,
+                  ),
 
-                const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-                SummaryMiniStrip(snapshot: snapshot),
+                  SummaryMiniStrip(snapshot: snapshot),
 
-                const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-                SummaryGrid(snapshot: snapshot),
+                  SummaryGrid(snapshot: snapshot),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                InsightsSection(snapshot: snapshot),
+                  InsightsSection(snapshot: snapshot),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                DistributionSection(snapshot: snapshot),
+                  DistributionSection(snapshot: snapshot),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                AppointmentsPreviewSection(
-                  filterLabel: snapshot.filterLabel,
-                  appointments: controller.previewAppointments,
-                ),
+                  AppointmentsPreviewSection(
+                    filterLabel: snapshot.filterLabel,
+                    appointments: controller.previewAppointments,
+                  ),
+                ],
               ],
             ),
           ),
