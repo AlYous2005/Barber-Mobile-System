@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
-import '../../../utils/booking_formatters.dart';
+import '../../../general_utils/app_theme_colors.dart';
+import '../../../features/bookings/utils/booking_formatters.dart';
 
 class ServicesLiveCounter extends StatelessWidget {
   const ServicesLiveCounter({

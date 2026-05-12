@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/mock_appointment.dart';
-
 import '../../../services/auth_session.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
+import '../../../features/barber/services_management/services_management.dart';
+import '../../shared/app_date_picker_sheet.dart';
 import 'manual_appointment_widgets.dart';
-import '../../../data/mocks/mock_services.dart';
+import '../../../features/barber/schedule/schedule.dart';
+import '../../../features/bookings/bookings.dart';
+
+typedef AddManualAppointmentCallback =
+    Future<void> Function({
+      required String customerName,
+      required List<ServiceModel> services,
+      required DateTime startDateTime,
+    });
 
 class AddManualAppointmentSheet extends StatefulWidget {
   const AddManualAppointmentSheet({
@@ -15,7 +23,7 @@ class AddManualAppointmentSheet extends StatefulWidget {
     required this.onMessage,
   });
 
-  final ValueChanged<MockAppointment> onAddAppointment;
+  final AddManualAppointmentCallback onAddAppointment;
   final VoidCallback onAddedSuccessfully;
   final ValueChanged<String> onMessage;
 
@@ -26,13 +34,29 @@ class AddManualAppointmentSheet extends StatefulWidget {
 
 class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
   late final TextEditingController customerNameController;
+  final ServiceRepository serviceRepository = const ServiceRepository();
 
-  String? selectedServiceName;
-  int selectedServiceDuration = 30;
+  final BarberWorkingHoursRepository workingHoursRepository =
+      const BarberWorkingHoursRepository();
+  final BarberAvailabilityRepository availabilityRepository =
+      const BarberAvailabilityRepository();
+  final BookingRepository bookingRepository = const BookingRepository();
 
+  List<ServiceModel> availableServices = [];
+  bool isLoadingServices = true;
+  String? servicesLoadError;
+
+  List<ServiceModel> selectedServices = [];
+  ServiceTarget? activeServiceTarget = ServiceTarget.personal;
+  ManualAppointmentDateChoice selectedDateChoice =
+      ManualAppointmentDateChoice.today;
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
-
+  List<DateTime> availableTimeSlots = [];
+  bool isLoadingTimeSlots = false;
+  String? timeSlotsMessage;
+  int _timeSlotsRequestId = 0;
+  bool isSubmittingAppointment = false;
   String? customerNameError;
   String? serviceError;
   String? dateError;
@@ -45,11 +69,19 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
 
   late final FocusNode customerNameFocusNode;
 
+  int get _selectedTotalDuration {
+    return selectedServices.fold(
+      0,
+      (sum, service) => sum + service.durationMinutes,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     customerNameController = TextEditingController();
     customerNameFocusNode = FocusNode();
+    _loadAvailableServices();
   }
 
   @override
@@ -59,39 +91,250 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
     super.dispose();
   }
 
-  Future<void> _pickDate() async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      locale: const Locale('ar'),
-      builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
+  Future<void> _loadAvailableServices() async {
+    final String? barberId = AuthSession.currentUser?.barberId;
+
+    if (barberId == null || barberId.trim().isEmpty) {
+      if (!mounted) return;
+
+      setState(() {
+        isLoadingServices = false;
+        servicesLoadError = 'تعذر معرفة حساب الحلاق الحالي';
+      });
+
+      return;
+    }
+
+    try {
+      final services = await serviceRepository.getAvailableServices(
+        barberId: barberId,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        availableServices = services;
+        isLoadingServices = false;
+        servicesLoadError = services.isEmpty
+            ? 'لا توجد خدمات مفعّلة حاليًا'
+            : null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        isLoadingServices = false;
+        servicesLoadError = 'تعذر تحميل الخدمات';
+      });
+    }
+  }
+
+  String _emptySlotsMessage() {
+    switch (selectedDateChoice) {
+      case ManualAppointmentDateChoice.today:
+        return 'لا توجد أوقات متاحة اليوم';
+      case ManualAppointmentDateChoice.tomorrow:
+        return 'لا توجد أوقات متاحة للغد';
+      case ManualAppointmentDateChoice.custom:
+        return 'لا توجد أوقات متاحة لهذا التاريخ';
+    }
+  }
+
+  DateTime? _resolvedAppointmentDate() {
+    final DateTime now = DateTime.now();
+
+    switch (selectedDateChoice) {
+      case ManualAppointmentDateChoice.today:
+        return DateTime(now.year, now.month, now.day);
+
+      case ManualAppointmentDateChoice.tomorrow:
+        final DateTime tomorrow = now.add(const Duration(days: 1));
+        return DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
+
+      case ManualAppointmentDateChoice.custom:
+        if (selectedDate == null) {
+          return null;
+        }
+
+        return DateTime(
+          selectedDate!.year,
+          selectedDate!.month,
+          selectedDate!.day,
         );
-      },
+    }
+  }
+
+  Future<void> _loadAvailableTimeSlots() async {
+    final int requestId = ++_timeSlotsRequestId;
+
+    final String? barberId = AuthSession.currentUser?.barberId;
+    final DateTime? appointmentDate = _resolvedAppointmentDate();
+
+    if (barberId == null || barberId.trim().isEmpty) {
+      if (!mounted) return;
+
+      setState(() {
+        availableTimeSlots = [];
+        selectedTime = null;
+        timeSlotsMessage = 'تعذر معرفة حساب الحلاق الحالي';
+      });
+
+      return;
+    }
+
+    if (appointmentDate == null) {
+      if (!mounted) return;
+
+      setState(() {
+        availableTimeSlots = [];
+        selectedTime = null;
+        timeSlotsMessage = 'اختر تاريخ الموعد أولًا';
+      });
+
+      return;
+    }
+
+    if (_selectedTotalDuration <= 0) {
+      if (!mounted) return;
+
+      setState(() {
+        availableTimeSlots = [];
+        selectedTime = null;
+        timeSlotsMessage = 'اختر خدمة واحدة على الأقل لعرض الأوقات المتاحة';
+      });
+
+      return;
+    }
+
+    setState(() {
+      isLoadingTimeSlots = true;
+      availableTimeSlots = [];
+      selectedTime = null;
+      timeSlotsMessage = null;
+    });
+
+    try {
+      final workingDays = await workingHoursRepository.getWorkingDays(
+        barberId: barberId,
+      );
+
+      final closures = await availabilityRepository.getClosures(
+        barberId: barberId,
+      );
+
+      final timeBlocks = await availabilityRepository.getTimeBlocks(
+        barberId: barberId,
+      );
+
+      final appointments = await bookingRepository.getBarberAppointmentsForDate(
+        barberId: barberId,
+        date: appointmentDate,
+      );
+
+      final slots = ManualAppointmentSlotsHelper.buildAvailableSlots(
+        date: appointmentDate,
+        totalDurationMinutes: _selectedTotalDuration,
+        workingDays: workingDays,
+        existingAppointments: appointments,
+        closures: closures,
+        timeBlocks: timeBlocks,
+        stepMinutes: 15,
+      );
+      debugPrint('MANUAL_SLOTS_DEBUG: date = $appointmentDate');
+      debugPrint('MANUAL_SLOTS_DEBUG: totalDuration = $_selectedTotalDuration');
+      debugPrint(
+        'MANUAL_SLOTS_DEBUG: workingDays = ${workingDays.map((d) => '${d.dayName}/${d.dayOfWeek}/${d.startTime}-${d.endTime}/active=${d.isActive}').toList()}',
+      );
+      debugPrint(
+        'MANUAL_SLOTS_DEBUG: appointments count = ${appointments.length}',
+      );
+      debugPrint(
+        'MANUAL_SLOTS_DEBUG: closures = ${closures.map((c) => '${c.dateLabel} - ${c.reason}').toList()}',
+      );
+      debugPrint(
+        'MANUAL_SLOTS_DEBUG: timeBlocks = ${timeBlocks.map((b) => 'type=${b.type}, date=${b.dateLabel}, ${b.startTime}-${b.endTime}, reason=${b.reason}').toList()}',
+      );
+      debugPrint('MANUAL_SLOTS_DEBUG: slots count = ${slots.length}');
+
+      if (!mounted || requestId != _timeSlotsRequestId) return;
+
+      setState(() {
+        availableTimeSlots = slots;
+        isLoadingTimeSlots = false;
+        timeSlotsMessage = slots.isEmpty ? _emptySlotsMessage() : null;
+      });
+    } catch (error, stackTrace) {
+      debugPrint('LOAD_MANUAL_TIME_SLOTS_ERROR: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted || requestId != _timeSlotsRequestId) return;
+
+      setState(() {
+        availableTimeSlots = [];
+        isLoadingTimeSlots = false;
+        timeSlotsMessage = 'تعذر تحميل الأوقات المتاحة';
+      });
+    }
+  }
+
+  Future<void> _selectDateChoice(ManualAppointmentDateChoice choice) async {
+    if (choice == ManualAppointmentDateChoice.custom) {
+      await _pickDate();
+      await _loadAvailableTimeSlots();
+      return;
+    }
+
+    setState(() {
+      selectedDateChoice = choice;
+      selectedDate = null;
+      dateError = null;
+    });
+
+    await _loadAvailableTimeSlots();
+  }
+
+  void _toggleService(ServiceModel service) {
+    final bool isSelected = selectedServices.any(
+      (item) => item.id == service.id,
+    );
+
+    setState(() {
+      if (isSelected) {
+        selectedServices = selectedServices
+            .where((item) => item.id != service.id)
+            .toList();
+      } else {
+        selectedServices = [...selectedServices, service];
+      }
+
+      serviceError = null;
+    });
+
+    _loadAvailableTimeSlots();
+  }
+
+  Future<void> _pickDate() async {
+    final DateTime? pickedDate = await showAppDatePickerSheet(
+      context: context,
+      initialDate: selectedDate,
+      title: 'اختر تاريخ الموعد',
+      subtitle: 'اختر الشهر واليوم بالسحب',
     );
 
     if (pickedDate == null) return;
 
     setState(() {
+      selectedDateChoice = ManualAppointmentDateChoice.custom;
       selectedDate = pickedDate;
       dateError = null;
     });
+
+    await _loadAvailableTimeSlots();
   }
 
-  Future<void> _pickTime() async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: selectedTime ?? TimeOfDay.now(),
-    );
-
-    if (pickedTime == null) return;
-
+  void _selectTimeSlot(DateTime slot) {
     setState(() {
-      selectedTime = pickedTime;
+      selectedTime = TimeOfDay.fromDateTime(slot);
       timeError = null;
     });
   }
@@ -115,13 +358,13 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
         shouldFocusCustomerName = true;
       }
 
-      if (selectedServiceName == null) {
-        serviceError = 'الرجاء اختيار نوع الخدمة';
+      if (selectedServices.isEmpty) {
+        serviceError = 'الرجاء اختيار خدمة واحدة على الأقل';
         serviceShakeTrigger++;
         isValid = false;
       }
 
-      if (selectedDate == null) {
+      if (_resolvedAppointmentDate() == null) {
         dateError = 'الرجاء اختيار تاريخ الموعد';
         dateShakeTrigger++;
         isValid = false;
@@ -141,75 +384,56 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
     return isValid;
   }
 
-  void _addManualAppointment() {
+  Future<void> _addManualAppointment() async {
+    if (isSubmittingAppointment) {
+      return;
+    }
+
     if (!_validateForm()) {
       return;
     }
+
+    setState(() {
+      isSubmittingAppointment = true;
+    });
+
     try {
       final String customerName = customerNameController.text.trim();
 
+      final DateTime appointmentDate = _resolvedAppointmentDate()!;
+
       final DateTime startDateTime = DateTime(
-        selectedDate!.year,
-        selectedDate!.month,
-        selectedDate!.day,
+        appointmentDate.year,
+        appointmentDate.month,
+        appointmentDate.day,
         selectedTime!.hour,
         selectedTime!.minute,
       );
 
-      final DateTime endDateTime = startDateTime.add(
-        Duration(minutes: selectedServiceDuration),
-      );
-
-      final String dateLabel = _dateLabelFor(selectedDate!);
-      final String timeLabel =
-          '${_formatTimeOfDay(selectedTime!)} - ${_formatDateTimeTime(endDateTime)}';
-
-      final appointment = MockAppointment(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+      await widget.onAddAppointment(
         customerName: customerName,
-        barberName: 'أنت',
-        barberRating: 0,
-        serviceName: selectedServiceName!,
-        dateLabel: dateLabel,
-        timeLabel: timeLabel,
-        status: 'مؤكد',
+        services: selectedServices,
         startDateTime: startDateTime,
-        endDateTime: endDateTime,
-        customerId: null,
-        barberId: AuthSession.currentUser?.barberId ?? 'b1',
-        createdAt: DateTime.now(),
       );
 
-      widget.onAddAppointment(appointment);
+      if (!mounted) return;
+
       Navigator.of(context).pop();
       widget.onAddedSuccessfully();
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('ADD_MANUAL_APPOINTMENT_ERROR: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+
       widget.onMessage('حدث خطأ أثناء إضافة الموعد');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isSubmittingAppointment = false;
+        });
+      }
     }
-  }
-
-  String _dateLabelFor(DateTime date) {
-    final DateTime now = DateTime.now();
-
-    final bool isToday =
-        date.year == now.year && date.month == now.month && date.day == now.day;
-
-    if (isToday) return 'اليوم';
-
-    return '${date.day}/${date.month}/${date.year}';
-  }
-
-  String _formatTimeOfDay(TimeOfDay time) {
-    final int hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
-    final String minute = time.minute.toString().padLeft(2, '0');
-    final String period = time.period == DayPeriod.am ? 'صباحًا' : 'مساءً';
-
-    return '$hour:$minute $period';
-  }
-
-  String _formatDateTimeTime(DateTime dateTime) {
-    final TimeOfDay time = TimeOfDay.fromDateTime(dateTime);
-    return _formatTimeOfDay(time);
   }
 
   @override
@@ -248,7 +472,9 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
+
                 const SizedBox(height: 16),
+
                 Row(
                   children: [
                     Container(
@@ -269,7 +495,9 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                         size: 21,
                       ),
                     ),
+
                     const SizedBox(width: 10),
+
                     Expanded(
                       child: Text(
                         'إضافة موعد يدوي',
@@ -280,6 +508,7 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                         ),
                       ),
                     ),
+
                     Material(
                       color: AppThemeColors.softCard(context),
                       borderRadius: BorderRadius.circular(14),
@@ -298,7 +527,9 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 18),
+
                 ManualAppointmentTextField(
                   label: 'اسم الزبون',
                   hint: 'مثال: أحمد خالد',
@@ -309,98 +540,87 @@ class _AddManualAppointmentSheetState extends State<AddManualAppointmentSheet> {
                   hasError: customerNameError != null,
                   shakeTrigger: customerNameShakeTrigger,
                 ),
+
                 const SizedBox(height: 14),
-                ManualServiceDropdown(
-                  selectedServiceName: selectedServiceName,
+
+                ManualServicesSelector(
+                  services: availableServices,
+                  selectedServices: selectedServices,
+                  activeTarget: activeServiceTarget,
+                  isLoadingServices: isLoadingServices,
+                  loadErrorText: servicesLoadError,
                   errorText: serviceError,
                   hasError: serviceError != null,
                   shakeTrigger: serviceShakeTrigger,
-                  onChanged: (value) {
-                    if (value == null) return;
-
-                    final service = mockBarberServices.firstWhere(
-                      (item) => item.name == value,
-                    );
-
+                  onTargetChanged: (target) {
                     setState(() {
-                      selectedServiceName = value;
-                      selectedServiceDuration =
-                          int.tryParse(service.durationMinutes.toString()) ??
-                          30;
-                      serviceError = null;
+                      activeServiceTarget = target;
                     });
                   },
+                  onToggleService: _toggleService,
                 ),
+
                 const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: PickerBox(
-                        label: 'تاريخ الموعد',
-                        value: selectedDate == null
-                            ? 'اختر التاريخ'
-                            : _dateLabelFor(selectedDate!),
-                        icon: Icons.calendar_month_rounded,
-                        onTap: _pickDate,
-                        errorText: dateError,
-                        hasError: dateError != null,
-                        shakeTrigger: dateShakeTrigger,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: PickerBox(
-                        label: 'وقت الموعد',
-                        value: selectedTime == null
-                            ? 'اختر الوقت'
-                            : _formatTimeOfDay(selectedTime!),
-                        icon: Icons.access_time_rounded,
-                        onTap: _pickTime,
-                        errorText: timeError,
-                        hasError: timeError != null,
-                        shakeTrigger: timeShakeTrigger,
-                      ),
-                    ),
-                  ],
+
+                ManualDateChoiceSelector(
+                  selectedChoice: selectedDateChoice,
+                  customDate: selectedDate,
+                  errorText: dateError,
+                  hasError: dateError != null,
+                  shakeTrigger: dateShakeTrigger,
+                  onChoiceSelected: (choice) {
+                    _selectDateChoice(choice);
+                  },
                 ),
+
                 const SizedBox(height: 14),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppThemeColors.elevatedCard(context),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppThemeColors.border(context)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.info_rounded,
-                        color: Color(0xFFC47A3D),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'مدة الموعد ستُحسب تلقائيًا حسب الخدمة المختارة: $selectedServiceDuration دقيقة',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            height: 1.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppThemeColors.textSecondary(context),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+
+                ManualAvailableTimeSlotsSelector(
+                  slots: availableTimeSlots,
+                  selectedTime: selectedTime,
+                  isLoading: isLoadingTimeSlots,
+                  message: timeSlotsMessage,
+                  errorText: timeError,
+                  hasError: timeError != null,
+                  shakeTrigger: timeShakeTrigger,
+                  onSelectSlot: _selectTimeSlot,
                 ),
+
                 const SizedBox(height: 18),
+
                 SizedBox(
                   width: double.infinity,
-                  child: ManualPrimaryButton(
-                    label: 'إضافة الموعد',
-                    icon: Icons.add_rounded,
-                    onTap: _addManualAppointment,
+                  child: ElevatedButton.icon(
+                    onPressed: isLoadingServices || isSubmittingAppointment
+                        ? null
+                        : _addManualAppointment,
+                    icon: isSubmittingAppointment
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.add_rounded),
+                    label: Text(
+                      isSubmittingAppointment
+                          ? 'جاري الإضافة...'
+                          : 'إضافة الموعد',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFC47A3D),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ),
                 ),
               ],

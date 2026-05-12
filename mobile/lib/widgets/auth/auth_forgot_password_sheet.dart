@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'password_strength_indicator.dart';
 
-import '../../services/auth_service.dart';
+import '../../features/auth/auth.dart';
 import 'auth_country_code_selector.dart';
 import 'auth_error_message.dart';
 import 'auth_text_field.dart';
@@ -297,6 +297,13 @@ class _AuthForgotPasswordSheetState extends State<AuthForgotPasswordSheet> {
 
       setState(() {
         step = _ForgotPasswordStep.done;
+        loading = false;
+      });
+    } on AuthException catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        errorMessage = error.message;
         loading = false;
       });
     } catch (error) {

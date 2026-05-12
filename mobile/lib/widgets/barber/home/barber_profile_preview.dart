@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 import '../../shared/star_rating_display.dart';
 
 class BarberProfilePreview extends StatelessWidget {
@@ -8,11 +8,17 @@ class BarberProfilePreview extends StatelessWidget {
     super.key,
     required this.onTap,
     required this.rating,
+    required this.ratingCount,
+    required this.satisfactionRate,
+    required this.ratingBreakdown,
     this.avatarUrl,
   });
 
   final VoidCallback onTap;
   final double rating;
+  final int ratingCount;
+  final int satisfactionRate;
+  final Map<int, int> ratingBreakdown;
   final String? avatarUrl;
 
   @override
@@ -106,8 +112,9 @@ class BarberProfilePreview extends StatelessWidget {
 
           StarRatingDisplay(
             rating: rating,
-            ratingCount: 0,
-            satisfactionRate: rating <= 0 ? 0 : ((rating / 5) * 100).round(),
+            ratingCount: ratingCount,
+            satisfactionRate: satisfactionRate,
+            ratingBreakdown: ratingBreakdown,
             starSize: 18,
             enableDetailsPopup: true,
           ),

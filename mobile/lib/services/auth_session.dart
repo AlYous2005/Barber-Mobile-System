@@ -1,4 +1,4 @@
-import '../models/app_user.dart';
+import '../features/auth/auth.dart';
 
 class AuthSession {
   AuthSession._();

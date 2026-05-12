@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/mock_appointment.dart';
-import '../../../utils/app_theme_colors.dart';
-import '../../../utils/booking_formatters.dart';
+import '../../../features/bookings/bookings.dart';
+import '../../../general_utils/app_theme_colors.dart';
+import '../../shared/appointment_status_pulse_hint.dart';
 
 class CustomerAppointmentCard extends StatelessWidget {
   const CustomerAppointmentCard({
@@ -69,7 +69,12 @@ class CustomerAppointmentCard extends StatelessWidget {
                         : const SizedBox.shrink(),
                   ),
                 ),
-                _StatusBadge(visual: statusVisual),
+                AppointmentStatusPulseHint(
+                  arabicStatus: appointment.status,
+                  audience: AppointmentStatusAudience.customer,
+                  cancelledBy: appointment.cancelledBy,
+                  styleResolver: appointmentStatusBadgeStyleForCustomerCard,
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -217,6 +222,8 @@ class CustomerAppointmentCard extends StatelessWidget {
 
       case 'قادم':
       case 'تم التأكيد':
+      case 'مؤكد':
+      case 'مؤكدة':
         return const _AppointmentStatusVisual(
           shortLabel: 'تم التأكيد',
           fullLabel: 'تم التأكيد',
@@ -226,7 +233,18 @@ class CustomerAppointmentCard extends StatelessWidget {
           icon: Icons.verified_rounded,
         );
 
+      case 'لم يحضر':
+        return const _AppointmentStatusVisual(
+          shortLabel: 'لم يحضر',
+          fullLabel: 'لم يحضر',
+          color: Color(0xFF92400E),
+          backgroundColor: Color(0xFFFFFBEB),
+          borderColor: Color(0xFFFDE68A),
+          icon: Icons.person_off_rounded,
+        );
+
       case 'مكتمل':
+      case 'مكتملة':
         return const _AppointmentStatusVisual(
           shortLabel: 'مكتمل',
           fullLabel: 'مكتمل',
@@ -299,39 +317,6 @@ class _AppointmentInfoRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.visual});
-
-  final _AppointmentStatusVisual visual;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: visual.backgroundColor,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: visual.borderColor),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(visual.icon, size: 15, color: visual.color),
-          const SizedBox(width: 6),
-          Text(
-            visual.shortLabel,
-            style: TextStyle(
-              color: visual.color,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 import 'service_form_widgets.dart';
 
 class ServiceConfirmDialog extends StatelessWidget {

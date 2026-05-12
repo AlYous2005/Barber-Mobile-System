@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
-import '../../../models/selected_booking_service.dart';
-import '../../../models/service_model.dart';
-import '../../../models/service_target.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/services_management/services_management.dart';
+import '../../../features/bookings/bookings.dart';
+import '../../../general_utils/app_theme_colors.dart';
+import '../../shared/service_icon_view.dart';
 
 typedef ServiceTargetToggle =
     void Function(ServiceModel service, ServiceTarget target);
@@ -37,71 +36,21 @@ class _ChooseServicesStepState extends State<ChooseServicesStep> {
   }
 
   List<ServiceModel> get _personalServices {
-    return widget.services.where(_isPersonalService).toList();
+    return widget.services
+        .where((service) => service.target == ServiceTarget.personal)
+        .toList();
   }
 
   List<ServiceModel> get _childServices {
-    return widget.services.where(_isChildService).toList();
+    return widget.services
+        .where((service) => service.target == ServiceTarget.child)
+        .toList();
   }
 
   List<ServiceModel> get _elderlyServices {
-    return widget.services.where(_isElderlyService).toList();
-  }
-
-  bool _isPersonalService(ServiceModel service) {
-    final name = service.name.trim();
-
-    if (_containsAny(name, ['طفل', 'أطفال', 'اطفال'])) {
-      return false;
-    }
-
-    return _containsAny(name, [
-      'شعر',
-      'لحية',
-      'ماسك',
-      'اسود',
-      'أسود',
-      'ابيض',
-      'أبيض',
-    ]);
-  }
-
-  bool _isChildService(ServiceModel service) {
-    final name = service.name.trim();
-
-    return _containsAny(name, [
-      'طفل',
-      'أطفال',
-      'اطفال',
-      'ماسك',
-      'اسود',
-      'أسود',
-      'ابيض',
-      'أبيض',
-    ]);
-  }
-
-  bool _isElderlyService(ServiceModel service) {
-    final name = service.name.trim();
-
-    return _containsAny(name, [
-      'شعر',
-      'لحية',
-      'ماسك',
-      'اسود',
-      'أسود',
-      'ابيض',
-      'أبيض',
-      'شمع',
-    ]);
-  }
-
-  bool _containsAny(String text, List<String> words) {
-    final normalized = text.toLowerCase();
-
-    return words.any((word) {
-      return normalized.contains(word.toLowerCase());
-    });
+    return widget.services
+        .where((service) => service.target == ServiceTarget.elderly)
+        .toList();
   }
 
   void _selectMainTab(_MainServicesTab tab) {
@@ -784,8 +733,7 @@ class _PremiumSelectableServiceCard extends StatelessWidget {
             child: Row(
               children: [
                 _ServiceIconBox(
-                  serviceName: service.name,
-                  target: target,
+                  service: service,
                   selected: selected,
                   compact: compact,
                 ),
@@ -919,32 +867,36 @@ class _TargetBadge extends StatelessWidget {
 
 class _ServiceIconBox extends StatelessWidget {
   const _ServiceIconBox({
-    required this.serviceName,
-    required this.target,
+    required this.service,
     required this.selected,
     required this.compact,
   });
 
-  final String serviceName;
-  final ServiceTarget target;
+  final ServiceModel service;
   final bool selected;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final IconData icon = _resolveServiceIcon(serviceName, target);
+    final String? imageUrl = _cleanText(service.serviceImageUrl);
+    final ServiceIconOption iconOption = ServiceIconOptions.byKey(
+      service.serviceIconKey,
+    );
 
     return Container(
       width: compact ? 46 : 54,
       height: compact ? 46 : 54,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: selected
-              ? const [Color(0xFF6E3F2F), Color(0xFFC47A3D)]
-              : const [Color(0xFFFFEFE4), Color(0xFFFFF8F2)],
-        ),
+        gradient: imageUrl == null
+            ? LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                colors: selected
+                    ? const [Color(0xFF6E3F2F), Color(0xFFC47A3D)]
+                    : const [Color(0xFFFFEFE4), Color(0xFFFFF8F2)],
+              )
+            : null,
+        color: imageUrl == null ? null : AppThemeColors.softCard(context),
         borderRadius: BorderRadius.circular(compact ? 16 : 18),
         border: Border.all(
           color: const Color(
@@ -961,46 +913,43 @@ class _ServiceIconBox extends StatelessWidget {
               ]
             : [],
       ),
-      child: Icon(
-        icon,
-        color: selected ? Colors.white : const Color(0xFF3A2014),
-        size: compact ? 23 : 27,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(compact ? 15 : 17),
+        child: imageUrl == null
+            ? ServiceIconView(
+                option: iconOption,
+                size: compact ? 23 : 27,
+                fallbackColor: selected
+                    ? Colors.white
+                    : const Color(0xFF3A2014),
+                assetPadding: 2,
+              )
+            : Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    iconOption.icon,
+                    color: selected ? Colors.white : const Color(0xFF3A2014),
+                    size: compact ? 23 : 27,
+                  );
+                },
+              ),
       ),
     );
   }
 
-  IconData _resolveServiceIcon(String serviceName, ServiceTarget target) {
-    final name = serviceName.toLowerCase();
-
-    if (target == ServiceTarget.child) {
-      return Icons.child_care_rounded;
+  String? _cleanText(String? value) {
+    if (value == null) {
+      return null;
     }
 
-    if (target == ServiceTarget.elderly) {
-      return Icons.elderly_rounded;
+    final String trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
     }
 
-    if (name.contains('لحية')) {
-      return Icons.face_6_rounded;
-    }
-
-    if (name.contains('ماسك') || name.contains('بشرة')) {
-      return Icons.spa_rounded;
-    }
-
-    if (name.contains('بكج') || name.contains('كامل')) {
-      return Icons.workspace_premium_rounded;
-    }
-
-    if (name.contains('غسيل')) {
-      return Icons.water_drop_rounded;
-    }
-
-    if (name.contains('شمع')) {
-      return Icons.auto_fix_high_rounded;
-    }
-
-    return Icons.content_cut_rounded;
+    return trimmed;
   }
 }
 

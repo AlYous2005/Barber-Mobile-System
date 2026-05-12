@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/service_model.dart';
+import '../../../features/barber/services_management/services_management.dart';
 import '../home/customer_theme.dart';
 
 class ServiceCard extends StatelessWidget {

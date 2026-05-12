@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class CustomerHomeTopBar extends StatelessWidget {
   const CustomerHomeTopBar({
@@ -9,6 +9,8 @@ class CustomerHomeTopBar extends StatelessWidget {
     required this.unreadCount,
     required this.onProfileTap,
     required this.onNotificationsTap,
+    this.shouldAnimateNotificationBell = false,
+    this.onNotificationAnimationConsumed,
     required this.onSettingsTap,
     required this.onLogoutTap,
     required this.avatarUrl,
@@ -18,6 +20,8 @@ class CustomerHomeTopBar extends StatelessWidget {
   final int unreadCount;
   final VoidCallback onProfileTap;
   final VoidCallback onNotificationsTap;
+  final bool shouldAnimateNotificationBell;
+  final VoidCallback? onNotificationAnimationConsumed;
   final VoidCallback onSettingsTap;
   final VoidCallback onLogoutTap;
   final String? avatarUrl;
@@ -86,6 +90,8 @@ class CustomerHomeTopBar extends StatelessWidget {
                     color: const Color(0xFFC47A3D),
                     onTap: onNotificationsTap,
                     badgeCount: unreadCount,
+                    shouldAnimate: shouldAnimateNotificationBell,
+                    onAnimationConsumed: onNotificationAnimationConsumed,
                   ),
                 ],
               ),
@@ -190,42 +196,142 @@ class _CustomerProfileAvatar extends StatelessWidget {
   }
 }
 
-class _HeaderActionButton extends StatelessWidget {
+class _HeaderActionButton extends StatefulWidget {
   const _HeaderActionButton({
     required this.icon,
     required this.color,
     required this.onTap,
     this.badgeCount = 0,
+    this.shouldAnimate = false,
+    this.onAnimationConsumed,
   });
 
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
   final int badgeCount;
+  final bool shouldAnimate;
+  final VoidCallback? onAnimationConsumed;
+
+  @override
+  State<_HeaderActionButton> createState() => _HeaderActionButtonState();
+}
+
+class _HeaderActionButtonState extends State<_HeaderActionButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController;
+  late final Animation<double> _shakeAnimation;
+  bool _consumedCurrentCycle = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    );
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0, end: -3.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -3.0, end: 3.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 3.0, end: -2.2), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -2.2, end: 1.8), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 1.8, end: 0), weight: 2),
+    ]).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _syncAnimation();
+  }
+
+  @override
+  void didUpdateWidget(covariant _HeaderActionButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shouldAnimate != widget.shouldAnimate) {
+      _syncAnimation();
+    }
+  }
+
+  void _syncAnimation() {
+    if (!widget.shouldAnimate) {
+      _animationController.stop();
+      _animationController.value = 0;
+      _consumedCurrentCycle = false;
+      return;
+    }
+    if (_animationController.isAnimating) {
+      return;
+    }
+    _consumedCurrentCycle = false;
+    _animationController.forward(from: 0).whenComplete(() {
+      if (!mounted || _consumedCurrentCycle) {
+        return;
+      }
+      _consumedCurrentCycle = true;
+      widget.onAnimationConsumed?.call();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    const Color highlightColor = Color(0xFFEAB308);
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Material(
-          color: color.withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(16),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withValues(alpha: 0.18)),
+        AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            final bool isActive = widget.shouldAnimate;
+            final Color activeColor = isActive ? highlightColor : widget.color;
+            final double glowStrength = isActive
+                ? (0.45 + (0.55 * (1 - _animationController.value)))
+                : 0;
+            return Transform.translate(
+              offset: Offset(_shakeAnimation.value, 0),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    if (isActive)
+                      BoxShadow(
+                        color: highlightColor.withValues(
+                          alpha: 0.24 * glowStrength,
+                        ),
+                        blurRadius: 16,
+                        spreadRadius: 2.2,
+                      ),
+                  ],
+                ),
+                child: Material(
+                  color: activeColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
+                  child: InkWell(
+                    onTap: widget.onTap,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: activeColor.withValues(
+                            alpha: isActive ? 0.45 : 0.18,
+                          ),
+                        ),
+                      ),
+                      child: Icon(widget.icon, color: activeColor, size: 21),
+                    ),
+                  ),
+                ),
               ),
-              child: Icon(icon, color: color, size: 21),
-            ),
-          ),
+            );
+          },
         ),
-        if (badgeCount > 0)
+        if (widget.badgeCount > 0)
           Positioned(
             top: -4,
             right: -4,
@@ -240,7 +346,7 @@ class _HeaderActionButton extends StatelessWidget {
                 ),
               ),
               child: Text(
-                badgeCount > 9 ? '9+' : '$badgeCount',
+                widget.badgeCount > 9 ? '9+' : '${widget.badgeCount}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,

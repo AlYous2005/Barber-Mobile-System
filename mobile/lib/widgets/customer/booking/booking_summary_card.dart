@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/service_model.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/services_management/services_management.dart';
+import '../../../general_utils/app_theme_colors.dart';
+import '../../shared/service_icon_view.dart';
 
 class BookingSummaryCard extends StatelessWidget {
   const BookingSummaryCard({
@@ -289,27 +290,7 @@ class _ServicesSummaryCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: services
-                .map(
-                  (service) => Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppThemeColors.softCard(context),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: AppThemeColors.border(context)),
-                    ),
-                    child: Text(
-                      service.name,
-                      style: TextStyle(
-                        color: AppThemeColors.textSecondary(context),
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                )
+                .map((service) => _ServiceSummaryChip(service: service))
                 .toList(),
           ),
         ],
@@ -377,4 +358,106 @@ class _MiniSummaryBox extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ServiceSummaryChip extends StatelessWidget {
+  const _ServiceSummaryChip({required this.service});
+
+  final ServiceModel service;
+
+  @override
+  Widget build(BuildContext context) {
+    final String? imageUrl = _cleanText(service.serviceImageUrl);
+    final ServiceIconOption iconOption = ServiceIconOptions.byKey(
+      service.serviceIconKey,
+    );
+
+    return Container(
+      padding: const EdgeInsetsDirectional.only(
+        start: 7,
+        end: 11,
+        top: 6,
+        bottom: 6,
+      ),
+      decoration: BoxDecoration(
+        color: AppThemeColors.softCard(context),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppThemeColors.border(context)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ServiceSummaryVisual(imageUrl: imageUrl, iconOption: iconOption),
+
+          const SizedBox(width: 7),
+
+          Text(
+            service.name,
+            style: TextStyle(
+              color: AppThemeColors.textSecondary(context),
+              fontSize: 12.5,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ServiceSummaryVisual extends StatelessWidget {
+  const _ServiceSummaryVisual({
+    required this.imageUrl,
+    required this.iconOption,
+  });
+
+  final String? imageUrl;
+  final ServiceIconOption iconOption;
+
+  @override
+  Widget build(BuildContext context) {
+    const double size = 26;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: const Color(0xFFC47A3D).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: const Color(0xFFC47A3D).withValues(alpha: 0.18),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(999),
+        child: imageUrl == null
+            ? Icon(iconOption.icon, color: const Color(0xFFC47A3D), size: 15)
+            : Image.network(
+                imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return ServiceIconView(
+                    option: iconOption,
+                    size: 15,
+                    fallbackColor: const Color(0xFFC47A3D),
+                    assetPadding: 1,
+                  );
+                },
+              ),
+      ),
+    );
+  }
+}
+
+String? _cleanText(String? value) {
+  if (value == null) {
+    return null;
+  }
+
+  final String trimmed = value.trim();
+  if (trimmed.isEmpty) {
+    return null;
+  }
+
+  return trimmed;
 }

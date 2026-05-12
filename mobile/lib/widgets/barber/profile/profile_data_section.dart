@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
+import '../../../features/locations/locations.dart';
 
 class ProfileDataSection extends StatelessWidget {
   const ProfileDataSection({
@@ -12,6 +13,14 @@ class ProfileDataSection extends StatelessWidget {
     required this.whatsappController,
     required this.addressController,
     required this.bioController,
+    required this.governorates,
+    required this.areas,
+    required this.selectedGovernorateId,
+    required this.selectedAreaId,
+    required this.isLoadingGovernorates,
+    required this.isLoadingAreas,
+    required this.onGovernorateChanged,
+    required this.onAreaChanged,
     required this.whatsappCountryCode,
     required this.onWhatsappCountryChanged,
     required this.fullWhatsapp,
@@ -24,9 +33,59 @@ class ProfileDataSection extends StatelessWidget {
   final TextEditingController whatsappController;
   final TextEditingController addressController;
   final TextEditingController bioController;
+  final List<GovernorateModel> governorates;
+  final List<AreaModel> areas;
+  final String? selectedGovernorateId;
+  final String? selectedAreaId;
+  final bool isLoadingGovernorates;
+  final bool isLoadingAreas;
+  final ValueChanged<String?> onGovernorateChanged;
+  final ValueChanged<String?> onAreaChanged;
   final String whatsappCountryCode;
   final ValueChanged<String?> onWhatsappCountryChanged;
   final String fullWhatsapp;
+
+  String get selectedGovernorateName {
+    final id = selectedGovernorateId?.trim();
+    if (id == null || id.isEmpty) {
+      return '';
+    }
+
+    for (final governorate in governorates) {
+      if (governorate.id == id) {
+        return governorate.nameAr;
+      }
+    }
+
+    return '';
+  }
+
+  String get selectedAreaName {
+    final id = selectedAreaId?.trim();
+    if (id == null || id.isEmpty) {
+      return '';
+    }
+
+    for (final area in areas) {
+      if (area.id == id) {
+        return area.nameAr;
+      }
+    }
+
+    return '';
+  }
+
+  String get selectedLocationLabel {
+    if (selectedGovernorateName.isNotEmpty && selectedAreaName.isNotEmpty) {
+      return '$selectedGovernorateName - $selectedAreaName';
+    }
+
+    if (selectedAreaName.isNotEmpty) {
+      return selectedAreaName;
+    }
+
+    return '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +134,13 @@ class ProfileDataSection extends StatelessWidget {
                   : nameController.text.trim(),
             ),
             ProfileInfoTile(
+              icon: Icons.map_rounded,
+              title: 'الموقع الرسمي',
+              value: selectedLocationLabel.isEmpty
+                  ? 'لم يتم تحديد المحافظة والمنطقة'
+                  : selectedLocationLabel,
+            ),
+            ProfileInfoTile(
               icon: Icons.phone_rounded,
               title: 'رقم الهاتف',
               value: phoneController.text.trim().isEmpty
@@ -90,7 +156,7 @@ class ProfileDataSection extends StatelessWidget {
             ),
             ProfileInfoTile(
               icon: Icons.location_on_rounded,
-              title: 'العنوان',
+              title: 'العنوان التفصيلي',
               value: addressController.text.trim().isEmpty
                   ? 'لم يتم إدخال العنوان'
                   : addressController.text.trim(),
@@ -121,9 +187,67 @@ class ProfileDataSection extends StatelessWidget {
               onCountryChanged: onWhatsappCountryChanged,
               controller: whatsappController,
             ),
+            const SizedBox(height: 20),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                'موقع الصالون',
+                style: TextStyle(
+                  color: AppThemeColors.textPrimary(context),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            ProfileDropdownField(
+              label: 'المحافظة',
+              icon: Icons.location_city_rounded,
+              value: selectedGovernorateId,
+              isLoading: isLoadingGovernorates,
+              hintText: 'اختر المحافظة',
+              items: governorates.map((governorate) {
+                return DropdownMenuItem<String>(
+                  value: governorate.id,
+                  child: Text(
+                    governorate.nameAr,
+                    style: TextStyle(
+                      color: AppThemeColors.textPrimary(context),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: onGovernorateChanged,
+            ),
+            const SizedBox(height: 12),
+            ProfileDropdownField(
+              label: 'المنطقة',
+              icon: Icons.place_rounded,
+              value: selectedAreaId,
+              isLoading: isLoadingAreas,
+              isEnabled: selectedGovernorateId != null,
+              hintText: selectedGovernorateId == null
+                  ? 'اختر المحافظة أولًا'
+                  : 'اختر المنطقة',
+              items: areas.map((area) {
+                return DropdownMenuItem<String>(
+                  value: area.id,
+                  child: Text(
+                    area.nameAr,
+                    style: TextStyle(
+                      color: AppThemeColors.textPrimary(context),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: onAreaChanged,
+            ),
             const SizedBox(height: 12),
             ProfileTextField(
-              label: 'العنوان',
+              label: 'العنوان التفصيلي',
               controller: addressController,
               icon: Icons.location_on_rounded,
             ),
@@ -135,6 +259,75 @@ class ProfileDataSection extends StatelessWidget {
               maxLines: 3,
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class ProfileDropdownField extends StatelessWidget {
+  const ProfileDropdownField({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+    required this.hintText,
+    this.isLoading = false,
+    this.isEnabled = true,
+  });
+
+  final String label;
+  final IconData icon;
+  final String? value;
+  final List<DropdownMenuItem<String>> items;
+  final ValueChanged<String?> onChanged;
+  final String hintText;
+  final bool isLoading;
+  final bool isEnabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool canChange = isEnabled && !isLoading;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppThemeColors.softCard(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppThemeColors.border(context)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFFC47A3D), size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: value,
+                isExpanded: true,
+                dropdownColor: AppThemeColors.card(context),
+                iconEnabledColor: AppThemeColors.textSecondary(context),
+                hint: Text(
+                  isLoading ? 'جاري التحميل...' : hintText,
+                  style: TextStyle(
+                    color: AppThemeColors.textSecondary(context),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                items: items,
+                onChanged: canChange ? onChanged : null,
+              ),
+            ),
+          ),
+          if (isLoading)
+            const SizedBox(
+              width: 17,
+              height: 17,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
         ],
       ),
     );

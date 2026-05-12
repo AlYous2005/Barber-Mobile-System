@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../models/working_day_model.dart';
-import '../../repositories/barber_working_hours_repository.dart';
+import '../../features/barber/schedule/schedule.dart';
 import '../../services/auth_session.dart';
+import '../../features/barber/schedule/utils/arabic_time_formatter.dart';
 
 class BarberWorkingHoursController extends ChangeNotifier {
   BarberWorkingHoursController({
@@ -82,15 +82,6 @@ class BarberWorkingHoursController extends ChangeNotifier {
   }
 
   String formatTime(String value) {
-    final parts = value.split(':');
-    final hour = int.tryParse(parts.first) ?? 0;
-    final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
-
-    final time = TimeOfDay(hour: hour, minute: minute);
-    final displayHour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
-    final displayMinute = time.minute.toString().padLeft(2, '0');
-    final period = time.period == DayPeriod.am ? 'صباحًا' : 'مساءً';
-
-    return '$displayHour:$displayMinute $period';
+    return formatArabicTime(value);
   }
 }

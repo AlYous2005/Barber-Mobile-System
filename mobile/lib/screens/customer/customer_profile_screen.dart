@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/customer/customer_profile_controller.dart';
-import '../../utils/app_theme_colors.dart';
+import '../../general_utils/app_theme_colors.dart';
 import '../../widgets/customer/profile/customer_password_box.dart';
 import '../../widgets/customer/profile/customer_profile_form_box.dart';
 import '../../widgets/customer/profile/customer_profile_intro_card.dart';
@@ -10,8 +10,8 @@ import '../../widgets/customer/profile/customer_profile_shared_widgets.dart';
 import '../../widgets/customer/shared/customer_feedback_popup.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../repositories/customer_profile_repository.dart';
-import '../../services/auth_service.dart';
+import '../../features/customer/profile/customer_profile.dart';
+import '../../features/auth/auth.dart';
 import '../../services/auth_session.dart';
 
 class CustomerProfileScreen extends StatefulWidget {

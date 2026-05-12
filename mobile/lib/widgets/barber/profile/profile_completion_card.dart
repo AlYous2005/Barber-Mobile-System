@@ -1,14 +1,41 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class ProfileCompletionCard extends StatelessWidget {
-  const ProfileCompletionCard({super.key, required this.completedItemsCount});
+  const ProfileCompletionCard({
+    super.key,
+    required this.hasImage,
+    required this.hasWhatsapp,
+    required this.hasLocation,
+    required this.hasAddress,
+    required this.hasBio,
+  });
 
-  final int completedItemsCount;
+  final bool hasImage;
+  final bool hasWhatsapp;
+  final bool hasLocation;
+  final bool hasAddress;
+  final bool hasBio;
+
+  static const int _totalItems = 5;
+
+  int get completedItemsCount {
+    int count = 0;
+
+    if (hasImage) count++;
+    if (hasWhatsapp) count++;
+    if (hasLocation) count++;
+    if (hasAddress) count++;
+    if (hasBio) count++;
+
+    return count;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final int completed = completedItemsCount;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -41,7 +68,7 @@ class ProfileCompletionCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  '$completedItemsCount / 4',
+                  '$completed / $_totalItems',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
@@ -55,23 +82,34 @@ class ProfileCompletionCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: CompletionChip(
-                  label: 'الصورة',
-                  isDone: completedItemsCount >= 1,
-                ),
+                child: CompletionChip(label: 'الصورة', isDone: hasImage),
               ),
               const SizedBox(width: 8),
-              const Expanded(
-                child: CompletionChip(label: 'الواتساب', isDone: true),
+              Expanded(
+                child: CompletionChip(label: 'الواتساب', isDone: hasWhatsapp),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             children: [
-              Expanded(child: CompletionChip(label: 'النبذة', isDone: true)),
-              SizedBox(width: 8),
-              Expanded(child: CompletionChip(label: 'العنوان', isDone: true)),
+              Expanded(
+                child: CompletionChip(label: 'الموقع', isDone: hasLocation),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: CompletionChip(label: 'العنوان', isDone: hasAddress),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: CompletionChip(label: 'النبذة', isDone: hasBio),
+              ),
+              const SizedBox(width: 8),
+              const Expanded(child: SizedBox()),
             ],
           ),
         ],

@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/ui_service_model.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/services_management/services_management.dart';
+import '../../../general_utils/app_theme_colors.dart';
 import 'service_form_widgets.dart';
+import '../../shared/service_icon_view.dart';
 
 class ServiceCard extends StatelessWidget {
   const ServiceCard({
     super.key,
     required this.service,
     required this.onEdit,
-    required this.onViewAppointments,
+    required this.onArchive,
     required this.onToggleActive,
   });
 
   final UiService service;
   final VoidCallback onEdit;
-  final VoidCallback onViewAppointments;
+  final VoidCallback onArchive;
   final VoidCallback onToggleActive;
 
   @override
   Widget build(BuildContext context) {
     final bool active = service.isActive;
-
+    final ServiceIconOption iconOption = ServiceIconOptions.byKey(
+      service.serviceIconKey,
+    );
+    final String? serviceImageUrl = _cleanText(service.serviceImageUrl);
     return Opacity(
       opacity: active ? 1 : 0.72,
       child: Container(
@@ -46,23 +50,39 @@ class ServiceCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
                     color: active
                         ? const Color(0xFFEEF7F1)
                         : AppThemeColors.softCard(context),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(15),
                     border: Border.all(
                       color: active
                           ? const Color(0xFFDCEFE2)
                           : AppThemeColors.border(context),
                     ),
                   ),
-                  child: Icon(
-                    Icons.content_cut_rounded,
-                    color: const Color(0xFF5C4030),
-                    size: 20,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: serviceImageUrl == null
+                        ? ServiceIconView(
+                            option: iconOption,
+                            size: 21,
+                            fallbackColor: const Color(0xFF5C4030),
+                            assetPadding: 2,
+                          )
+                        : Image.network(
+                            serviceImageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                iconOption.icon,
+                                color: const Color(0xFF5C4030),
+                                size: 21,
+                              );
+                            },
+                          ),
                   ),
                 ),
 
@@ -130,6 +150,16 @@ class ServiceCard extends StatelessWidget {
               ],
             ),
 
+            const SizedBox(height: 10),
+
+            MetaBadge(
+              icon: Icons.people_alt_rounded,
+              label: service.target.arabicLabel,
+              color: const Color(0xFF9A5A38),
+              backgroundColor: const Color(0xFFFFF7ED),
+              borderColor: const Color(0xFFFED7AA),
+            ),
+
             const SizedBox(height: 16),
 
             CardButton(
@@ -142,25 +172,38 @@ class ServiceCard extends StatelessWidget {
             const SizedBox(height: 10),
 
             CardButton(
-              label: 'المواعيد المرتبطة',
-              icon: Icons.visibility_rounded,
-              color: const Color(0xFF0F766E),
-              onTap: onViewAppointments,
+              label: active ? 'تعطيل' : 'تفعيل',
+              icon: active ? Icons.toggle_off_rounded : Icons.toggle_on_rounded,
+              color: active ? const Color(0xFFEF4444) : const Color(0xFF16A34A),
+              onTap: onToggleActive,
             ),
 
             const SizedBox(height: 10),
 
             CardButton(
-              label: active ? 'تعطيل' : 'تفعيل',
-              icon: active ? Icons.toggle_off_rounded : Icons.toggle_on_rounded,
-              color: active ? const Color(0xFFEF4444) : const Color(0xFF16A34A),
-              onTap: onToggleActive,
+              label: 'حذف من قائمة الخدمات',
+              icon: Icons.delete_outline_rounded,
+              color: const Color(0xFF92400E),
+              onTap: onArchive,
             ),
           ],
         ),
       ),
     );
   }
+}
+
+String? _cleanText(String? value) {
+  if (value == null) {
+    return null;
+  }
+
+  final String trimmed = value.trim();
+  if (trimmed.isEmpty) {
+    return null;
+  }
+
+  return trimmed;
 }
 
 class MetaBadge extends StatelessWidget {

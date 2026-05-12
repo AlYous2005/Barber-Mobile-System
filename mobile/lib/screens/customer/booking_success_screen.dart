@@ -1,9 +1,8 @@
-import '../../utils/app_theme_colors.dart';
+import '../../general_utils/app_theme_colors.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/booking_model.dart';
+import '../../features/bookings/bookings.dart';
 import '../../widgets/customer/booking/booking_summary_card.dart';
-import '../../utils/duration_formatters.dart';
 import '../../widgets/customer/booking/booking_success_reminder_dialog.dart';
 
 class BookingSuccessScreen extends StatefulWidget {
@@ -16,6 +15,14 @@ class BookingSuccessScreen extends StatefulWidget {
 }
 
 class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
+  String _displayAddress(String? address) {
+    final cleaned = address?.trim();
+    if (cleaned == null || cleaned.isEmpty) {
+      return 'العنوان غير محدد';
+    }
+    return cleaned;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -155,7 +162,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
 
                   BookingSummaryCard(
                     barberName: booking.barber.name,
-                    barberLocation: 'زيتا، زيتا',
+                    barberLocation: _displayAddress(booking.barber.address),
                     selectedServices: [booking.service],
                     dateLabel: booking.dateDisplayLabel,
                     timeLabel: booking.timeLabel,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../shared/stat_card.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class HomeStatsSection extends StatelessWidget {
   const HomeStatsSection({

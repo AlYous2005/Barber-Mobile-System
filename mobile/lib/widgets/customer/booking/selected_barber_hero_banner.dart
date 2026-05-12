@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/barber_model.dart';
+import '../../../features/barber/profile/barber_profile.dart';
 import 'barber_public_profile_dialog.dart';
 
 class SelectedBarberHeroBanner extends StatelessWidget {

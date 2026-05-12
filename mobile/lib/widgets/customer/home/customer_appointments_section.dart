@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/mock_appointment.dart';
-import '../../../utils/appointment_filters.dart';
+import '../../../features/bookings/bookings.dart';
 import '../appointments/customer_appointment_card.dart';
 import 'appointments_tabs_selector.dart';
 import 'empty_appointments_box.dart';
@@ -60,7 +59,9 @@ class CustomerAppointmentsSection extends StatelessWidget {
             ...previousAppointments.map(
               (item) => CustomerAppointmentCard(
                 appointment: item,
-                onRate: item.isCompleted ? () => onRateAppointment(item) : null,
+                onRate: item.isCompleted && item.customerRating == null
+                    ? () => onRateAppointment(item)
+                    : null,
                 onCancel: null,
                 onRebook: () => onRebookAppointment(item),
               ),

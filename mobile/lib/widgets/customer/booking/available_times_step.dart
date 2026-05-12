@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class AvailableTimesStep extends StatefulWidget {
   const AvailableTimesStep({
@@ -8,12 +8,18 @@ class AvailableTimesStep extends StatefulWidget {
     required this.selectedTime,
     required this.selectedDateLabel,
     required this.requiredDurationLabel,
+    required this.availableTimes,
+    required this.isLoadingTimes,
+    required this.message,
     required this.onSelectTime,
   });
 
   final String? selectedTime;
   final String selectedDateLabel;
   final String requiredDurationLabel;
+  final List<String> availableTimes;
+  final bool isLoadingTimes;
+  final String? message;
   final ValueChanged<String> onSelectTime;
 
   @override
@@ -21,193 +27,22 @@ class AvailableTimesStep extends StatefulWidget {
 }
 
 class _AvailableTimesStepState extends State<AvailableTimesStep> {
-  String selectedPeriod = 'morning';
-
-  static const List<String> morningTimes = [
-    '10:00 صباحاً',
-    '10:30 صباحاً',
-    '11:00 صباحاً',
-    '12:00 ظهراً',
-  ];
-
-  static const List<String> eveningTimes = [
-    '04:00 مساءً',
-    '05:30 مساءً',
-    '06:00 مساءً',
-    '07:00 مساءً',
-  ];
-
-  // Mock حاليًا: لاحقًا الباك إند هو الذي يحدد الأوقات غير المتاحة.
-  static const Set<String> unavailableTimes = {'10:30 صباحاً', '06:00 مساءً'};
-
-  List<String> get currentTimes {
-    if (selectedPeriod == 'morning') {
-      return morningTimes;
-    }
-
-    return eveningTimes;
-  }
-
-  String get currentTitle {
-    if (selectedPeriod == 'morning') {
-      return 'الأوقات الصباحية المتاحة';
-    }
-
-    return 'الأوقات المسائية المتاحة';
-  }
-
-  String get currentSubtitle {
-    if (selectedPeriod == 'morning') {
-      return 'اختر وقتًا مناسبًا قبل الظهيرة.';
-    }
-
-    return 'أوقات مناسبة بعد الظهر والمساء.';
-  }
-
-  IconData get currentIcon {
-    if (selectedPeriod == 'morning') {
-      return Icons.wb_sunny_rounded;
-    }
-
-    return Icons.nightlight_round_rounded;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _TimePeriodTabs(
-          selectedPeriod: selectedPeriod,
-          onChanged: (period) {
-            setState(() {
-              selectedPeriod = period;
-            });
-          },
-        ),
-
-        const SizedBox(height: 16),
-
         _TimesGroup(
-          title: currentTitle,
-          subtitle: currentSubtitle,
-          icon: currentIcon,
-          times: currentTimes,
-          unavailableTimes: unavailableTimes,
+          title: 'الأوقات المتاحة',
+          subtitle:
+              '${widget.selectedDateLabel} • مدة الموعد ${widget.requiredDurationLabel}',
+          icon: Icons.access_time_filled_rounded,
+          times: widget.availableTimes,
+          isLoading: widget.isLoadingTimes,
+          message: widget.message,
           selectedTime: widget.selectedTime,
           onSelectTime: widget.onSelectTime,
         ),
       ],
-    );
-  }
-}
-
-class _TimePeriodTabs extends StatelessWidget {
-  const _TimePeriodTabs({
-    required this.selectedPeriod,
-    required this.onChanged,
-  });
-
-  final String selectedPeriod;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: AppThemeColors.softCard(context),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppThemeColors.border(context)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _TimePeriodTabButton(
-              title: 'صباحي',
-              icon: Icons.wb_sunny_rounded,
-              isSelected: selectedPeriod == 'morning',
-              onTap: () => onChanged('morning'),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _TimePeriodTabButton(
-              title: 'مسائي',
-              icon: Icons.nightlight_round_rounded,
-              isSelected: selectedPeriod == 'evening',
-              onTap: () => onChanged('evening'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TimePeriodTabButton extends StatelessWidget {
-  const _TimePeriodTabButton({
-    required this.title,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String title;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    const Color activeColor = Color(0xFFC47A3D);
-
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? activeColor : Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: isSelected
-                ? const [
-                    BoxShadow(
-                      color: Color(0x22C47A3D),
-                      blurRadius: 16,
-                      offset: Offset(0, 7),
-                    ),
-                  ]
-                : [],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? Colors.white : activeColor,
-                size: 20,
-              ),
-              const SizedBox(width: 7),
-              Text(
-                title,
-                style: TextStyle(
-                  color: isSelected
-                      ? Colors.white
-                      : AppThemeColors.textSecondary(context),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -218,7 +53,8 @@ class _TimesGroup extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.times,
-    required this.unavailableTimes,
+    required this.isLoading,
+    required this.message,
     required this.selectedTime,
     required this.onSelectTime,
   });
@@ -227,7 +63,8 @@ class _TimesGroup extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final List<String> times;
-  final Set<String> unavailableTimes;
+  final bool isLoading;
+  final String? message;
   final String? selectedTime;
   final ValueChanged<String> onSelectTime;
 
@@ -293,28 +130,48 @@ class _TimesGroup extends StatelessWidget {
 
           const SizedBox(height: 14),
 
-          GridView.builder(
-            itemCount: times.length,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 2.45,
+          if (isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.6),
+              ),
+            )
+          else if (message != null && message!.trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                message!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppThemeColors.textSecondary(context),
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            )
+          else
+            GridView.builder(
+              itemCount: times.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 2.45,
+              ),
+              itemBuilder: (context, index) {
+                final String time = times[index];
+                return _AvailableTimeCard(
+                  label: time,
+                  selected: selectedTime == time,
+                  onTap: () => onSelectTime(time),
+                );
+              },
             ),
-            itemBuilder: (context, index) {
-              final String time = times[index];
-              final bool isUnavailable = unavailableTimes.contains(time);
-
-              return _AvailableTimeCard(
-                label: time,
-                selected: selectedTime == time,
-                unavailable: isUnavailable,
-                onTap: isUnavailable ? null : () => onSelectTime(time),
-              );
-            },
-          ),
         ],
       ),
     );
@@ -325,14 +182,12 @@ class _AvailableTimeCard extends StatelessWidget {
   const _AvailableTimeCard({
     required this.label,
     required this.selected,
-    required this.unavailable,
     required this.onTap,
   });
 
   final String label;
   final bool selected;
-  final bool unavailable;
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -346,13 +201,6 @@ class _AvailableTimeCard extends StatelessWidget {
       borderColor = const Color(0xFFC47A3D);
       textColor = Colors.white;
       iconColor = Colors.white;
-    }
-
-    if (unavailable) {
-      backgroundColor = AppThemeColors.softCard(context);
-      borderColor = AppThemeColors.border(context);
-      textColor = AppThemeColors.textMuted(context);
-      iconColor = AppThemeColors.textMuted(context);
     }
 
     return Material(
@@ -381,9 +229,7 @@ class _AvailableTimeCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                unavailable
-                    ? Icons.block_rounded
-                    : selected
+                selected
                     ? Icons.check_circle_rounded
                     : Icons.access_time_rounded,
                 color: iconColor,
@@ -392,7 +238,7 @@ class _AvailableTimeCard extends StatelessWidget {
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
-                  unavailable ? 'محجوز' : label,
+                  label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

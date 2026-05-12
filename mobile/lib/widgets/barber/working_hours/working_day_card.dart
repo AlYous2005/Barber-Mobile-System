@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/working_day_model.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/schedule/schedule.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class WorkingDayCard extends StatelessWidget {
   const WorkingDayCard({

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class CustomerSectionTitleCard extends StatelessWidget {
   const CustomerSectionTitleCard({super.key, required this.title});

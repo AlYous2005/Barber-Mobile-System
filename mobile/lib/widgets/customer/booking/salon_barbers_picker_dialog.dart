@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/barber_model.dart';
-import '../../../repositories/barber_repository.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/profile/barber_profile.dart';
+import '../../../features/bookings/bookings.dart';
+import '../../../general_utils/app_theme_colors.dart';
 import '../../shared/star_rating_display.dart';
 
 class SalonBarbersPickerDialog extends StatefulWidget {
@@ -397,8 +397,9 @@ class _SalonBarberCard extends StatelessWidget {
 
                     StarRatingDisplay(
                       rating: barber.rating,
-                      ratingCount: 27,
-                      satisfactionRate: 96,
+                      ratingCount: barber.ratingCount,
+                      satisfactionRate: barber.satisfactionRate,
+                      ratingBreakdown: barber.ratingBreakdown,
                       starSize: 14,
                       enableDetailsPopup: false,
                     ),

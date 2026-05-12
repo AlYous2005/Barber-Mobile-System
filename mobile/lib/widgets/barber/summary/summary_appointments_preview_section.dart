@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/mock_appointment.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/bookings/bookings.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class AppointmentsPreviewSection extends StatelessWidget {
   const AppointmentsPreviewSection({

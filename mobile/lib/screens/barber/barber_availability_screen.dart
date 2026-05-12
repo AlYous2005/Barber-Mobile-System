@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/barber/barber_availability_controller.dart';
-import '../../models/availability_models.dart';
+import '../../features/barber/schedule/schedule.dart';
 import '../../widgets/barber/availability/availability_add_cards.dart';
 import '../../widgets/barber/availability/availability_confirm_dialog.dart';
 import '../../widgets/barber/availability/availability_intro_card.dart';
@@ -11,6 +11,7 @@ import '../../widgets/barber/availability/availability_subnav.dart';
 import '../../widgets/barber/availability/edit_closure_sheet.dart';
 import '../../widgets/barber/availability/edit_time_block_sheet.dart';
 import '../../widgets/barber/shared/barber_feedback_popup.dart';
+import '../../widgets/shared/app_date_picker_sheet.dart';
 
 class BarberAvailabilityScreen extends StatefulWidget {
   const BarberAvailabilityScreen({super.key});
@@ -38,19 +39,16 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
 
   Future<void> _pickClosureDate() async {
     final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime maxDate = today.add(const Duration(days: 365));
 
-    final DateTime? pickedDate = await showDatePicker(
+    final DateTime? pickedDate = await showAppDatePickerSheet(
       context: context,
-      initialDate: controller.selectedClosureDate ?? now,
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
-      locale: const Locale('ar'),
-      builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
+      initialDate: controller.selectedClosureDate ?? today,
+      title: 'تاريخ الإغلاق',
+      subtitle: 'اختر الشهر واليوم بالسحب',
+      minSelectableDate: today,
+      maxSelectableDate: maxDate,
     );
 
     if (pickedDate == null) return;
@@ -60,19 +58,16 @@ class _BarberAvailabilityScreenState extends State<BarberAvailabilityScreen> {
 
   Future<void> _pickTimeBlockDate() async {
     final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime maxDate = today.add(const Duration(days: 365));
 
-    final DateTime? pickedDate = await showDatePicker(
+    final DateTime? pickedDate = await showAppDatePickerSheet(
       context: context,
-      initialDate: controller.selectedTimeBlockDate ?? now,
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
-      locale: const Locale('ar'),
-      builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
+      initialDate: controller.selectedTimeBlockDate ?? today,
+      title: 'تاريخ فترة عدم التوفر',
+      subtitle: 'اختر الشهر واليوم بالسحب',
+      minSelectableDate: today,
+      maxSelectableDate: maxDate,
     );
 
     if (pickedDate == null) return;

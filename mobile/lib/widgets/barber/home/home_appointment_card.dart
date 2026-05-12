@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/mock_appointment.dart';
-import '../../../utils/app_theme_colors.dart';
-import '../../../utils/appointment_status_utils.dart';
-import '../../../utils/booking_formatters.dart';
+import '../../../features/bookings/bookings.dart';
+import '../../../general_utils/app_theme_colors.dart';
+
+import '../../shared/appointment_status_pulse_hint.dart';
 import '../shared/user_avatar_box.dart';
 
 class HomeAppointmentCard extends StatelessWidget {
@@ -76,7 +76,11 @@ class HomeAppointmentCard extends StatelessWidget {
                       : const SizedBox.shrink(),
                 ),
               ),
-              HomeAppointmentStatusBadge(status: appointment.status),
+              AppointmentStatusPulseHint(
+                arabicStatus: appointment.status,
+                audience: AppointmentStatusAudience.barber,
+                cancelledBy: appointment.cancelledBy,
+              ),
             ],
           ),
 
@@ -241,73 +245,6 @@ class HomeAppointmentDetailLine extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class HomeAppointmentStatusBadge extends StatelessWidget {
-  const HomeAppointmentStatusBadge({super.key, required this.status});
-
-  final String status;
-
-  String get label {
-    return AppointmentStatusUtils.displayLabel(status);
-  }
-
-  Color get textColor {
-    switch (status) {
-      case 'مؤكد':
-        return const Color(0xFF1E4A36);
-      case 'ملغي':
-      case 'ملغية':
-        return const Color(0xFF7A2E2A);
-      case 'لم يحضر':
-        return const Color(0xFF6B3D28);
-      case 'مكتمل':
-      case 'مكتملة':
-        return const Color(0xFF2C4F78);
-      default:
-        return const Color(0xFF4C3D66);
-    }
-  }
-
-  List<Color> get gradientColors {
-    switch (status) {
-      case 'مؤكد':
-        return const [Color(0xFFE8F2EC), Color(0xFFD4E8DC)];
-      case 'ملغي':
-      case 'ملغية':
-        return const [Color(0xFFF8E9E8), Color(0xFFEFD5D3)];
-      case 'لم يحضر':
-        return const [Color(0xFFFAF3EB), Color(0xFFF0E0D0)];
-      case 'مكتمل':
-      case 'مكتملة':
-        return const [Color(0xFFE8EEF6), Color(0xFFD6E2F0)];
-      default:
-        return const [Color(0xFFF2EEF8), Color(0xFFE6DFF0)];
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: gradientColors),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: textColor.withValues(alpha: 0.22)),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w900,
-            color: textColor,
-          ),
-        ),
-      ),
     );
   }
 }

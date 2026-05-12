@@ -4,21 +4,21 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../controllers/customer/customer_home_controller.dart';
-import '../../models/customer_profile_result.dart';
-import '../../models/mock_appointment.dart';
-import '../../utils/app_theme_colors.dart';
+import '../../features/customer/profile/customer_profile.dart';
+import '../../features/bookings/bookings.dart';
+import '../../general_utils/app_theme_colors.dart';
 import '../../widgets/customer/appointments/cancel_appointment_dialog.dart';
 import '../../widgets/customer/appointments/rating_dialog.dart';
 import '../../widgets/customer/home/customer_appointments_section.dart';
 import '../../widgets/customer/home/customer_booking_cta_card.dart';
 import '../../widgets/customer/home/customer_home_top_bar.dart';
-import '../../widgets/customer/home/customer_notifications_dropdown.dart';
+import '../../features/notifications/widgets/customer_notifications_dropdown.dart';
 import '../../widgets/customer/home/customer_section_title_card.dart';
 import '../../widgets/customer/shared/customer_feedback_popup.dart';
 import 'customer_booking_screen.dart';
 import 'customer_profile_screen.dart';
 
-import 'customer_settings_screen.dart';
+import '../../features/settings/settings.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({
@@ -37,6 +37,16 @@ class CustomerHomeScreen extends StatefulWidget {
 class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     with SingleTickerProviderStateMixin {
   late final CustomerHomeController controller;
+
+  static const double _appointmentsScrollLoadThresholdPx = 140;
+
+  bool _appointmentsScrollNearBottom(ScrollMetrics metrics) {
+    if (!metrics.hasPixels || !metrics.hasViewportDimension) {
+      return false;
+    }
+    return metrics.pixels >=
+        metrics.maxScrollExtent - _appointmentsScrollLoadThresholdPx;
+  }
 
   late final AnimationController _greetingAnimController;
   late final Animation<double> _greetingFade;
@@ -147,7 +157,31 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
     if (!mounted || shouldCancel != true) return;
 
-    controller.cancelAppointmentLocally(appointment);
+    try {
+      await controller.cancelAppointment(appointment);
+    } catch (error) {
+      if (!mounted) return;
+
+      if (error is CustomerAppointmentAlreadyStartedException) {
+        await showCustomerFeedbackPopup(
+          context: context,
+          title: 'لا يمكن إلغاء الموعد',
+          message: 'لا يمكنك إلغاء هذا الموعد لأنه بدأ بالفعل. يرجى مراجعة الحلاق.',
+          icon: Icons.lock_clock_rounded,
+          iconStartColor: const Color(0xFFF59E0B),
+          iconEndColor: const Color(0xFFFCD34D),
+        );
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر إلغاء الموعد، حاول مرة أخرى')),
+      );
+
+      return;
+    }
+
+    if (!mounted) return;
 
     await showCustomerFeedbackPopup(
       context: context,
@@ -168,6 +202,28 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     );
 
     if (!mounted || selectedStars == null) return;
+
+    try {
+      await controller.submitAppointmentRating(
+        appointment: appointment,
+        rating: selectedStars,
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      await showCustomerFeedbackPopup(
+        context: context,
+        title: 'تعذر إرسال التقييم',
+        message: 'قد تكون قيّمت هذا الموعد سابقًا أو أن الموعد غير مكتمل بعد.',
+        icon: Icons.error_outline_rounded,
+        iconStartColor: const Color(0xFFEF4444),
+        iconEndColor: const Color(0xFFFCA5A5),
+      );
+
+      return;
+    }
+
+    if (!mounted) return;
 
     if (selectedStars > 4) {
       await showCustomerFeedbackPopup(
@@ -213,7 +269,23 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
             body: SafeArea(
               child: Stack(
                 children: [
-                  SingleChildScrollView(
+                  NotificationListener<ScrollNotification>(
+                    onNotification: (ScrollNotification notification) {
+                      if (notification is! ScrollUpdateNotification &&
+                          notification is! OverscrollNotification) {
+                        return false;
+                      }
+                      if (!controller.hasMoreAppointments ||
+                          controller.isLoadingMoreAppointments ||
+                          controller.isLoadingAppointments) {
+                        return false;
+                      }
+                      if (_appointmentsScrollNearBottom(notification.metrics)) {
+                        controller.loadMoreAppointments();
+                      }
+                      return false;
+                    },
+                    child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -225,6 +297,10 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                           onProfileTap: _openProfile,
                           onNotificationsTap:
                               controller.toggleNotificationsDropdown,
+                          shouldAnimateNotificationBell:
+                              controller.shouldAnimateNotificationBell,
+                          onNotificationAnimationConsumed:
+                              controller.consumeNotificationBellAnimation,
                           onSettingsTap: _openSettings,
                           onLogoutTap: widget.onLogout,
                         ),
@@ -317,7 +393,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                               ],
                             ),
                           )
-                        else
+                        else ...[
                           CustomerAppointmentsSection(
                             selectedTab: controller.selectedAppointmentsTab,
                             upcomingAppointments:
@@ -331,7 +407,22 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                               _rebookAppointment(appointment);
                             },
                           ),
+                          if (controller.isLoadingMoreAppointments)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 26,
+                                  height: 26,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.4,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ],
+                    ),
                     ),
                   ),
 
@@ -359,6 +450,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                         notifications: controller.customerNotifications,
                         onMarkAllAsRead: controller.markAllNotificationsAsRead,
                         onClose: controller.closeNotificationsDropdown,
+                        onNearEndScroll:
+                            controller.loadMoreCustomerNotifications,
+                        isLoadingMore:
+                            controller.isLoadingMoreCustomerNotifications,
+                        hasMoreNotifications:
+                            controller.hasMoreCustomerNotifications,
                       ),
                     ),
                 ],

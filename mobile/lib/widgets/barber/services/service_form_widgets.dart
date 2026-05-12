@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../features/barber/services_management/services_management.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class ServiceTextField extends StatefulWidget {
   const ServiceTextField({
@@ -542,6 +543,134 @@ class CardButton extends StatelessWidget {
       icon: icon,
       color: color,
       onTap: onTap,
+    );
+  }
+}
+
+class ServiceTargetSelector extends StatelessWidget {
+  const ServiceTargetSelector({
+    super.key,
+    required this.selectedTarget,
+    required this.onChanged,
+  });
+
+  final ServiceTarget selectedTarget;
+  final ValueChanged<ServiceTarget> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'لمن هذه الخدمة؟',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+            color: AppThemeColors.textSecondary(context),
+          ),
+        ),
+        const SizedBox(height: 9),
+        Row(
+          children: [
+            Expanded(
+              child: _ServiceTargetChip(
+                label: ServiceTarget.personal.arabicLabel,
+                icon: Icons.person_rounded,
+                isSelected: selectedTarget == ServiceTarget.personal,
+                onTap: () => onChanged(ServiceTarget.personal),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _ServiceTargetChip(
+                label: ServiceTarget.child.arabicLabel,
+                icon: Icons.child_care_rounded,
+                isSelected: selectedTarget == ServiceTarget.child,
+                onTap: () => onChanged(ServiceTarget.child),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _ServiceTargetChip(
+                label: ServiceTarget.elderly.arabicLabel,
+                icon: Icons.elderly_rounded,
+                isSelected: selectedTarget == ServiceTarget.elderly,
+                onTap: () => onChanged(ServiceTarget.elderly),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ServiceTargetChip extends StatelessWidget {
+  const _ServiceTargetChip({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color selectedColor = AppThemeColors.brandBrown(context);
+
+    return Material(
+      color: isSelected
+          ? selectedColor.withValues(alpha: 0.14)
+          : AppThemeColors.softCard(context),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? selectedColor
+                  : AppThemeColors.border(context),
+              width: isSelected ? 1.4 : 1,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: isSelected
+                    ? selectedColor
+                    : AppThemeColors.textSecondary(context),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: isSelected
+                      ? selectedColor
+                      : AppThemeColors.textPrimary(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

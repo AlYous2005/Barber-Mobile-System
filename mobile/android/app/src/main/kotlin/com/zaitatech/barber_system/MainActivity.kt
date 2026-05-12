@@ -1,7 +1,5 @@
 package com.zaitatech.barber_system
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
-
-com.haat.palestine.system.1234
+class MainActivity : FlutterFragmentActivity()

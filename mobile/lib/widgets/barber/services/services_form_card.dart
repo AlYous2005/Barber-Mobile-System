@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 import 'service_form_widgets.dart';
+import 'service_icon_selector.dart';
+import 'service_image_picker_card.dart';
+import '../../../features/barber/services_management/services_management.dart';
 
 class ServicesFormCard extends StatelessWidget {
   const ServicesFormCard({
@@ -15,6 +18,14 @@ class ServicesFormCard extends StatelessWidget {
     required this.onDecreasePrice,
     required this.onSubmit,
     required this.onReset,
+    required this.selectedTarget,
+    required this.onTargetChanged,
+    required this.selectedIconKey,
+    required this.onIconChanged,
+    required this.selectedImageUrl,
+    required this.isUploadingImage,
+    required this.onPickImage,
+    required this.onClearImage,
     this.serviceNameError,
     this.durationError,
     this.priceError,
@@ -33,6 +44,14 @@ class ServicesFormCard extends StatelessWidget {
   final VoidCallback onDecreasePrice;
   final VoidCallback onSubmit;
   final VoidCallback onReset;
+  final ServiceTarget selectedTarget;
+  final ValueChanged<ServiceTarget> onTargetChanged;
+  final String selectedIconKey;
+  final ValueChanged<String> onIconChanged;
+  final String? selectedImageUrl;
+  final bool isUploadingImage;
+  final VoidCallback onPickImage;
+  final VoidCallback onClearImage;
 
   final String? serviceNameError;
   final String? durationError;
@@ -148,6 +167,29 @@ class ServicesFormCard extends StatelessWidget {
             onDecrease: onDecreasePrice,
             errorText: priceError,
             shakeTrigger: priceShakeTrigger,
+          ),
+
+          const SizedBox(height: 14),
+
+          ServiceTargetSelector(
+            selectedTarget: selectedTarget,
+            onChanged: onTargetChanged,
+          ),
+
+          const SizedBox(height: 14),
+
+          ServiceIconSelector(
+            selectedIconKey: selectedIconKey,
+            onChanged: onIconChanged,
+          ),
+
+          const SizedBox(height: 14),
+
+          ServiceImagePickerCard(
+            imageUrl: selectedImageUrl,
+            isUploading: isUploadingImage,
+            onPickImage: onPickImage,
+            onClearImage: onClearImage,
           ),
 
           const SizedBox(height: 18),

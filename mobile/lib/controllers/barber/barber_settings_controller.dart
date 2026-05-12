@@ -5,9 +5,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../main.dart';
-import '../../repositories/barber_avatar_repository.dart';
-import '../../repositories/barber_salon_image_repository.dart';
-import '../../repositories/user_settings_repository.dart';
+import '../../features/barber/profile/barber_profile.dart';
+import '../../features/bookings/utils/booking_window_helper.dart';
+import '../../features/settings/settings.dart';
 import '../../services/auth_session.dart';
 
 class BarberSettingsController extends ChangeNotifier {
@@ -15,19 +15,27 @@ class BarberSettingsController extends ChangeNotifier {
     UserSettingsRepository? userSettingsRepository,
     BarberSalonImageRepository? barberSalonImageRepository,
     BarberAvatarRepository? barberAvatarRepository,
+    BarberBookingWindowRepository? barberBookingWindowRepository,
   }) : _userSettingsRepository =
            userSettingsRepository ?? const UserSettingsRepository(),
        _barberSalonImageRepository =
            barberSalonImageRepository ?? const BarberSalonImageRepository(),
        _barberAvatarRepository =
-           barberAvatarRepository ?? const BarberAvatarRepository();
+           barberAvatarRepository ?? const BarberAvatarRepository(),
+       _barberBookingWindowRepository =
+           barberBookingWindowRepository ?? const BarberBookingWindowRepository();
 
   final UserSettingsRepository _userSettingsRepository;
   final BarberSalonImageRepository _barberSalonImageRepository;
   final BarberAvatarRepository _barberAvatarRepository;
+  final BarberBookingWindowRepository _barberBookingWindowRepository;
 
   bool notificationsEnabled = true;
   bool isDarkMode = false;
+
+  bool bookingWindowEnabled = false;
+  BookingWindowType bookingWindowType = BookingWindowType.month;
+  bool isSavingBookingWindow = false;
 
   bool hasSalonImage = false;
   bool hasBarberAvatar = false;
@@ -86,6 +94,20 @@ class BarberSettingsController extends ChangeNotifier {
         );
 
         hasSalonImage = salonImageUrl != null && salonImageUrl!.isNotEmpty;
+
+        try {
+          final bookingWindow = await _barberBookingWindowRepository
+              .fetchForBarber(barberId: barberId);
+          if (bookingWindow != null) {
+            bookingWindowEnabled = bookingWindow.enabled;
+            bookingWindowType = BookingWindowType.fromStorage(
+              bookingWindow.type,
+            );
+          }
+        } catch (_) {
+          bookingWindowEnabled = false;
+          bookingWindowType = BookingWindowType.month;
+        }
       }
     } catch (error) {
       settingsErrorMessage = error.toString();
@@ -123,6 +145,66 @@ class BarberSettingsController extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Future<void> setBookingWindowEnabled(bool value) async {
+    final String barberId = _currentBarberId;
+    if (barberId.isEmpty) {
+      return;
+    }
+
+    final bool oldEnabled = bookingWindowEnabled;
+    bookingWindowEnabled = value;
+    notifyListeners();
+
+    isSavingBookingWindow = true;
+    notifyListeners();
+
+    try {
+      await _barberBookingWindowRepository.updateForBarber(
+        barberId: barberId,
+        enabled: value,
+        bookingWindowType: bookingWindowType.storageValue,
+      );
+    } catch (error) {
+      bookingWindowEnabled = oldEnabled;
+      settingsErrorMessage = error.toString();
+    } finally {
+      isSavingBookingWindow = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> setBookingWindowType(BookingWindowType type) async {
+    final String barberId = _currentBarberId;
+    if (barberId.isEmpty) {
+      return;
+    }
+
+    final BookingWindowType oldType = bookingWindowType;
+    bookingWindowType = type;
+    notifyListeners();
+
+    if (!bookingWindowEnabled) {
+      return;
+    }
+
+    isSavingBookingWindow = true;
+    notifyListeners();
+
+    try {
+      await _barberBookingWindowRepository.updateForBarber(
+        barberId: barberId,
+        enabled: true,
+        bookingWindowType: type.storageValue,
+      );
+    } catch (error) {
+      bookingWindowType = oldType;
+      settingsErrorMessage = error.toString();
+    } finally {
+      isSavingBookingWindow = false;
+      notifyListeners();
+    }
   }
 
   Future<void> setThemeMode(bool value) async {

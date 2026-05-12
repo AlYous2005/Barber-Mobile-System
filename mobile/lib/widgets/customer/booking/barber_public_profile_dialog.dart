@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/barber_model.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/profile/barber_profile.dart';
+import '../../../general_utils/app_theme_colors.dart';
 import '../../shared/star_rating_display.dart';
 import 'salon_barbers_picker_dialog.dart';
 
@@ -183,10 +183,11 @@ class BarberPublicProfileDialog extends StatelessWidget {
                         Center(
                           child: StarRatingDisplay(
                             rating: barber.rating,
-                            ratingCount: 27,
-                            satisfactionRate: 96,
+                            ratingCount: barber.ratingCount,
+                            satisfactionRate: barber.satisfactionRate,
+                            ratingBreakdown: barber.ratingBreakdown,
                             starSize: 20,
-                            enableDetailsPopup: false,
+                            enableDetailsPopup: true,
                           ),
                         ),
 

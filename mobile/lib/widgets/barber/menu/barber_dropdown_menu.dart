@@ -11,6 +11,7 @@ class BarberDropdownMenu extends StatelessWidget {
     required this.onClose,
     required this.onServicesTap,
     required this.onAppointmentsTap,
+    required this.onCustomersTap,
     required this.onAvailabilityTap,
     required this.onWorkingHoursTap,
     required this.onSummaryTap,
@@ -22,6 +23,7 @@ class BarberDropdownMenu extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback onServicesTap;
   final VoidCallback onAppointmentsTap;
+  final VoidCallback onCustomersTap;
   final VoidCallback onAvailabilityTap;
   final VoidCallback onWorkingHoursTap;
   final VoidCallback onSummaryTap;
@@ -163,6 +165,12 @@ class BarberDropdownMenu extends StatelessWidget {
                             label: 'المواعيد',
                             icon: Icons.calendar_month_outlined,
                             onTap: onAppointmentsTap,
+                          ),
+
+                          BarberMenuItem(
+                            label: 'إدارة الزبائن',
+                            icon: Icons.groups_rounded,
+                            onTap: onCustomersTap,
                           ),
 
                           BarberMenuItem(

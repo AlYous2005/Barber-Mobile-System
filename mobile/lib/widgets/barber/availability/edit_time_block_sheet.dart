@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/availability_models.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/schedule/schedule.dart';
+import '../../../general_utils/app_theme_colors.dart';
+import '../../shared/app_date_picker_sheet.dart';
 import 'availability_shared_widgets.dart';
 import 'availability_sheet_widgets.dart';
 
@@ -50,19 +51,16 @@ class _EditTimeBlockSheetState extends State<EditTimeBlockSheet> {
 
   Future<void> _pickEditDate() async {
     final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime maxDate = today.add(const Duration(days: 365));
 
-    final DateTime? pickedDate = await showDatePicker(
+    final DateTime? pickedDate = await showAppDatePickerSheet(
       context: context,
-      initialDate: editDate ?? now,
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
-      locale: const Locale('ar'),
-      builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
+      initialDate: editDate ?? today,
+      title: 'تاريخ فترة عدم التوفر',
+      subtitle: 'اختر الشهر واليوم بالسحب',
+      minSelectableDate: today,
+      maxSelectableDate: maxDate,
     );
 
     if (pickedDate == null) return;

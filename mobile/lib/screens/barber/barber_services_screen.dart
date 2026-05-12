@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/barber/barber_services_controller.dart';
-import '../../models/ui_service_model.dart';
-import '../../utils/app_theme_colors.dart';
+import '../../features/barber/services_management/services_management.dart';
+import '../../general_utils/app_theme_colors.dart';
 import '../../widgets/barber/services/edit_service_sheet.dart';
 import '../../widgets/barber/services/service_card.dart';
 import '../../widgets/barber/services/service_confirm_dialog.dart';
@@ -22,6 +22,7 @@ class BarberServicesScreen extends StatefulWidget {
 
 class _BarberServicesScreenState extends State<BarberServicesScreen> {
   late final BarberServicesController controller;
+  ServiceTarget _listCategory = ServiceTarget.personal;
 
   @override
   void initState() {
@@ -29,6 +30,12 @@ class _BarberServicesScreenState extends State<BarberServicesScreen> {
 
     controller = BarberServicesController();
     controller.loadBarberServices();
+  }
+
+  List<UiService> _servicesForCategory(ServiceTarget target) {
+    return controller.services
+        .where((UiService s) => s.target == target)
+        .toList();
   }
 
   @override
@@ -98,6 +105,16 @@ class _BarberServicesScreenState extends State<BarberServicesScreen> {
   }
 
   void _addService() {
+    if (controller.isUploadingAddImage) {
+      _schedulePopup(
+        title: 'جاري رفع الصورة',
+        message: 'انتظر حتى يكتمل رفع صورة الخدمة ثم حاول الإضافة',
+        icon: Icons.cloud_upload_rounded,
+        iconStartColor: const Color(0xFFC47A3D),
+        iconEndColor: const Color(0xFFF6D38B),
+      );
+      return;
+    }
     if (!controller.validateAddForm()) {
       return;
     }
@@ -123,7 +140,10 @@ class _BarberServicesScreenState extends State<BarberServicesScreen> {
               iconStartColor: const Color(0xFFC47A3D),
               iconEndColor: const Color(0xFFF6D38B),
             );
-          } catch (_) {
+          } catch (error, stackTrace) {
+            debugPrint('ADD_SERVICE_ERROR: $error');
+            debugPrintStack(stackTrace: stackTrace);
+
             if (!mounted) return;
 
             _schedulePopup(
@@ -146,15 +166,31 @@ class _BarberServicesScreenState extends State<BarberServicesScreen> {
       confirmText: 'إعادة التعيين',
       confirmColor: const Color(0xFFC47A3D),
       onConfirm: () {
-        controller.resetForm();
+        Future.microtask(() async {
+          try {
+            await controller.resetForm();
 
-        _schedulePopup(
-          title: 'تم إعادة التعيين',
-          message: 'تمت إعادة تعيين الحقول',
-          icon: Icons.refresh_rounded,
-          iconStartColor: const Color(0xFF64748B),
-          iconEndColor: const Color(0xFFCBD5E1),
-        );
+            if (!mounted) return;
+
+            _schedulePopup(
+              title: 'تم إعادة التعيين',
+              message: 'تمت إعادة تعيين الحقول',
+              icon: Icons.refresh_rounded,
+              iconStartColor: const Color(0xFF64748B),
+              iconEndColor: const Color(0xFFCBD5E1),
+            );
+          } catch (_) {
+            if (!mounted) return;
+
+            _schedulePopup(
+              title: 'تعذر إعادة التعيين',
+              message: 'حدث خطأ أثناء حذف صورة الخدمة أو إعادة تعيين الحقول',
+              icon: Icons.error_outline_rounded,
+              iconStartColor: const Color(0xFFEF4444),
+              iconEndColor: const Color(0xFFFCA5A5),
+            );
+          }
+        });
       },
     );
   }
@@ -168,7 +204,17 @@ class _BarberServicesScreenState extends State<BarberServicesScreen> {
       builder: (context) {
         return EditServiceSheet(
           service: service,
-          onMessage: (_) {},
+          onMessage: (message) {
+            _schedulePopup(
+              title: 'تنبيه',
+              message: message,
+              icon: Icons.info_outline_rounded,
+              iconStartColor: const Color(0xFFC47A3D),
+              iconEndColor: const Color(0xFFF6D38B),
+            );
+          },
+          onPickImage: controller.pickAndUploadServiceImageUrl,
+          onDeleteImage: controller.deleteServiceImageByUrl,
           onSave: (updatedService) {
             Future.microtask(() async {
               try {
@@ -201,22 +247,162 @@ class _BarberServicesScreenState extends State<BarberServicesScreen> {
     );
   }
 
-  void _toggleServiceActive(UiService service) {
-    if (service.isActive) {
-      _showConfirmDialog(
-        title: 'تأكيد تعطيل الخدمة',
-        message: 'هل تريد تعطيل الخدمة "${service.name}"؟',
-        confirmText: 'تعطيل الخدمة',
-        confirmColor: const Color(0xFFEF4444),
-        onConfirm: () {
-          _setServiceActive(service: service, isActive: false);
-        },
-      );
-
+  Future<void> _onToggleServiceActive(UiService service) async {
+    if (!service.isActive) {
+      await _setServiceActive(service: service, isActive: true);
       return;
     }
 
-    _setServiceActive(service: service, isActive: true);
+    try {
+      final int activeCount = await controller
+          .countActiveAppointmentsForService(service.id);
+      if (!mounted) return;
+
+      if (activeCount == 0) {
+        await _setServiceActive(service: service, isActive: false);
+        return;
+      }
+
+      _showConfirmDialog(
+        title: 'تعطيل الخدمة',
+        message:
+            'يوجد مواعيد سارية مرتبطة بهذه الخدمة، هل تريد إلغاء هذه المواعيد وتعطيل الخدمة؟',
+        confirmText: 'نعم، إلغاء المواعيد وتعطيل الخدمة',
+        confirmColor: const Color(0xFFDC2626),
+        onConfirm: () {
+          Future.microtask(() async {
+            try {
+              await controller.cancelActiveAppointmentsForService(service.id);
+              await controller.setServiceActive(
+                service: service,
+                isActive: false,
+              );
+
+              if (!mounted) return;
+              _schedulePopup(
+                title: 'تم تعطيل الخدمة',
+                message: 'تم إلغاء المواعيد السارية وتعطيل الخدمة',
+                icon: Icons.toggle_off_rounded,
+                iconStartColor: const Color(0xFFEA580C),
+                iconEndColor: const Color(0xFFFDBA74),
+              );
+            } catch (_) {
+              if (!mounted) return;
+              _schedulePopup(
+                title: 'تعذر إكمال العملية',
+                message:
+                    'حدث خطأ أثناء إلغاء المواعيد أو تعطيل الخدمة، حاول مرة أخرى',
+                icon: Icons.error_outline_rounded,
+                iconStartColor: const Color(0xFFEF4444),
+                iconEndColor: const Color(0xFFFCA5A5),
+              );
+            }
+          });
+        },
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      _schedulePopup(
+        title: 'تعذر التحقق',
+        message: 'حدث خطأ أثناء التحقق من المواعيد المرتبطة',
+        icon: Icons.error_outline_rounded,
+        iconStartColor: const Color(0xFFEF4444),
+        iconEndColor: const Color(0xFFFCA5A5),
+      );
+    }
+  }
+
+  Future<void> _onArchiveService(UiService service) async {
+    try {
+      final int activeCount = await controller
+          .countActiveAppointmentsForService(service.id);
+      if (!mounted) return;
+
+      if (activeCount == 0) {
+        _showConfirmDialog(
+          title: 'حذف الخدمة من القائمة',
+          message: 'هل تريد حذف هذه الخدمة من قائمة خدماتك؟',
+          confirmText: 'نعم، حذفها من قائمتي',
+          confirmColor: const Color(0xFF92400E),
+          onConfirm: () {
+            Future.microtask(() async {
+              try {
+                await controller.archiveServiceById(service.id);
+
+                if (!mounted) return;
+                _schedulePopup(
+                  title: 'تم الحذف من القائمة',
+                  message:
+                      'تم إخفاء الخدمة؛ المواعيد السابقة لا تزال تعرض اسم الخدمة المحفوظ',
+                  icon: Icons.inventory_2_outlined,
+                  iconStartColor: const Color(0xFFC47A3D),
+                  iconEndColor: const Color(0xFFF6D38B),
+                );
+              } catch (_) {
+                if (!mounted) return;
+                _schedulePopup(
+                  title: 'تعذر الحذف',
+                  message:
+                      'حدث خطأ أثناء إخفاء الخدمة؛ تحقق من الاتصال وحاول مجددًا',
+                  icon: Icons.error_outline_rounded,
+                  iconStartColor: const Color(0xFFEF4444),
+                  iconEndColor: const Color(0xFFFCA5A5),
+                );
+              }
+            });
+          },
+        );
+        return;
+      }
+
+      _showConfirmDialog(
+        title: 'حذف الخدمة من القائمة',
+        message:
+            'يوجد مواعيد سارية مرتبطة بهذه الخدمة، هل تريد حذفها؟\n\n'
+            'سيتم إلغاء المواعيد القادمة المرتبطة بهذه الخدمة فقط. '
+            'المواعيد القديمة والمكتملة تبقى كما هي مع أسماء الخدمات المحفوظة.',
+        confirmText: 'نعم، إلغاء المواعيد السارية والحذف من القائمة',
+        confirmColor: const Color(0xFFDC2626),
+        onConfirm: () {
+          Future.microtask(() async {
+            try {
+              await controller.cancelActiveAppointmentsForService(service.id);
+              await controller.archiveServiceById(service.id);
+
+              if (!mounted) return;
+              _schedulePopup(
+                title: 'تم الحذف من القائمة',
+                message:
+                    'تم إلغاء المواعيد السارية وإخفاء الخدمة؛ السجلات القديمة محفوظة',
+                icon: Icons.inventory_2_outlined,
+                iconStartColor: const Color(0xFFC47A3D),
+                iconEndColor: const Color(0xFFF6D38B),
+              );
+            } catch (_) {
+              if (!mounted) return;
+              _schedulePopup(
+                title: 'تعذر إكمال العملية',
+                message: 'حدث خطأ أثناء إلغاء المواعيد أو إخفاء الخدمة',
+                icon: Icons.error_outline_rounded,
+                iconStartColor: const Color(0xFFEF4444),
+                iconEndColor: const Color(0xFFFCA5A5),
+              );
+            }
+          });
+        },
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      _schedulePopup(
+        title: 'تعذر التحقق',
+        message: 'حدث خطأ أثناء التحقق من المواعيد المرتبطة',
+        icon: Icons.error_outline_rounded,
+        iconStartColor: const Color(0xFFEF4444),
+        iconEndColor: const Color(0xFFFCA5A5),
+      );
+    }
   }
 
   Future<void> _setServiceActive({
@@ -258,24 +444,6 @@ class _BarberServicesScreenState extends State<BarberServicesScreen> {
     }
   }
 
-  void _viewLinkedAppointments(UiService service) {
-    _showConfirmDialog(
-      title: 'عرض المواعيد المرتبطة',
-      message: 'هل تريد فتح المواعيد المرتبطة بالخدمة "${service.name}"؟',
-      confirmText: 'عرض المواعيد',
-      confirmColor: const Color(0xFF0F766E),
-      onConfirm: () {
-        _schedulePopup(
-          title: 'لا توجد مواعيد مرتبطة',
-          message: 'لا توجد مواعيد مرتبطة بهذه الخدمة',
-          icon: Icons.event_available_rounded,
-          iconStartColor: const Color(0xFF0F766E),
-          iconEndColor: const Color(0xFF5EEAD4),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -306,6 +474,16 @@ class _BarberServicesScreenState extends State<BarberServicesScreen> {
                 const SizedBox(height: 18),
 
                 ServicesFormCard(
+                  selectedTarget: controller.selectedAddTarget,
+                  onTargetChanged: controller.changeAddTarget,
+                  selectedIconKey: controller.selectedAddIconKey,
+                  onIconChanged: controller.changeAddIconKey,
+                  selectedImageUrl: controller.selectedAddImageUrl,
+                  isUploadingImage: controller.isUploadingAddImage,
+                  onPickImage: controller.pickAndUploadAddServiceImage,
+                  onClearImage: () {
+                    Future.microtask(controller.clearAddServiceImage);
+                  },
                   serviceNameController: controller.serviceNameController,
                   durationController: controller.durationController,
                   priceController: controller.priceController,
@@ -359,16 +537,59 @@ class _BarberServicesScreenState extends State<BarberServicesScreen> {
                   )
                 else if (controller.services.isEmpty)
                   const EmptyServicesState()
-                else
-                  ...controller.services.map(
-                    (service) => ServiceCard(
-                      service: service,
-                      onEdit: () => _openEditServiceSheet(service),
-                      onViewAppointments: () =>
-                          _viewLinkedAppointments(service),
-                      onToggleActive: () => _toggleServiceActive(service),
+                else ...[
+                  ServicesTargetTabs(
+                    selected: _listCategory,
+                    onChanged: (ServiceTarget t) {
+                      setState(() {
+                        _listCategory = t;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 320),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0.04, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
+                    child: Builder(
+                      key: ValueKey<ServiceTarget>(_listCategory),
+                      builder: (BuildContext context) {
+                        final List<UiService> filtered = _servicesForCategory(
+                          _listCategory,
+                        );
+                        if (filtered.isEmpty) {
+                          return const EmptyCategoryServicesState();
+                        }
+                        return Column(
+                          children: filtered
+                              .map(
+                                (UiService service) => ServiceCard(
+                                  service: service,
+                                  onEdit: () => _openEditServiceSheet(service),
+                                  onArchive: () => _onArchiveService(service),
+                                  onToggleActive: () =>
+                                      _onToggleServiceActive(service),
+                                ),
+                              )
+                              .toList(),
+                        );
+                      },
                     ),
                   ),
+                ],
               ],
             ),
           ),

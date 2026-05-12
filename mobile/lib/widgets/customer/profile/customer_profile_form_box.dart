@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 import 'customer_profile_fields.dart';
 import 'customer_profile_shared_widgets.dart';
 

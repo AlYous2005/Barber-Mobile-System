@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class NotificationsIntroCard extends StatelessWidget {
   const NotificationsIntroCard({super.key, required this.unreadCount});

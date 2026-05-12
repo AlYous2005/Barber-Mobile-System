@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/barber/barber_summary_controller.dart';
-import '../../models/summary_models.dart';
-import '../../utils/app_theme_colors.dart';
+import '../../features/barber/profile/barber_profile.dart';
+import '../../general_utils/app_theme_colors.dart';
 import '../../widgets/barber/summary/summary_appointments_preview_section.dart';
 import '../../widgets/barber/summary/summary_distribution_section.dart';
 import '../../widgets/barber/summary/summary_filters_card.dart';
@@ -12,6 +12,7 @@ import '../../widgets/barber/summary/summary_grid.dart';
 import '../../widgets/barber/summary/summary_insights_section.dart';
 import '../../widgets/barber/summary/summary_intro_card.dart';
 import '../../widgets/barber/summary/summary_mini_strip.dart';
+import '../../widgets/shared/app_date_picker_sheet.dart';
 
 class BarberSummaryScreen extends StatefulWidget {
   const BarberSummaryScreen({super.key});
@@ -38,19 +39,16 @@ class _BarberSummaryScreenState extends State<BarberSummaryScreen> {
 
   Future<void> _pickSpecificDate() async {
     final DateTime now = DateTime.now();
+    final DateTime minDate = DateTime(now.year - 2, 1, 1);
+    final DateTime maxDate = DateTime(now.year + 1, 12, 31);
 
-    final DateTime? pickedDate = await showDatePicker(
+    final DateTime? pickedDate = await showAppDatePickerSheet(
       context: context,
       initialDate: controller.selectedSpecificDate ?? now,
-      firstDate: DateTime(now.year - 2),
-      lastDate: DateTime(now.year + 1),
-      locale: const Locale('ar'),
-      builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
+      title: 'اختر التاريخ',
+      subtitle: 'اختر الشهر واليوم بالسحب',
+      minSelectableDate: minDate,
+      maxSelectableDate: maxDate,
     );
 
     if (pickedDate == null) return;

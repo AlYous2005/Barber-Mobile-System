@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/ui_service_model.dart';
-import '../../../utils/app_theme_colors.dart';
-import '../../../utils/validators/service_field_validation.dart';
+import '../../../features/barber/services_management/services_management.dart';
+import '../../../general_utils/app_theme_colors.dart';
 import 'service_form_widgets.dart';
+import 'service_icon_selector.dart';
+import 'service_image_picker_card.dart';
 
 class EditServiceSheet extends StatefulWidget {
   const EditServiceSheet({
@@ -11,11 +12,15 @@ class EditServiceSheet extends StatefulWidget {
     required this.service,
     required this.onSave,
     required this.onMessage,
+    required this.onPickImage,
+    required this.onDeleteImage,
   });
 
   final UiService service;
   final ValueChanged<UiService> onSave;
   final ValueChanged<String> onMessage;
+  final Future<String?> Function() onPickImage;
+  final Future<void> Function(String? imageUrl) onDeleteImage;
 
   @override
   State<EditServiceSheet> createState() => _EditServiceSheetState();
@@ -29,6 +34,14 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
   late final String _originalName;
   late final int _originalDuration;
   late final int _originalPrice;
+  late final ServiceTarget _originalTarget;
+  late final String _originalIconKey;
+  late final String? _originalImageUrl;
+  late ServiceTarget selectedTarget;
+  late String selectedIconKey;
+  String? selectedImageUrl;
+  bool isUploadingImage = false;
+  bool _didSave = false;
 
   late final VoidCallback _onNameChanged;
   late final VoidCallback _onDurationChanged;
@@ -49,6 +62,13 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
     _originalName = widget.service.name.trim();
     _originalDuration = widget.service.durationMinutes;
     _originalPrice = widget.service.price.round();
+    _originalTarget = widget.service.target;
+    _originalIconKey =
+        widget.service.serviceIconKey ?? ServiceIconOptions.defaultKey;
+    _originalImageUrl = _cleanText(widget.service.serviceImageUrl);
+    selectedTarget = widget.service.target;
+    selectedIconKey = _originalIconKey;
+    selectedImageUrl = _originalImageUrl;
 
     nameController = TextEditingController(text: widget.service.name);
     durationController = TextEditingController(
@@ -80,7 +100,13 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
     final String n = nameController.text.trim();
     final int? d = int.tryParse(durationController.text.trim());
     final int? p = int.tryParse(priceController.text.trim());
-    return n != _originalName || d != _originalDuration || p != _originalPrice;
+
+    return n != _originalName ||
+        d != _originalDuration ||
+        p != _originalPrice ||
+        selectedTarget != _originalTarget ||
+        selectedIconKey != _originalIconKey ||
+        _cleanText(selectedImageUrl) != _originalImageUrl;
   }
 
   bool _validate() {
@@ -132,6 +158,81 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
     setState(() {});
   }
 
+  Future<void> _pickImage() async {
+    if (isUploadingImage) {
+      return;
+    }
+
+    final String? previousSelectedImageUrl = _cleanText(selectedImageUrl);
+
+    setState(() {
+      isUploadingImage = true;
+    });
+
+    try {
+      final String? uploadedUrl = await widget.onPickImage();
+
+      if (!mounted) {
+        return;
+      }
+
+      final String? cleanUploadedUrl = _cleanText(uploadedUrl);
+
+      if (cleanUploadedUrl != null) {
+        setState(() {
+          selectedImageUrl = cleanUploadedUrl;
+        });
+
+        final bool previousWasTemporary =
+            previousSelectedImageUrl != null &&
+            previousSelectedImageUrl != _originalImageUrl;
+
+        if (previousWasTemporary) {
+          await widget.onDeleteImage(previousSelectedImageUrl);
+        }
+      }
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      widget.onMessage('تعذر رفع صورة الخدمة، حاول مرة أخرى');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isUploadingImage = false;
+        });
+      }
+    }
+  }
+
+  void _clearImage() {
+    final String? imageUrlToDelete = _cleanText(selectedImageUrl);
+    final bool imageIsTemporary =
+        imageUrlToDelete != null && imageUrlToDelete != _originalImageUrl;
+
+    setState(() {
+      selectedImageUrl = null;
+    });
+
+    if (imageIsTemporary) {
+      Future.microtask(() => widget.onDeleteImage(imageUrlToDelete));
+    }
+  }
+
+  String? _cleanText(String? value) {
+    if (value == null) {
+      return null;
+    }
+
+    final String trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+
+    return trimmed;
+  }
+
   void _saveChanges() {
     if (!_hasChanges) return;
 
@@ -143,18 +244,51 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
     final int newDuration = int.parse(durationController.text.trim());
     final int newPriceInt = int.parse(priceController.text.trim());
 
+    final String? cleanImageUrl = _cleanText(selectedImageUrl);
+
     final updatedService = widget.service.copyWith(
+      target: selectedTarget,
       name: newName,
       durationMinutes: newDuration,
       price: newPriceInt.toDouble(),
+      serviceImageUrl: cleanImageUrl,
+      clearServiceImageUrl: cleanImageUrl == null,
+      serviceIconKey: selectedIconKey,
     );
+
+    _didSave = true;
 
     widget.onSave(updatedService);
     Navigator.of(context).pop();
   }
 
+  void _deleteTemporaryImageIfNeeded() {
+    if (_didSave) {
+      return;
+    }
+
+    final String? currentImageUrl = _cleanText(selectedImageUrl);
+
+    if (currentImageUrl == null) {
+      return;
+    }
+
+    if (currentImageUrl == _originalImageUrl) {
+      return;
+    }
+
+    Future.microtask(() => widget.onDeleteImage(currentImageUrl));
+  }
+
+  void _closeWithoutSaving() {
+    _deleteTemporaryImageIfNeeded();
+    Navigator.of(context).pop();
+  }
+
   @override
   void dispose() {
+    _deleteTemporaryImageIfNeeded();
+
     nameController.removeListener(_onNameChanged);
     durationController.removeListener(_onDurationChanged);
     priceController.removeListener(_onPriceChanged);
@@ -248,7 +382,7 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
                       ),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(14),
-                        onTap: () => Navigator.of(context).pop(),
+                        onTap: _closeWithoutSaving,
                         child: SizedBox(
                           width: 40,
                           height: 40,
@@ -299,6 +433,37 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
                   shakeTrigger: priceShakeTrigger,
                 ),
 
+                const SizedBox(height: 14),
+
+                ServiceTargetSelector(
+                  selectedTarget: selectedTarget,
+                  onChanged: (target) {
+                    setState(() {
+                      selectedTarget = target;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 14),
+
+                ServiceIconSelector(
+                  selectedIconKey: selectedIconKey,
+                  onChanged: (iconKey) {
+                    setState(() {
+                      selectedIconKey = iconKey;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 14),
+
+                ServiceImagePickerCard(
+                  imageUrl: selectedImageUrl,
+                  isUploading: isUploadingImage,
+                  onPickImage: _pickImage,
+                  onClearImage: _clearImage,
+                ),
+
                 const SizedBox(height: 18),
 
                 Row(
@@ -318,7 +483,7 @@ class _EditServiceSheetState extends State<EditServiceSheet> {
                       child: SecondaryActionButton(
                         label: 'إغلاق',
                         icon: Icons.close_rounded,
-                        onTap: () => Navigator.of(context).pop(),
+                        onTap: _closeWithoutSaving,
                       ),
                     ),
                   ],

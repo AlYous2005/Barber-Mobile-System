@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
-import '../../../models/booking_date_choice.dart';
+import '../../../general_utils/app_theme_colors.dart';
+import '../../../features/bookings/bookings.dart';
 
 class BookingDateSelector extends StatefulWidget {
   const BookingDateSelector({
@@ -10,12 +10,21 @@ class BookingDateSelector extends StatefulWidget {
     required this.customDate,
     required this.onChoiceChanged,
     required this.onCustomDateChanged,
+    this.useBookingWindow = false,
+    this.allowedBookingDates = const <DateTime>[],
+    this.onBookingWindowDateSelected,
   });
 
   final BookingDateChoice choice;
   final DateTime? customDate;
   final ValueChanged<BookingDateChoice> onChoiceChanged;
   final ValueChanged<DateTime> onCustomDateChanged;
+
+  /// When true and [allowedBookingDates] is non-empty, shows date chips only
+  /// (barber-defined booking window).
+  final bool useBookingWindow;
+  final List<DateTime> allowedBookingDates;
+  final ValueChanged<DateTime>? onBookingWindowDateSelected;
 
   @override
   State<BookingDateSelector> createState() => _BookingDateSelectorState();
@@ -75,6 +84,16 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
+  bool _isAllowedBookingWindowDate(DateTime date) {
+    return widget.allowedBookingDates.any((allowedDate) {
+      return _isSameDay(allowedDate, date);
+    });
+  }
+
+  bool get _isLongMonthBookingWindow {
+    return widget.useBookingWindow && widget.allowedBookingDates.length > 8;
+  }
+
   bool _isPastDate(DateTime date) {
     return date.isBefore(today);
   }
@@ -114,6 +133,75 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.useBookingWindow && widget.allowedBookingDates.isNotEmpty) {
+      final DateTime selected = resolveBookingDate(
+        widget.choice,
+        widget.customDate,
+      );
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'اختر يوم الموعد',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: AppThemeColors.textPrimary(context),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _BookingWindowHintCard(
+            dates: widget.allowedBookingDates,
+            today: today,
+            isSameDay: _isSameDay,
+          ),
+          const SizedBox(height: 12),
+          if (_isLongMonthBookingWindow)
+            _MonthBookingWindowPicker(
+              dates: widget.allowedBookingDates,
+              selectedDate: selected,
+              customDate: widget.customDate,
+              isCalendarOpen: isCalendarOpen,
+              today: today,
+              isSameDay: _isSameDay,
+              isAllowedDate: _isAllowedBookingWindowDate,
+              arabicWeekdayName: _arabicDayName,
+              dateLabel: _dateLabel,
+              onToggleCalendar: () {
+                setState(() {
+                  isCalendarOpen = !isCalendarOpen;
+                });
+              },
+              onDateSelected: (DateTime date) {
+                if (!_isAllowedBookingWindowDate(date)) {
+                  return;
+                }
+
+                widget.onBookingWindowDateSelected?.call(date);
+
+                setState(() {
+                  isCalendarOpen = false;
+                  selectedDatePulseKey++;
+                });
+              },
+            )
+          else
+            _ConstrainedDayCards(
+              dates: widget.allowedBookingDates,
+              selectedDate: selected,
+              onDateSelected: (DateTime date) {
+                widget.onBookingWindowDateSelected?.call(date);
+              },
+              isSameDay: _isSameDay,
+              arabicWeekdayName: _arabicDayName,
+              dateLabel: _dateLabel,
+              today: today,
+            ),
+        ],
+      );
+    }
+
     final String selectedCustomLabel = widget.customDate == null
         ? 'لم يتم اختيار تاريخ محدد'
         : _customDateWithDayLabel(widget.customDate!);
@@ -196,6 +284,465 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
   }
 }
 
+class _BookingWindowHintCard extends StatelessWidget {
+  const _BookingWindowHintCard({
+    required this.dates,
+    required this.today,
+    required this.isSameDay,
+  });
+
+  final List<DateTime> dates;
+  final DateTime today;
+  final bool Function(DateTime a, DateTime b) isSameDay;
+
+  String get _message {
+    if (dates.length == 1 && isSameDay(dates.first, today)) {
+      return 'هذا الحلاق يسمح لك بالحجز اليوم فقط.';
+    }
+
+    if (dates.length == 2 &&
+        isSameDay(dates.first, today) &&
+        isSameDay(dates[1], today.add(const Duration(days: 1)))) {
+      return 'هذا الحلاق يسمح لك بالحجز اليوم وغدًا فقط.';
+    }
+
+    if (dates.length >= 6 && dates.length <= 8) {
+      return 'هذا الحلاق يسمح لك بالحجز خلال الأسبوع الحالي.';
+    }
+
+    return 'هذا الحلاق يسمح لك بالحجز حتى نهاية الشهر الحالي.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: const Color(0xFFC47A3D).withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFC47A3D).withValues(alpha: 0.22),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.info_outline_rounded,
+            color: Color(0xFFC47A3D),
+            size: 21,
+          ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Text(
+              _message,
+              style: TextStyle(
+                color: AppThemeColors.textSecondary(context),
+                fontSize: 12.8,
+                fontWeight: FontWeight.w800,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConstrainedDayCards extends StatelessWidget {
+  const _ConstrainedDayCards({
+    required this.dates,
+    required this.selectedDate,
+    required this.onDateSelected,
+    required this.isSameDay,
+    required this.arabicWeekdayName,
+    required this.dateLabel,
+    required this.today,
+  });
+
+  final List<DateTime> dates;
+  final DateTime selectedDate;
+  final ValueChanged<DateTime> onDateSelected;
+  final bool Function(DateTime a, DateTime b) isSameDay;
+  final String Function(DateTime date) arabicWeekdayName;
+  final String Function(DateTime date) dateLabel;
+  final DateTime today;
+
+  String _mainLabelFor(DateTime date) {
+    if (isSameDay(date, today)) {
+      return 'اليوم';
+    }
+
+    if (isSameDay(date, today.add(const Duration(days: 1)))) {
+      return 'غدًا';
+    }
+
+    return arabicWeekdayName(date);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: dates.map((DateTime date) {
+        final bool selected = isSameDay(date, selectedDate);
+
+        return _BookingWindowDateCard(
+          date: date,
+          title: _mainLabelFor(date),
+          subtitle: dateLabel(date),
+          selected: selected,
+          onTap: () => onDateSelected(date),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _MonthBookingWindowPicker extends StatelessWidget {
+  const _MonthBookingWindowPicker({
+    required this.dates,
+    required this.selectedDate,
+    required this.customDate,
+    required this.isCalendarOpen,
+    required this.today,
+    required this.isSameDay,
+    required this.isAllowedDate,
+    required this.arabicWeekdayName,
+    required this.dateLabel,
+    required this.onToggleCalendar,
+    required this.onDateSelected,
+  });
+
+  final List<DateTime> dates;
+  final DateTime selectedDate;
+  final DateTime? customDate;
+  final bool isCalendarOpen;
+  final DateTime today;
+  final bool Function(DateTime a, DateTime b) isSameDay;
+  final bool Function(DateTime date) isAllowedDate;
+  final String Function(DateTime date) arabicWeekdayName;
+  final String Function(DateTime date) dateLabel;
+  final VoidCallback onToggleCalendar;
+  final ValueChanged<DateTime> onDateSelected;
+
+  DateTime get tomorrow => today.add(const Duration(days: 1));
+
+  DateTime? get _todayDate {
+    for (final DateTime date in dates) {
+      if (isSameDay(date, today)) {
+        return date;
+      }
+    }
+
+    return null;
+  }
+
+  DateTime? get _tomorrowDate {
+    for (final DateTime date in dates) {
+      if (isSameDay(date, tomorrow)) {
+        return date;
+      }
+    }
+
+    return null;
+  }
+
+  bool get _selectedIsTodayOrTomorrow {
+    return isSameDay(selectedDate, today) || isSameDay(selectedDate, tomorrow);
+  }
+
+  String get _customSelectedLabel {
+    if (_selectedIsTodayOrTomorrow) {
+      return 'اختر يومًا آخر من الشهر الحالي';
+    }
+
+    return '${arabicWeekdayName(selectedDate)} - ${dateLabel(selectedDate)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final DateTime visibleMonth = DateTime(today.year, today.month);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_todayDate != null)
+          _BookingWindowDateCard(
+            date: _todayDate!,
+            title: 'اليوم',
+            subtitle: dateLabel(_todayDate!),
+            selected: isSameDay(_todayDate!, selectedDate),
+            onTap: () => onDateSelected(_todayDate!),
+          ),
+
+        if (_tomorrowDate != null)
+          _BookingWindowDateCard(
+            date: _tomorrowDate!,
+            title: 'غدًا',
+            subtitle: dateLabel(_tomorrowDate!),
+            selected: isSameDay(_tomorrowDate!, selectedDate),
+            onTap: () => onDateSelected(_tomorrowDate!),
+          ),
+
+        _BookingWindowCustomDateCard(
+          selected: !_selectedIsTodayOrTomorrow,
+          selectedLabel: _customSelectedLabel,
+          isOpen: isCalendarOpen,
+          onTap: onToggleCalendar,
+        ),
+
+        if (isCalendarOpen) ...[
+          const SizedBox(height: 14),
+          _ArabicCalendarCard(
+            visibleMonth: visibleMonth,
+            selectedDate: selectedDate,
+            today: today,
+            isSameDay: isSameDay,
+            isPastDate: (DateTime date) {
+              return date.isBefore(today) || !isAllowedDate(date);
+            },
+            onPreviousMonth: () {},
+            onNextMonth: () {},
+            onSelectDate: onDateSelected,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _BookingWindowCustomDateCard extends StatelessWidget {
+  const _BookingWindowCustomDateCard({
+    required this.selected,
+    required this.selectedLabel,
+    required this.isOpen,
+    required this.onTap,
+  });
+
+  final bool selected;
+  final String selectedLabel;
+  final bool isOpen;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color activeColor = const Color(0xFFC47A3D);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: selected
+            ? activeColor.withValues(alpha: 0.12)
+            : AppThemeColors.card(context),
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.all(13),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: selected ? activeColor : AppThemeColors.border(context),
+                width: selected ? 1.7 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: selected
+                      ? activeColor.withValues(alpha: 0.16)
+                      : const Color(0x0D000000),
+                  blurRadius: selected ? 18 : 10,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? activeColor
+                        : activeColor.withValues(alpha: 0.11),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.edit_calendar_rounded,
+                    color: selected ? Colors.white : activeColor,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'اختيار تاريخ محدد',
+                        style: TextStyle(
+                          color: selected
+                              ? activeColor
+                              : AppThemeColors.textPrimary(context),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        selectedLabel,
+                        style: TextStyle(
+                          color: AppThemeColors.textSecondary(context),
+                          fontSize: 12.7,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  isOpen
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  color: activeColor,
+                  size: 26,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BookingWindowDateCard extends StatelessWidget {
+  const _BookingWindowDateCard({
+    required this.date,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final DateTime date;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color activeColor = const Color(0xFFC47A3D);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: selected
+            ? activeColor.withValues(alpha: 0.12)
+            : AppThemeColors.card(context),
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.all(13),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: selected ? activeColor : AppThemeColors.border(context),
+                width: selected ? 1.7 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: selected
+                      ? activeColor.withValues(alpha: 0.16)
+                      : const Color(0x0D000000),
+                  blurRadius: selected ? 18 : 10,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? activeColor
+                        : activeColor.withValues(alpha: 0.11),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.calendar_month_rounded,
+                    color: selected ? Colors.white : activeColor,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          color: selected
+                              ? activeColor
+                              : AppThemeColors.textPrimary(context),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: AppThemeColors.textSecondary(context),
+                          fontSize: 12.7,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: selected ? activeColor : Colors.transparent,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: selected
+                          ? activeColor
+                          : AppThemeColors.border(context),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: selected
+                      ? const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 21,
+                        )
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _DateChoiceCard extends StatelessWidget {
   const _DateChoiceCard({
     required this.label,
@@ -221,7 +768,7 @@ class _DateChoiceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 190),
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
@@ -244,8 +791,8 @@ class _DateChoiceCard extends StatelessWidget {
             children: [
               AnimatedContainer(
                 duration: const Duration(milliseconds: 190),
-                width: 42,
-                height: 42,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   color: selected
                       ? const Color(0xFFC47A3D)
@@ -258,19 +805,21 @@ class _DateChoiceCard extends StatelessWidget {
                   size: 21,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 7),
               Text(
                 label,
                 style: TextStyle(
                   color: AppThemeColors.textPrimary(context),
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 subtitle,
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: AppThemeColors.textSecondary(context),
                   fontSize: 11.5,

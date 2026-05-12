@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../models/availability_models.dart';
-import '../../repositories/barber_availability_repository.dart';
+import '../../features/barber/schedule/schedule.dart';
 import '../../services/auth_session.dart';
+import '../../features/barber/schedule/utils/arabic_time_formatter.dart';
 
 class BarberAvailabilityController extends ChangeNotifier {
   BarberAvailabilityController({
@@ -291,36 +291,15 @@ class BarberAvailabilityController extends ChangeNotifier {
   }
 
   String dateLabel(DateTime? date) {
-    if (date == null) return 'اختر التاريخ';
-    return '${date.day}/${date.month}/${date.year}';
+    return formatArabicDateLabel(date);
   }
 
   String formatTime(String value) {
-    final parts = value.split(':');
-    final hour = int.tryParse(parts.first) ?? 0;
-    final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
-
-    final time = TimeOfDay(hour: hour, minute: minute);
-    final displayHour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
-    final displayMinute = time.minute.toString().padLeft(2, '0');
-    final period = time.period == DayPeriod.am ? 'صباحًا' : 'مساءً';
-
-    return '$displayHour:$displayMinute $period';
+    return formatArabicTime(value);
   }
 
   bool isStartBeforeEnd(String start, String end) {
-    final List<String> startParts = start.split(':');
-    final List<String> endParts = end.split(':');
-
-    final int startMinutes =
-        ((int.tryParse(startParts[0]) ?? 0) * 60) +
-        (startParts.length > 1 ? int.tryParse(startParts[1]) ?? 0 : 0);
-
-    final int endMinutes =
-        ((int.tryParse(endParts[0]) ?? 0) * 60) +
-        (endParts.length > 1 ? int.tryParse(endParts[1]) ?? 0 : 0);
-
-    return startMinutes < endMinutes;
+    return isStartTimeBeforeEndTime(start, end);
   }
 
   @override

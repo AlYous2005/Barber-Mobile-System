@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/summary_models.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/profile/barber_profile.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class DistributionSection extends StatelessWidget {
   const DistributionSection({super.key, required this.snapshot});

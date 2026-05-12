@@ -13,13 +13,14 @@ import '../../widgets/barber/profile/barber_profile_sheet.dart';
 import '../../widgets/barber/timeline/barber_timeline_card.dart';
 import 'barber_appointments_screen.dart';
 import 'barber_availability_screen.dart';
-import 'barber_notifications_screen.dart';
+import '../../features/notifications/notifications.dart';
 import 'barber_services_screen.dart';
 import 'barber_settings_screen.dart';
 import 'barber_summary_screen.dart';
 import 'barber_working_hours_screen.dart';
-import '../../models/mock_appointment.dart';
+import '../../features/bookings/bookings.dart';
 import '../../widgets/barber/shared/barber_feedback_popup.dart';
+import 'barber_customers_screen.dart';
 
 class BarberHomeScreen extends StatefulWidget {
   const BarberHomeScreen({
@@ -38,6 +39,16 @@ class BarberHomeScreen extends StatefulWidget {
 class _BarberHomeScreenState extends State<BarberHomeScreen> {
   late final BarberHomeController controller;
 
+  static const double _appointmentsScrollLoadThresholdPx = 140;
+
+  bool _appointmentsScrollNearBottom(ScrollMetrics metrics) {
+    if (!metrics.hasPixels || !metrics.hasViewportDimension) {
+      return false;
+    }
+    return metrics.pixels >=
+        metrics.maxScrollExtent - _appointmentsScrollLoadThresholdPx;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +66,7 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
   }
 
   Future<void> _openNotifications() async {
+    controller.consumeNotificationBellAnimation();
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const BarberNotificationsScreen(),
@@ -77,6 +89,12 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
   void _openServices() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const BarberServicesScreen()),
+    );
+  }
+
+  void _openCustomers() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const BarberCustomersScreen()),
     );
   }
 
@@ -207,11 +225,24 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
                   } catch (error) {
                     if (!mounted) return;
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('تعذر تحديث حالة الموعد، حاول مرة أخرى'),
-                      ),
-                    );
+                    if (error is BarberAppointmentSyncConflictException) {
+                      await _showSuccessPopup(
+                        title: 'تم تحديث الموعد',
+                        message:
+                            'تعذر تحديث حالة الموعد , بسبب تغيير حالته من قبل الطرف الاخر. سيتم تحديث القوائم الان',
+                        icon: Icons.sync_problem_rounded,
+                        iconStartColor: const Color(0xFF2563EB),
+                        iconEndColor: const Color(0xFF93C5FD),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'تعذر تحديث حالة الموعد، حاول مرة أخرى',
+                          ),
+                        ),
+                      );
+                    }
                   }
                 },
                 child: Text(confirmText),
@@ -305,98 +336,136 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
             body: Stack(
               children: [
                 SafeArea(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        BarberHeader(
-                          userName: controller.barberDisplayName,
-                          rating: controller.barberRating,
-                          unreadNotifications: controller.unreadNotifications,
-                          onNotificationsTap: _openNotifications,
-                          onMenuTap: controller.openMenu,
-                        ),
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (ScrollNotification notification) {
+                      if (notification is! ScrollUpdateNotification &&
+                          notification is! OverscrollNotification) {
+                        return false;
+                      }
+                      if (!controller.hasMoreAppointments ||
+                          controller.isLoadingMoreAppointments ||
+                          controller.isLoadingAppointments) {
+                        return false;
+                      }
+                      if (_appointmentsScrollNearBottom(notification.metrics)) {
+                        controller.loadMoreAppointments();
+                      }
+                      return false;
+                    },
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          BarberHeader(
+                            userName: controller.barberDisplayName,
+                            rating: controller.barberRating,
+                            unreadNotifications: controller.unreadNotifications,
+                            onNotificationsTap: _openNotifications,
+                            shouldAnimateNotificationBell:
+                                controller.shouldAnimateNotificationBell,
+                            onNotificationAnimationConsumed:
+                                controller.consumeNotificationBellAnimation,
+                            onMenuTap: controller.openMenu,
+                          ),
 
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        BarberProfilePreview(
-                          avatarUrl: controller.barberAvatarUrl,
-                          rating: controller.barberRating,
-                          onTap: _openBarberProfile,
-                        ),
+                          BarberProfilePreview(
+                            avatarUrl: controller.barberAvatarUrl,
+                            rating: controller.barberRating,
+                            ratingCount: controller.barberRatingCount,
+                            satisfactionRate: controller.barberSatisfactionRate,
+                            ratingBreakdown: controller.barberRatingBreakdown,
+                            onTap: _openBarberProfile,
+                          ),
 
-                        const SizedBox(height: 18),
+                          const SizedBox(height: 18),
 
-                        BarberTimelineCard(
-                          currentAppointment:
-                              controller.currentTimelineAppointment,
-                          upcomingAppointment:
-                              controller.upcomingTimelineAppointment,
-                          showCurrent: controller.showCurrent,
-                          onToggle: controller.toggleTimelineMode,
-                        ),
+                          BarberTimelineCard(
+                            currentAppointment:
+                                controller.currentTimelineAppointment,
+                            upcomingAppointment:
+                                controller.upcomingTimelineAppointment,
+                            showCurrent: controller.showCurrent,
+                            onToggle: controller.toggleTimelineMode,
+                          ),
 
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        HomeStatsSection(
-                          selectedAppointmentFilter:
-                              controller.selectedAppointmentFilter,
-                          pendingAppointmentsCount:
-                              controller.pendingAppointmentsCount,
-                          confirmedAppointmentsCount:
-                              controller.confirmedAppointmentsCount,
-                          completedAppointmentsCount:
-                              controller.completedAppointmentsCount,
-                          cancelledAppointmentsCount:
-                              controller.cancelledAppointmentsCount,
-                          onFilterChanged: controller.changeAppointmentFilter,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        HomeAppointmentsHeader(
-                          title: controller.appointmentsSectionTitle,
-                          onShowAll: controller.showAllAppointments,
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        if (controller.isLoadingAppointments)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Center(child: CircularProgressIndicator()),
-                          )
-                        else if (controller.appointmentsErrorMessage != null)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Text(
-                              controller.appointmentsErrorMessage!,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          )
-                        else if (controller.filteredAppointments.isEmpty)
-                          HomeAppointmentsEmptyState(
+                          HomeStatsSection(
                             selectedAppointmentFilter:
                                 controller.selectedAppointmentFilter,
-                          )
-                        else
-                          ...controller.filteredAppointments.map(
-                            (appointment) => HomeAppointmentCard(
-                              appointment: appointment,
-                              onConfirm: () =>
-                                  _handleConfirmAppointment(appointment),
-                              onMarkCompleted: () =>
-                                  _handleCompleteAppointment(appointment),
-                              onNoShow: () => _handleNoShow(appointment),
-                              onCancel: () =>
-                                  _handleCancelAppointment(appointment),
-                            ),
+                            pendingAppointmentsCount:
+                                controller.pendingAppointmentsCount,
+                            confirmedAppointmentsCount:
+                                controller.confirmedAppointmentsCount,
+                            completedAppointmentsCount:
+                                controller.completedAppointmentsCount,
+                            cancelledAppointmentsCount:
+                                controller.cancelledAppointmentsCount,
+                            onFilterChanged: controller.changeAppointmentFilter,
                           ),
-                      ],
+
+                          const SizedBox(height: 16),
+
+                          HomeAppointmentsHeader(
+                            title: controller.appointmentsSectionTitle,
+                            onShowAll: controller.showAllAppointments,
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          if (controller.isLoadingAppointments)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          else if (controller.appointmentsErrorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: Text(
+                                controller.appointmentsErrorMessage!,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            )
+                          else if (controller.filteredAppointments.isEmpty)
+                            HomeAppointmentsEmptyState(
+                              selectedAppointmentFilter:
+                                  controller.selectedAppointmentFilter,
+                            )
+                          else ...[
+                            ...controller.filteredAppointments.map(
+                              (appointment) => HomeAppointmentCard(
+                                appointment: appointment,
+                                onConfirm: () =>
+                                    _handleConfirmAppointment(appointment),
+                                onMarkCompleted: () =>
+                                    _handleCompleteAppointment(appointment),
+                                onNoShow: () => _handleNoShow(appointment),
+                                onCancel: () =>
+                                    _handleCancelAppointment(appointment),
+                              ),
+                            ),
+                            if (controller.isLoadingMoreAppointments)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 20),
+                                child: Center(
+                                  child: SizedBox(
+                                    width: 26,
+                                    height: 26,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.4,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -409,6 +478,9 @@ class _BarberHomeScreenState extends State<BarberHomeScreen> {
                   },
                   onAppointmentsTap: () {
                     _closeMenuThenAsync(_openAppointments);
+                  },
+                  onCustomersTap: () {
+                    _closeMenuThen(_openCustomers);
                   },
                   onAvailabilityTap: () {
                     _closeMenuThen(_openAvailability);

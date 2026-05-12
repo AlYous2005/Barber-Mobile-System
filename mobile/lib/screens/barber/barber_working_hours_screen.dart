@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/barber/barber_working_hours_controller.dart';
-import '../../models/working_day_model.dart';
-import '../../utils/app_theme_colors.dart';
+import '../../features/barber/schedule/schedule.dart';
+import '../../general_utils/app_theme_colors.dart';
 import '../../widgets/barber/shared/barber_feedback_popup.dart';
 import '../../widgets/barber/working_hours/working_day_card.dart';
 import '../../widgets/barber/working_hours/working_hours_edit_sheet.dart';

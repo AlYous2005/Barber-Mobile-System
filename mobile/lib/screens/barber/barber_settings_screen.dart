@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../controllers/barber/barber_settings_controller.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../widgets/barber/settings/booking_window_settings_card.dart';
 import '../../widgets/barber/settings/notifications_settings_card.dart';
 import '../../widgets/barber/settings/salon_image_settings_card.dart';
 import '../../widgets/barber/settings/settings_intro_card.dart';
@@ -298,6 +299,20 @@ class _BarberSettingsScreenState extends State<BarberSettingsScreen> {
                 NotificationsSettingsCard(
                   notificationsEnabled: controller.notificationsEnabled,
                   onToggle: _toggleNotifications,
+                ),
+
+                const SizedBox(height: 16),
+
+                BookingWindowSettingsCard(
+                  enabled: controller.bookingWindowEnabled,
+                  type: controller.bookingWindowType,
+                  isSaving: controller.isSavingBookingWindow,
+                  onToggleEnabled: (v) async {
+                    await controller.setBookingWindowEnabled(v);
+                  },
+                  onSelectType: (t) async {
+                    await controller.setBookingWindowType(t);
+                  },
                 ),
 
                 const SizedBox(height: 14),

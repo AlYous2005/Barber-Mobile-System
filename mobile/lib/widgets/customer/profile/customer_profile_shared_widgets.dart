@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class CustomerProfileCardShell extends StatelessWidget {
   const CustomerProfileCardShell({super.key, required this.child});

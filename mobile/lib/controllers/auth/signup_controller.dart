@@ -4,12 +4,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../models/pending_phone_signup.dart';
-import '../../services/auth_service.dart';
+import '../../features/auth/auth.dart';
+import '../../features/locations/locations.dart';
 
 class SignUpController extends ChangeNotifier {
-  SignUpController({AuthService authService = const AuthService()})
-    : _authService = authService {
+  SignUpController({
+    AuthService authService = const AuthService(),
+    LocationRepository locationRepository = const LocationRepository(),
+  }) : _authService = authService,
+       _locationRepository = locationRepository {
     _onFirstNameChanged = () {
       if (firstNameFieldError == null) return;
 
@@ -50,9 +53,11 @@ class SignUpController extends ChangeNotifier {
     phoneController.addListener(_onPhoneChanged);
     passwordController.addListener(_onPasswordChanged);
     confirmPasswordController.addListener(_onConfirmPasswordChanged);
+    loadGovernorates();
   }
 
   final AuthService _authService;
+  final LocationRepository _locationRepository;
 
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
@@ -74,11 +79,19 @@ class SignUpController extends ChangeNotifier {
   String selectedCountry = 'فلسطين';
   String? errorMessage;
   DateTime? selectedBirthDate;
+  List<GovernorateModel> governorates = <GovernorateModel>[];
+  List<AreaModel> areas = <AreaModel>[];
 
+  String? selectedGovernorateId;
+  String? selectedAreaId;
+
+  bool isLoadingGovernorates = false;
+  bool isLoadingAreas = false;
   String? firstNameFieldError;
   String? lastNameFieldError;
   String? phoneFieldError;
   String? birthDateFieldError;
+  String? areaFieldError;
   String? passwordFieldError;
   String? confirmPasswordFieldError;
 
@@ -102,6 +115,57 @@ class SignUpController extends ChangeNotifier {
   void changeBirthDate(DateTime date) {
     selectedBirthDate = date;
     birthDateFieldError = null;
+    areaFieldError = null;
+    notifyListeners();
+  }
+
+  Future<void> loadGovernorates() async {
+    isLoadingGovernorates = true;
+    notifyListeners();
+
+    try {
+      governorates = await _locationRepository.getActiveGovernorates();
+    } catch (_) {
+      governorates = <GovernorateModel>[];
+      showError('تعذر تحميل المحافظات، حاول مرة أخرى');
+    } finally {
+      isLoadingGovernorates = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> changeGovernorate(String? governorateId) async {
+    selectedGovernorateId = governorateId;
+    selectedAreaId = null;
+    areas = <AreaModel>[];
+    areaFieldError = null;
+
+    final String cleanGovernorateId = governorateId?.trim() ?? '';
+
+    if (cleanGovernorateId.isEmpty) {
+      notifyListeners();
+      return;
+    }
+
+    isLoadingAreas = true;
+    notifyListeners();
+
+    try {
+      areas = await _locationRepository.getActiveAreasByGovernorate(
+        governorateId: cleanGovernorateId,
+      );
+    } catch (_) {
+      areas = <AreaModel>[];
+      showError('تعذر تحميل المناطق، حاول مرة أخرى');
+    } finally {
+      isLoadingAreas = false;
+      notifyListeners();
+    }
+  }
+
+  void changeArea(String? areaId) {
+    selectedAreaId = areaId;
+    areaFieldError = null;
     notifyListeners();
   }
 
@@ -188,6 +252,14 @@ class SignUpController extends ChangeNotifier {
       throw SignUpControllerException(phoneValidationError);
     }
 
+    if (selectedAreaId == null || selectedAreaId!.trim().isEmpty) {
+      const String message = 'الرجاء اختيار منطقتك';
+      areaFieldError = message;
+      errorMessage = message;
+      notifyListeners();
+      throw const SignUpControllerException(message);
+    }
+
     loading = true;
     notifyListeners();
 
@@ -200,6 +272,7 @@ class SignUpController extends ChangeNotifier {
             password: passwordController.text,
             confirmPassword: confirmPasswordController.text,
             birthDate: selectedBirthDate,
+            areaId: selectedAreaId,
           );
 
       loading = false;

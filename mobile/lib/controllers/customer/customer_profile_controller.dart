@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../models/customer_profile_result.dart';
+import '../../features/customer/profile/customer_profile.dart';
 
 class CustomerProfileController extends ChangeNotifier {
   CustomerProfileController({

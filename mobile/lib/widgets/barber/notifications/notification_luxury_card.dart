@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/barber_notification_ui_model.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/notifications/models/barber_notification_ui_model.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class NotificationLuxuryCard extends StatelessWidget {
   const NotificationLuxuryCard({
@@ -162,6 +162,22 @@ class NotificationLuxuryCard extends StatelessWidget {
           actionText: 'فتح المواعيد',
           icon: Icons.calendar_month_rounded,
           color: Color(0xFF2563EB),
+        );
+
+      case NotificationType.customerAccessRequest:
+        return const NotificationVisual(
+          label: 'طلبات حجز',
+          actionText: 'فتح الطلبات',
+          icon: Icons.person_add_alt_1_rounded,
+          color: Color(0xFFC47A3D),
+        );
+
+      case NotificationType.customerAccessResponse:
+        return const NotificationVisual(
+          label: 'رد الطلب',
+          actionText: 'عرض الطلب',
+          icon: Icons.verified_user_rounded,
+          color: Color(0xFF16A34A),
         );
 
       case NotificationType.service:

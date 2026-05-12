@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/mock_appointment.dart';
-import '../../models/summary_models.dart';
-import '../../repositories/barber_summary_repository.dart';
-import '../../repositories/booking_repository.dart';
+import '../../features/bookings/bookings.dart';
+import '../../features/barber/profile/barber_profile.dart';
 import '../../services/auth_session.dart';
 
 class BarberSummaryController extends ChangeNotifier {

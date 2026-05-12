@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'animated_crown_name.dart';
 import 'header_icon_button.dart';
 import 'notification_header_button.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class BarberHeader extends StatelessWidget {
   const BarberHeader({
@@ -12,6 +12,8 @@ class BarberHeader extends StatelessWidget {
     required this.rating,
     required this.unreadNotifications,
     required this.onNotificationsTap,
+    this.shouldAnimateNotificationBell = false,
+    this.onNotificationAnimationConsumed,
     required this.onMenuTap,
   });
 
@@ -23,6 +25,8 @@ class BarberHeader extends StatelessWidget {
 
   final int unreadNotifications;
   final VoidCallback onNotificationsTap;
+  final bool shouldAnimateNotificationBell;
+  final VoidCallback? onNotificationAnimationConsumed;
   final VoidCallback onMenuTap;
 
   @override
@@ -100,6 +104,8 @@ class BarberHeader extends StatelessWidget {
               NotificationHeaderButton(
                 unreadCount: unreadNotifications,
                 onTap: onNotificationsTap,
+                shouldAnimate: shouldAnimateNotificationBell,
+                onAnimationConsumed: onNotificationAnimationConsumed,
               ),
             ],
           ),

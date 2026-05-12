@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/availability_models.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/schedule/schedule.dart';
+import '../../../general_utils/app_theme_colors.dart';
 import 'availability_shared_widgets.dart';
 
 class ClosuresList extends StatelessWidget {

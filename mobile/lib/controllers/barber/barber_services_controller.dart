@@ -2,15 +2,21 @@
 
 import 'package:flutter/material.dart';
 
-import '../../models/ui_service_model.dart';
-import '../../repositories/service_repository.dart';
+import '../../features/barber/services_management/services_management.dart';
+import '../../features/bookings/bookings.dart';
+
 import '../../services/auth_session.dart';
-import '../../utils/validators/service_field_validation.dart';
+import 'package:image_picker/image_picker.dart';
 
 class BarberServicesController extends ChangeNotifier {
   BarberServicesController({
     ServiceRepository serviceRepository = const ServiceRepository(),
-  }) : _serviceRepository = serviceRepository {
+    ServiceImageRepository serviceImageRepository =
+        const ServiceImageRepository(),
+    BookingRepository bookingRepository = const BookingRepository(),
+  }) : _serviceRepository = serviceRepository,
+       _serviceImageRepository = serviceImageRepository,
+       _bookingRepository = bookingRepository {
     _onAddNameChanged = () {
       addNameError = null;
       notifyListeners();
@@ -32,6 +38,8 @@ class BarberServicesController extends ChangeNotifier {
   }
 
   final ServiceRepository _serviceRepository;
+  final ServiceImageRepository _serviceImageRepository;
+  final BookingRepository _bookingRepository;
 
   final TextEditingController serviceNameController = TextEditingController();
   final TextEditingController durationController = TextEditingController();
@@ -48,11 +56,13 @@ class BarberServicesController extends ChangeNotifier {
   String? addNameError;
   String? addDurationError;
   String? addPriceError;
-
+  ServiceTarget selectedAddTarget = ServiceTarget.personal;
+  String selectedAddIconKey = ServiceIconOptions.defaultKey;
+  String? selectedAddImageUrl;
+  bool isUploadingAddImage = false;
   int addNameShake = 0;
   int addDurationShake = 0;
   int addPriceShake = 0;
-
   String get _currentBarberId {
     return AuthSession.currentUser?.barberId ?? 'b1';
   }
@@ -97,6 +107,75 @@ class BarberServicesController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void changeAddTarget(ServiceTarget target) {
+    selectedAddTarget = target;
+    notifyListeners();
+  }
+
+  void changeAddIconKey(String iconKey) {
+    selectedAddIconKey = iconKey;
+    notifyListeners();
+  }
+
+  Future<void> pickAndUploadAddServiceImage() async {
+    if (isUploadingAddImage) {
+      return;
+    }
+
+    isUploadingAddImage = true;
+    notifyListeners();
+
+    final String? previousImageUrl = selectedAddImageUrl;
+
+    try {
+      final String? uploadedUrl = await pickAndUploadServiceImageUrl();
+
+      if (uploadedUrl == null || uploadedUrl.trim().isEmpty) {
+        return;
+      }
+
+      selectedAddImageUrl = uploadedUrl.trim();
+
+      if (previousImageUrl != null && previousImageUrl != selectedAddImageUrl) {
+        await _serviceImageRepository.deleteServiceImageByPublicUrl(
+          previousImageUrl,
+        );
+      }
+    } finally {
+      isUploadingAddImage = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> pickAndUploadServiceImageUrl() async {
+    final XFile? pickedImage = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1200,
+      maxHeight: 1200,
+      imageQuality: 82,
+    );
+
+    if (pickedImage == null) {
+      return null;
+    }
+
+    return _serviceImageRepository.uploadServiceImage(
+      barberId: _currentBarberId,
+      image: pickedImage,
+    );
+  }
+
+  Future<void> clearAddServiceImage() async {
+    final String? imageUrlToDelete = selectedAddImageUrl;
+
+    selectedAddImageUrl = null;
+    notifyListeners();
+
+    await _serviceImageRepository.deleteServiceImageByPublicUrl(
+      imageUrlToDelete,
+    );
+  }
+
   bool validateAddForm() {
     final String? nameError = ServiceFieldValidation.nameError(
       serviceNameController.text,
@@ -124,7 +203,9 @@ class BarberServicesController extends ChangeNotifier {
     return isValid;
   }
 
-  void resetForm() {
+  Future<void> resetForm() async {
+    final String? imageUrlToDelete = selectedAddImageUrl;
+
     addNameError = null;
     addDurationError = null;
     addPriceError = null;
@@ -132,8 +213,16 @@ class BarberServicesController extends ChangeNotifier {
     serviceNameController.clear();
     durationController.clear();
     priceController.clear();
+    selectedAddTarget = ServiceTarget.personal;
+    selectedAddIconKey = ServiceIconOptions.defaultKey;
+    selectedAddImageUrl = null;
+    isUploadingAddImage = false;
 
     notifyListeners();
+
+    await _serviceImageRepository.deleteServiceImageByPublicUrl(
+      imageUrlToDelete,
+    );
   }
 
   Future<void> addService() async {
@@ -146,7 +235,10 @@ class BarberServicesController extends ChangeNotifier {
       name: name,
       durationMinutes: duration,
       price: priceInt.toDouble(),
+      target: selectedAddTarget,
       isActive: true,
+      serviceImageUrl: selectedAddImageUrl,
+      serviceIconKey: selectedAddIconKey,
     );
 
     final createdService = await _serviceRepository.addBarberService(
@@ -159,15 +251,25 @@ class BarberServicesController extends ChangeNotifier {
     serviceNameController.clear();
     durationController.clear();
     priceController.clear();
-
+    selectedAddTarget = ServiceTarget.personal;
+    selectedAddIconKey = ServiceIconOptions.defaultKey;
+    selectedAddImageUrl = null;
+    isUploadingAddImage = false;
     notifyListeners();
   }
 
   Future<void> updateService(UiService updatedService) async {
+    final UiService? previousService = _findServiceById(updatedService.id);
+    final String? previousImageUrl = _cleanText(
+      previousService?.serviceImageUrl,
+    );
+
     final savedService = await _serviceRepository.updateBarberService(
       barberId: _currentBarberId,
       service: updatedService,
     );
+
+    final String? newImageUrl = _cleanText(savedService.serviceImageUrl);
 
     services = services.map((service) {
       if (service.id == savedService.id) {
@@ -178,6 +280,12 @@ class BarberServicesController extends ChangeNotifier {
     }).toList();
 
     notifyListeners();
+
+    if (previousImageUrl != null && previousImageUrl != newImageUrl) {
+      await _serviceImageRepository.deleteServiceImageByPublicUrl(
+        previousImageUrl,
+      );
+    }
   }
 
   Future<void> setServiceActive({
@@ -201,8 +309,65 @@ class BarberServicesController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<int> countActiveAppointmentsForService(String serviceId) {
+    return _bookingRepository.countActiveAppointmentsForService(
+      barberId: _currentBarberId,
+      serviceId: serviceId,
+    );
+  }
+
+  Future<void> cancelActiveAppointmentsForService(String serviceId) {
+    return _bookingRepository.cancelActiveAppointmentsForService(
+      barberId: _currentBarberId,
+      serviceId: serviceId,
+    );
+  }
+
+  Future<void> archiveServiceById(String serviceId) async {
+    await _serviceRepository.archiveBarberService(
+      barberId: _currentBarberId,
+      serviceId: serviceId,
+    );
+    services = services.where((UiService s) => s.id != serviceId).toList();
+    notifyListeners();
+  }
+
+  UiService? _findServiceById(String serviceId) {
+    for (final service in services) {
+      if (service.id == serviceId) {
+        return service;
+      }
+    }
+
+    return null;
+  }
+
+  String? _cleanText(String? value) {
+    if (value == null) {
+      return null;
+    }
+
+    final String trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+
+    return trimmed;
+  }
+
+  Future<void> deleteServiceImageByUrl(String? imageUrl) {
+    return _serviceImageRepository.deleteServiceImageByPublicUrl(imageUrl);
+  }
+
   @override
   void dispose() {
+    final String? imageUrlToDelete = selectedAddImageUrl;
+
+    if (imageUrlToDelete != null && imageUrlToDelete.trim().isNotEmpty) {
+      Future.microtask(() {
+        _serviceImageRepository.deleteServiceImageByPublicUrl(imageUrlToDelete);
+      });
+    }
     serviceNameController.removeListener(_onAddNameChanged);
     durationController.removeListener(_onAddDurationChanged);
     priceController.removeListener(_onAddPriceChanged);

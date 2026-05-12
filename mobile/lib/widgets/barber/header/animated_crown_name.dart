@@ -61,35 +61,12 @@ class _AnimatedCrownNameState extends State<AnimatedCrownName>
               offset: Offset(0, _floatAnimation.value),
               child: Transform.scale(
                 scale: _scaleAnimation.value,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFFDF4D8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(
-                          0xFFC47A3D,
-                        ).withValues(alpha: _glowAnimation.value),
-                        blurRadius: 14,
-                        spreadRadius: 1.5,
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.workspace_premium_rounded,
-                      size: 16,
-                      color: Color(0xFFC28A2E),
-                    ),
-                  ),
-                ),
+                child: _PremiumCrownBadge(glowOpacity: _glowAnimation.value),
               ),
             );
           },
         ),
-        const SizedBox(width: 7),
+        const SizedBox(width: 5),
         Flexible(
           child: Text(
             widget.displayName,
@@ -103,7 +80,62 @@ class _AnimatedCrownNameState extends State<AnimatedCrownName>
             ),
           ),
         ),
+        const SizedBox(width: 5),
+        AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _floatAnimation.value),
+              child: Transform.scale(
+                scale: _scaleAnimation.value,
+                child: _PremiumCrownBadge(glowOpacity: _glowAnimation.value),
+              ),
+            );
+          },
+        ),
       ],
+    );
+  }
+}
+
+class _PremiumCrownBadge extends StatelessWidget {
+  const _PremiumCrownBadge({required this.glowOpacity});
+
+  final double glowOpacity;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFD700).withValues(
+              alpha: glowOpacity * 0.55,
+            ),
+            blurRadius: 14,
+            spreadRadius: 1.2,
+          ),
+          BoxShadow(
+            color: const Color(0xFFF6C453).withValues(
+              alpha: glowOpacity * 0.35,
+            ),
+            blurRadius: 7,
+            spreadRadius: 0.35,
+          ),
+        ],
+      ),
+      child: SizedBox(
+      width: 22,
+      height: 22,
+      child: Center(
+        child: Image.asset(
+          'assets/icons/premium_crown.png',
+          width: 18,
+          height: 18,
+        ),
+      ),
+      ),
     );
   }
 }

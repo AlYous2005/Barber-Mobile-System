@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../utils/app_theme_colors.dart';
+import '../../general_utils/app_theme_colors.dart';
 
 class StarRatingDisplay extends StatelessWidget {
   const StarRatingDisplay({
@@ -7,7 +7,7 @@ class StarRatingDisplay extends StatelessWidget {
     required this.rating,
     required this.ratingCount,
     required this.satisfactionRate,
-    this.ratingBreakdown = const {5: 18, 4: 6, 3: 2, 2: 1, 1: 0},
+    this.ratingBreakdown = const {5: 0, 4: 0, 3: 0, 2: 0, 1: 0},
     this.starSize = 18,
     this.enableDetailsPopup = true,
   });
@@ -171,6 +171,52 @@ class StarRatingDisplay extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 12),
+
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 56,
+                        child: Text(
+                          'النجوم',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppThemeColors.textMuted(context),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'النسبة',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppThemeColors.textMuted(context),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        width: 76,
+                        child: Text(
+                          'عدد الأشخاص',
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppThemeColors.textMuted(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 8),
 
                 ...[5, 4, 3, 2, 1].map((stars) {
                   final int count = ratingBreakdown[stars] ?? 0;

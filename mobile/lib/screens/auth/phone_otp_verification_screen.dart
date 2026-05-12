@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../models/app_user.dart';
-import '../../models/pending_phone_signup.dart';
-import '../../services/auth_service.dart';
+import '../../features/auth/auth.dart';
 import '../../services/auth_session.dart';
 import '../../widgets/auth/auth_background.dart';
 import '../../widgets/auth/auth_card.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../general_utils/app_theme_colors.dart';
 import '../shared/barber_feedback_popup.dart';
 import 'profile_action_widgets.dart';
 import 'profile_completion_card.dart';
@@ -9,8 +9,9 @@ import 'profile_image_options_sheet.dart';
 import 'profile_sheet_header.dart';
 import 'profile_summary_card.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../features/locations/locations.dart';
 
-import '../../../repositories/barber_avatar_repository.dart';
+import '../../../features/barber/profile/barber_profile.dart';
 import '../../../services/auth_session.dart';
 
 Future<void> showBarberProfileSheet({
@@ -58,6 +59,8 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
   late String _initialWhatsappLocal;
   late String _initialAddress;
   late String _initialBio;
+  late String _initialAreaId;
+  late String _initialGovernorateId;
 
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
@@ -68,9 +71,24 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
   final ImagePicker _imagePicker = ImagePicker();
   final BarberAvatarRepository _barberAvatarRepository =
       const BarberAvatarRepository();
+  final BarberProfileRepository _barberProfileRepository =
+      const BarberProfileRepository();
+
+  final LocationRepository _locationRepository = const LocationRepository();
 
   String? _barberAvatarUrl;
   bool _isUploadingImage = false;
+  bool _isLoadingProfile = false;
+  bool _isSavingProfile = false;
+
+  bool _isLoadingGovernorates = false;
+  bool _isLoadingAreas = false;
+
+  List<GovernorateModel> _governorates = <GovernorateModel>[];
+  List<AreaModel> _areas = <AreaModel>[];
+
+  String? _selectedGovernorateId;
+  String? _selectedAreaId;
 
   bool _isEditing = false;
   bool _hasSelectedImage = false;
@@ -84,12 +102,13 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
         ? 'اسم الحلاق'
         : widget.barberName.trim();
 
-    _initialPhone = '0590000000';
+    _initialPhone = '';
     _initialWhatsappCountryCode = '+970';
-    _initialWhatsappLocal = '590000000';
-    _initialAddress = 'نابلس - فلسطين';
-    _initialBio =
-        'حلاق متخصص في القصات العصرية واللحية والعناية الكاملة بالمظهر.';
+    _initialWhatsappLocal = '';
+    _initialAddress = '';
+    _initialBio = '';
+    _initialAreaId = '';
+    _initialGovernorateId = '';
 
     _whatsappCountryCode = _initialWhatsappCountryCode;
 
@@ -104,6 +123,8 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
     _whatsappController.addListener(_refresh);
     _addressController.addListener(_refresh);
     _bioController.addListener(_refresh);
+    _loadBarberProfileData();
+    _loadGovernorates();
     _loadBarberAvatar();
   }
 
@@ -130,7 +151,8 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
         _whatsappCountryCode != _initialWhatsappCountryCode ||
         _whatsappController.text.trim() != _initialWhatsappLocal ||
         _addressController.text.trim() != _initialAddress ||
-        _bioController.text.trim() != _initialBio;
+        _bioController.text.trim() != _initialBio ||
+        (_selectedAreaId ?? '') != _initialAreaId;
   }
 
   String get _fullWhatsapp {
@@ -139,15 +161,24 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
     return '$_whatsappCountryCode$local';
   }
 
-  int get _completedItemsCount {
-    int count = 0;
+  bool get _hasCompletedImage {
+    return _hasSelectedImage;
+  }
 
-    if (_hasSelectedImage) count++;
-    if (_fullWhatsapp.isNotEmpty) count++;
-    if (_bioController.text.trim().isNotEmpty) count++;
-    if (_addressController.text.trim().isNotEmpty) count++;
+  bool get _hasCompletedWhatsapp {
+    return _fullWhatsapp.trim().isNotEmpty;
+  }
 
-    return count;
+  bool get _hasCompletedLocation {
+    return (_selectedAreaId ?? '').trim().isNotEmpty;
+  }
+
+  bool get _hasCompletedAddress {
+    return _addressController.text.trim().isNotEmpty;
+  }
+
+  bool get _hasCompletedBio {
+    return _bioController.text.trim().isNotEmpty;
   }
 
   void _startEditing() {
@@ -167,38 +198,296 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
       _whatsappController.text = _initialWhatsappLocal;
       _addressController.text = _initialAddress;
       _bioController.text = _initialBio;
+      _selectedGovernorateId = _initialGovernorateId.isEmpty
+          ? null
+          : _initialGovernorateId;
+      _selectedAreaId = _initialAreaId.isEmpty ? null : _initialAreaId;
+    });
+
+    if (_selectedGovernorateId != null) {
+      _loadAreasForGovernorate(_selectedGovernorateId!);
+    }
+  }
+
+  Future<void> _loadGovernorates() async {
+    setState(() {
+      _isLoadingGovernorates = true;
+    });
+
+    try {
+      final loadedGovernorates = await _locationRepository
+          .getActiveGovernorates();
+
+      if (!mounted) return;
+
+      setState(() {
+        _governorates = loadedGovernorates;
+      });
+    } catch (error, stackTrace) {
+      debugPrint('Load governorates error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingGovernorates = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadAreasForGovernorate(String governorateId) async {
+    final cleanGovernorateId = governorateId.trim();
+
+    if (cleanGovernorateId.isEmpty) {
+      setState(() {
+        _areas = <AreaModel>[];
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoadingAreas = true;
+    });
+
+    try {
+      final loadedAreas = await _locationRepository.getActiveAreasByGovernorate(
+        governorateId: cleanGovernorateId,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _areas = loadedAreas;
+      });
+    } catch (error, stackTrace) {
+      debugPrint('Load areas error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+
+      setState(() {
+        _areas = <AreaModel>[];
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingAreas = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _changeGovernorate(String? governorateId) async {
+    setState(() {
+      _selectedGovernorateId = governorateId;
+      _selectedAreaId = null;
+      _areas = <AreaModel>[];
+    });
+
+    final cleanGovernorateId = governorateId?.trim() ?? '';
+
+    if (cleanGovernorateId.isEmpty) {
+      return;
+    }
+
+    await _loadAreasForGovernorate(cleanGovernorateId);
+  }
+
+  void _changeArea(String? areaId) {
+    setState(() {
+      _selectedAreaId = areaId;
     });
   }
 
-  void _saveChanges() {
-    if (!_hasChanges) return;
+  Future<void> _saveChanges() async {
+    if (!_hasChanges || _isSavingProfile) return;
+
+    final barberId = _currentBarberId;
+    if (barberId.isEmpty) {
+      if (!mounted) return;
+      await showBarberFeedbackPopup(
+        context: context,
+        title: 'تعذر تحديث البيانات',
+        message: 'لا يوجد حساب حلاق مرتبط حاليًا',
+        icon: Icons.error_outline_rounded,
+        iconStartColor: _accentRedStart,
+        iconEndColor: _accentRedEnd,
+      );
+      return;
+    }
+
+    final cleanAreaId = _selectedAreaId?.trim() ?? '';
+    if (cleanAreaId.isEmpty) {
+      if (!mounted) return;
+      await showBarberFeedbackPopup(
+        context: context,
+        title: 'منطقة الصالون مطلوبة',
+        message: 'اختر المحافظة والمنطقة حتى يظهر الصالون للزبائن في منطقتك',
+        icon: Icons.location_on_rounded,
+        iconStartColor: _accentRedStart,
+        iconEndColor: _accentRedEnd,
+      );
+      return;
+    }
 
     setState(() {
-      _initialName = _nameController.text.trim();
-      widget.onNameSaved?.call(_initialName);
-      _initialPhone = _phoneController.text.trim();
-      _initialWhatsappCountryCode = _whatsappCountryCode;
-      _initialWhatsappLocal = _whatsappController.text.trim();
-      _initialAddress = _addressController.text.trim();
-      _initialBio = _bioController.text.trim();
-
-      _hasSelectedImage = false;
-      _isEditing = false;
+      _isSavingProfile = true;
     });
 
-    if (!mounted) return;
-    showBarberFeedbackPopup(
-      context: context,
-      title: 'تم تحديث البيانات',
-      message: 'تم تحديث بيانات الحلاق بنجاح',
-      icon: Icons.verified_user_rounded,
-      iconStartColor: _accentGreenStart,
-      iconEndColor: _accentGreenEnd,
-    );
+    try {
+      final newName = _nameController.text.trim();
+      final newPhone = _phoneController.text.trim();
+      final newWhatsappCountry = _whatsappCountryCode;
+      final newWhatsappLocal = _whatsappController.text.trim();
+      final newWhatsappFull = newWhatsappLocal.isEmpty
+          ? ''
+          : '$newWhatsappCountry$newWhatsappLocal';
+      final newAddress = _addressController.text.trim();
+      final newBio = _bioController.text.trim();
+
+      await _barberProfileRepository.updateProfile(
+        areaId: cleanAreaId,
+        barberId: barberId,
+        name: newName,
+        phone: newPhone,
+        whatsappPhone: newWhatsappFull,
+        address: newAddress,
+        bio: newBio,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _initialName = newName;
+        _initialPhone = newPhone;
+        _initialWhatsappCountryCode = newWhatsappCountry;
+        _initialWhatsappLocal = newWhatsappLocal;
+        _initialAddress = newAddress;
+        _initialBio = newBio;
+        _initialAreaId = cleanAreaId;
+        _initialGovernorateId = _selectedGovernorateId ?? '';
+
+        _hasSelectedImage = false;
+        _isEditing = false;
+        _isSavingProfile = false;
+      });
+      widget.onNameSaved?.call(_initialName);
+
+      await showBarberFeedbackPopup(
+        context: context,
+        title: 'تم تحديث البيانات',
+        message: 'تم تحديث بيانات الحلاق بنجاح',
+        icon: Icons.verified_user_rounded,
+        iconStartColor: _accentGreenStart,
+        iconEndColor: _accentGreenEnd,
+      );
+    } catch (error, stackTrace) {
+      debugPrint('Save barber profile data error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+      setState(() {
+        _isSavingProfile = false;
+      });
+
+      await showBarberFeedbackPopup(
+        context: context,
+        title: 'فشل تحديث البيانات',
+        message: 'حاول مرة أخرى، أو تأكد من اتصال الإنترنت',
+        icon: Icons.error_outline_rounded,
+        iconStartColor: _accentRedStart,
+        iconEndColor: _accentRedEnd,
+      );
+    }
   }
 
   String get _currentUserId {
     return AuthSession.currentUser?.username ?? '';
+  }
+
+  String get _currentBarberId {
+    return AuthSession.currentUser?.barberId ?? '';
+  }
+
+  Future<void> _loadBarberProfileData() async {
+    final barberId = _currentBarberId;
+    if (barberId.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingProfile = true;
+    });
+
+    try {
+      final profile = await _barberProfileRepository.getProfile(
+        barberId: barberId,
+      );
+      if (!mounted || profile == null) {
+        return;
+      }
+
+      final whatsappParts = _splitWhatsapp(profile.whatsappPhone);
+
+      setState(() {
+        _initialName = profile.name.isEmpty ? _initialName : profile.name;
+        _initialPhone = profile.phone;
+        _initialWhatsappCountryCode = whatsappParts.countryCode;
+        _initialWhatsappLocal = whatsappParts.localNumber;
+        _initialAddress = profile.address;
+        _initialBio = profile.bio;
+
+        _initialAreaId = profile.areaId;
+        _initialGovernorateId = profile.governorateId;
+
+        _selectedAreaId = profile.areaId.isEmpty ? null : profile.areaId;
+        _selectedGovernorateId = profile.governorateId.isEmpty
+            ? null
+            : profile.governorateId;
+
+        _whatsappCountryCode = _initialWhatsappCountryCode;
+
+        _nameController.text = _initialName;
+        _phoneController.text = _initialPhone;
+        _whatsappController.text = _initialWhatsappLocal;
+        _addressController.text = _initialAddress;
+        _bioController.text = _initialBio;
+      });
+      if (profile.governorateId.isNotEmpty) {
+        await _loadAreasForGovernorate(profile.governorateId);
+      }
+    } catch (error, stackTrace) {
+      debugPrint('Load barber profile data error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingProfile = false;
+        });
+      }
+    }
+  }
+
+  ({String countryCode, String localNumber}) _splitWhatsapp(String rawPhone) {
+    final cleaned = rawPhone.trim();
+
+    if (cleaned.isEmpty) {
+      return (countryCode: '+970', localNumber: '');
+    }
+
+    if (cleaned.startsWith('+970')) {
+      return (countryCode: '+970', localNumber: cleaned.substring(4));
+    }
+
+    if (cleaned.startsWith('970')) {
+      return (countryCode: '+970', localNumber: cleaned.substring(3));
+    }
+
+    if (cleaned.startsWith('0')) {
+      return (countryCode: '+970', localNumber: cleaned.substring(1));
+    }
+
+    return (countryCode: '+970', localNumber: cleaned);
   }
 
   Future<void> _loadBarberAvatar() async {
@@ -416,8 +705,23 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
 
                       const SizedBox(height: 14),
 
+                      if (_isLoadingProfile) ...[
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 14),
+                          child: SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2.4),
+                          ),
+                        ),
+                      ],
+
                       ProfileCompletionCard(
-                        completedItemsCount: _completedItemsCount,
+                        hasImage: _hasCompletedImage,
+                        hasWhatsapp: _hasCompletedWhatsapp,
+                        hasLocation: _hasCompletedLocation,
+                        hasAddress: _hasCompletedAddress,
+                        hasBio: _hasCompletedBio,
                       ),
 
                       const SizedBox(height: 14),
@@ -431,6 +735,14 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
                         addressController: _addressController,
                         bioController: _bioController,
                         whatsappCountryCode: _whatsappCountryCode,
+                        governorates: _governorates,
+                        areas: _areas,
+                        selectedGovernorateId: _selectedGovernorateId,
+                        selectedAreaId: _selectedAreaId,
+                        isLoadingGovernorates: _isLoadingGovernorates,
+                        isLoadingAreas: _isLoadingAreas,
+                        onGovernorateChanged: _changeGovernorate,
+                        onAreaChanged: _changeArea,
                         onWhatsappCountryChanged: (value) {
                           if (value == null) return;
                           setState(() {
@@ -443,7 +755,7 @@ class _BarberProfileSheetState extends State<BarberProfileSheet> {
                       if (_isEditing) ...[
                         const SizedBox(height: 14),
                         EditActionsBar(
-                          canSave: _hasChanges,
+                          canSave: _hasChanges && !_isSavingProfile,
                           onSave: _saveChanges,
                           onCancel: _cancelEditing,
                         ),

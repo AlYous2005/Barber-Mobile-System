@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../models/mock_appointment.dart';
-import '../../../utils/app_theme_colors.dart';
-import '../../../utils/booking_formatters.dart';
+import '../../../features/bookings/bookings.dart';
+import '../../../general_utils/app_theme_colors.dart';
+
 import 'timeline_marquee_text.dart';
 import 'timeline_radar_circle.dart';
 import 'timeline_status_badge.dart';

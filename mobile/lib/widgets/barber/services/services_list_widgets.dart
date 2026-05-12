@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/services_management/services_management.dart';
+import '../../../general_utils/app_theme_colors.dart';
 
 class CurrentServicesBanner extends StatelessWidget {
   const CurrentServicesBanner({super.key});
@@ -95,6 +96,79 @@ class CurrentServicesBanner extends StatelessWidget {
   }
 }
 
+class ServicesTargetTabs extends StatelessWidget {
+  const ServicesTargetTabs({
+    super.key,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final ServiceTarget selected;
+  final ValueChanged<ServiceTarget> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color border = AppThemeColors.border(context);
+    Widget tab(ServiceTarget target, String label) {
+      final bool isOn = selected == target;
+      return Expanded(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => onChanged(target),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 6),
+              decoration: BoxDecoration(
+                color: isOn
+                    ? const Color(0xFFC47A3D).withValues(alpha: 0.14)
+                    : AppThemeColors.softCard(context),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isOn ? const Color(0xFFC47A3D) : border,
+                  width: isOn ? 1.6 : 1,
+                ),
+                boxShadow: isOn
+                    ? const [
+                        BoxShadow(
+                          color: Color(0x18C47A3D),
+                          blurRadius: 16,
+                          offset: Offset(0, 8),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w900,
+                  color: isOn
+                      ? const Color(0xFFC47A3D)
+                      : AppThemeColors.textSecondary(context),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        tab(ServiceTarget.personal, 'خدمات الشباب'),
+        const SizedBox(width: 8),
+        tab(ServiceTarget.child, 'خدمات الأطفال'),
+        const SizedBox(width: 8),
+        tab(ServiceTarget.elderly, 'خدمات كبار السن'),
+      ],
+    );
+  }
+}
+
 class EmptyServicesState extends StatelessWidget {
   const EmptyServicesState({super.key});
 
@@ -113,6 +187,33 @@ class EmptyServicesState extends StatelessWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: AppThemeColors.textSecondary(context),
+        ),
+      ),
+    );
+  }
+}
+
+class EmptyCategoryServicesState extends StatelessWidget {
+  const EmptyCategoryServicesState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: AppThemeColors.softCard(context),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppThemeColors.border(context)),
+      ),
+      child: Text(
+        'لا توجد خدمات في هذه الفئة حاليًا',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 14,
+          height: 1.5,
           fontWeight: FontWeight.w700,
           color: AppThemeColors.textSecondary(context),
         ),

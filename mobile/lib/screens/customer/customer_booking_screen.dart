@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/customer/customer_booking_controller.dart';
-import '../../models/barber_model.dart';
-import '../../utils/booking_date_helpers.dart';
-import '../../utils/booking_formatters.dart';
+import '../../features/barber/profile/barber_profile.dart';
+import '../../features/bookings/bookings.dart';
 import '../../widgets/customer/booking/available_times_step.dart';
 import '../../widgets/customer/booking/booking_bottom_action_button.dart';
 import '../../widgets/customer/booking/booking_confirm_warning_card.dart';
@@ -27,6 +26,14 @@ class CustomerBookingScreen extends StatefulWidget {
 
 class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
   late final CustomerBookingController controller;
+
+  String _displayAddress(String? address) {
+    final cleaned = address?.trim();
+    if (cleaned == null || cleaned.isEmpty) {
+      return 'العنوان غير محدد';
+    }
+    return cleaned;
+  }
 
   @override
   void initState() {
@@ -231,11 +238,7 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
 
     switch (controller.step) {
       case 0:
-        return ChooseBarberStep(
-          barbers: controller.availableBarbers,
-          selectedBarber: controller.selectedBarber,
-          onSelectBarber: controller.selectBarber,
-        );
+        return ChooseBarberStep(controller: controller);
 
       case 1:
         return ChooseServicesStep(
@@ -250,6 +253,9 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
           customDate: controller.customDate,
           onChoiceChanged: controller.changeDateChoice,
           onCustomDateChanged: controller.changeCustomDate,
+          useBookingWindow: controller.useConstrainedBookingDates,
+          allowedBookingDates: controller.allowedBookingDates,
+          onBookingWindowDateSelected: controller.selectResolvedBookingDate,
         );
 
       case 3:
@@ -264,6 +270,9 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
           requiredDurationLabel: formatBookingDuration(
             controller.selectedTotalDuration,
           ),
+          availableTimes: controller.availableTimeLabels,
+          isLoadingTimes: controller.isLoadingAvailableTimes,
+          message: controller.availableTimesMessage,
           onSelectTime: controller.selectTime,
         );
 
@@ -276,7 +285,7 @@ class _CustomerBookingScreenState extends State<CustomerBookingScreen> {
 
         return BookingSummaryCard(
           barberName: barber.name,
-          barberLocation: 'زيتا، زيتا',
+          barberLocation: _displayAddress(barber.address),
           selectedServices: controller.selectedServices
               .map((selected) => selected.service)
               .toList(),

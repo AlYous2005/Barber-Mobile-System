@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/availability_models.dart';
-import '../../../utils/app_theme_colors.dart';
+import '../../../features/barber/schedule/schedule.dart';
+import '../../../general_utils/app_theme_colors.dart';
+import '../../shared/app_date_picker_sheet.dart';
 import 'availability_shared_widgets.dart';
 import 'availability_sheet_widgets.dart';
 
@@ -79,18 +80,16 @@ class _EditClosureSheetState extends State<EditClosureSheet> {
 
   Future<void> _pickDate() async {
     final DateTime now = DateTime.now();
-    final DateTime? pickedDate = await showDatePicker(
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime maxDate = today.add(const Duration(days: 365));
+
+    final DateTime? pickedDate = await showAppDatePickerSheet(
       context: context,
-      initialDate: selectedDate ?? now,
-      firstDate: DateTime(now.year - 2),
-      lastDate: DateTime(now.year + 2),
-      locale: const Locale('ar'),
-      builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
+      initialDate: selectedDate ?? today,
+      title: 'تاريخ الإغلاق',
+      subtitle: 'اختر الشهر واليوم بالسحب',
+      minSelectableDate: today,
+      maxSelectableDate: maxDate,
     );
 
     if (pickedDate == null) return;

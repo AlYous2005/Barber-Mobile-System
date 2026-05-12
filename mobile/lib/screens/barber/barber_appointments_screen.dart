@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../../features/bookings/bookings.dart';
 import '../../controllers/barber/barber_appointments_controller.dart';
-import '../../models/mock_appointment.dart';
 import '../../widgets/barber/appointments/add_manual_appointment_button.dart';
 import '../../widgets/barber/appointments/add_manual_appointment_sheet.dart';
 import '../../widgets/barber/appointments/appointment_action_widgets.dart';
@@ -22,6 +22,16 @@ class BarberAppointmentsScreen extends StatefulWidget {
 
 class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
   late final BarberAppointmentsController controller;
+
+  static const double _appointmentsScrollLoadThresholdPx = 140;
+
+  bool _appointmentsScrollNearBottom(ScrollMetrics metrics) {
+    if (!metrics.hasPixels || !metrics.hasViewportDimension) {
+      return false;
+    }
+    return metrics.pixels >=
+        metrics.maxScrollExtent - _appointmentsScrollLoadThresholdPx;
+  }
 
   @override
   void initState() {
@@ -142,10 +152,35 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
                       onTap: () async {
                         Navigator.of(context).pop();
 
-                        await controller.updateStatus(
-                          appointment.id,
-                          newStatus,
-                        );
+                        try {
+                          await controller.updateStatus(
+                            appointment.id,
+                            newStatus,
+                          );
+                        } catch (error) {
+                          if (!mounted) return;
+
+                          if (error
+                              is BarberAppointmentsSyncConflictException) {
+                            await _showSuccessPopup(
+                              title: 'تم تحديث الموعد',
+                              message:
+                                  'تعذر تحديث حالة الموعد , بسبب تغيير حالته من قبل الطرف الاخر. سيتم تحديث القوائم الان',
+                              icon: Icons.sync_problem_rounded,
+                              iconStartColor: const Color(0xFF2563EB),
+                              iconEndColor: const Color(0xFF93C5FD),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(this.context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'تعذر تحديث حالة الموعد، حاول مرة أخرى',
+                                ),
+                              ),
+                            );
+                          }
+                          return;
+                        }
 
                         if (!mounted) return;
 
@@ -273,66 +308,95 @@ class _BarberAppointmentsScreenState extends State<BarberAppointmentsScreen> {
               elevation: 0,
               iconTheme: IconThemeData(color: appBarTextColor),
             ),
-            body: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-              children: [
-                const AppointmentsSectionIntro(),
+            body: NotificationListener<ScrollNotification>(
+              onNotification: (ScrollNotification notification) {
+                if (notification is! ScrollUpdateNotification &&
+                    notification is! OverscrollNotification) {
+                  return false;
+                }
+                if (!controller.hasMoreAppointments ||
+                    controller.isLoadingMoreAppointments ||
+                    controller.isLoadingAppointments) {
+                  return false;
+                }
+                if (_appointmentsScrollNearBottom(notification.metrics)) {
+                  controller.loadMoreAppointments();
+                }
+                return false;
+              },
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                children: [
+                  const AppointmentsSectionIntro(),
 
-                const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-                AddManualAppointmentButton(
-                  onTap: _openAddManualAppointmentSheet,
-                ),
+                  AddManualAppointmentButton(
+                    onTap: _openAddManualAppointmentSheet,
+                  ),
 
-                const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-                AppointmentsSubnav(
-                  selectedTab: controller.selectedTab,
-                  onChanged: controller.changeTab,
-                ),
+                  AppointmentsSubnav(
+                    selectedTab: controller.selectedTab,
+                    onChanged: controller.changeTab,
+                  ),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                if (controller.isLoadingAppointments)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (controller.appointmentsErrorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.error_outline_rounded, size: 42),
-                        const SizedBox(height: 12),
-                        Text(
-                          controller.appointmentsErrorMessage!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
+                  if (controller.isLoadingAppointments)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (controller.appointmentsErrorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, size: 42),
+                          const SizedBox(height: 12),
+                          Text(
+                            controller.appointmentsErrorMessage!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          ElevatedButton(
+                            onPressed: controller.loadBarberAppointments,
+                            child: const Text('إعادة المحاولة'),
+                          ),
+                        ],
+                      ),
+                    )
+                  else ...[
+                    AppointmentsListSection(
+                      title: controller.activeListTitle,
+                      emptyText: controller.activeEmptyText,
+                      appointments: controller.activeAppointments,
+                      isFinalStatus: controller.isFinalStatus,
+                      onConfirm: _handleConfirmAppointment,
+                      onCheckIn: _handleCheckIn,
+                      onNoShow: _handleNoShow,
+                      onCancel: _handleCancel,
+                    ),
+                    if (controller.isLoadingMoreAppointments)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Center(
+                          child: SizedBox(
+                            width: 26,
+                            height: 26,
+                            child: CircularProgressIndicator(strokeWidth: 2.4),
                           ),
                         ),
-                        const SizedBox(height: 14),
-                        ElevatedButton(
-                          onPressed: controller.loadBarberAppointments,
-                          child: const Text('إعادة المحاولة'),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  AppointmentsListSection(
-                    title: controller.activeListTitle,
-                    emptyText: controller.activeEmptyText,
-                    appointments: controller.activeAppointments,
-                    isFinalStatus: controller.isFinalStatus,
-                    onConfirm: _handleConfirmAppointment,
-                    onCheckIn: _handleCheckIn,
-                    onNoShow: _handleNoShow,
-                    onCancel: _handleCancel,
-                  ),
-              ],
+                      ),
+                  ],
+                ],
+              ),
             ),
           ),
         );

@@ -16,7 +16,7 @@ class TimelineStatusBadge extends StatelessWidget {
         ? isCurrentMode
               ? 'جارية'
               : 'قادم'
-        : 'متاح';
+        : 'جارية';
 
     final Color color = hasAppointment
         ? isCurrentMode
